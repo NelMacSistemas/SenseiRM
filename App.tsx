@@ -2410,19 +2410,250 @@ const AuditoriaPage = () => {
   );
 };
 
-const SobrePage = () => (
-  <div className="p-8 flex items-center justify-center min-h-[80vh] animate-in fade-in zoom-in duration-700">
-    <div className="max-w-3xl w-full bg-white rounded-[4rem] p-16 shadow-2xl border border-slate-100 text-center space-y-12">
-      <div className="inline-block p-10 bg-primary text-white rounded-[3rem] animate-bounce">
-        <Icon name="users-cog" className="text-7xl" />
+const SobrePage = () => {
+  const { users, clients, tasks, history } = useApp();
+
+  return (
+    <div className="p-8 space-y-10 animate-in fade-in duration-700 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center gap-3 border-b border-slate-200 pb-4">
+        <Icon name="info" className="text-slate-800" />
+        <h2 className="text-xl font-black text-slate-800 tracking-tight">Sobre o SenseIRM</h2>
       </div>
-      <div>
-        <h1 className="text-6xl font-black text-slate-900 tracking-tighter italic">SenseiRM <span className="text-primary font-bold">PRO</span></h1>
-        <p className="text-slate-400 text-xl font-medium mt-4">Enterprise CRM Ecosystem v4.3</p>
+
+      {/* Banner */}
+      <div className="bg-[#337ab7] rounded-xl p-10 text-white text-center space-y-4 shadow-lg">
+        <div className="flex items-center justify-center gap-3">
+          <Icon name="users" className="text-3xl" />
+          <h1 className="text-3xl font-bold tracking-tight">NelMac Sistemas</h1>
+        </div>
+        <div className="h-px bg-white/30 w-full max-w-4xl mx-auto" />
+        <p className="text-sm font-medium opacity-90">Soluções em tecnologia para otimizar sua gestão empresarial</p>
+      </div>
+
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Column 1: Informações do Sistema */}
+        <div className="bg-slate-50/50 rounded-3xl p-8 border border-slate-100 space-y-8">
+          <div className="flex items-center gap-2 text-primary">
+            <Icon name="code" className="text-lg" />
+            <h3 className="font-black uppercase tracking-widest text-xs">Informações do Sistema</h3>
+          </div>
+          
+          <div className="inline-block px-4 py-1.5 bg-primary text-white rounded-full text-[10px] font-black uppercase tracking-widest">
+            Versão 1.0.9
+          </div>
+
+          <p className="text-sm text-slate-600 leading-relaxed font-medium">
+            O <span className="font-bold text-slate-800">SenseIRM</span> é um sistema de CRM (Customer Relationship Management) compacto desenvolvido para otimizar a gestão de relacionamento com clientes, tarefas e comunicação empresarial.
+          </p>
+
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <Icon name="activity" className="text-slate-800 text-sm mt-1" />
+              <div>
+                <p className="text-xs font-bold text-slate-800">Alta Performance</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Icon name="shield-alt" className="text-slate-800 text-sm mt-1" />
+              <div>
+                <p className="text-xs font-bold text-slate-800">Segurança Avançada</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Icon name="smartphone" className="text-slate-800 text-sm mt-1" />
+              <div>
+                <p className="text-xs font-bold text-slate-800">Totalmente Responsivo</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-4 border-t border-slate-200">
+            <div className="flex items-center gap-2">
+              <Icon name="tag" className="text-slate-400 text-xs" />
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tecnologias Utilizadas</h4>
+            </div>
+            <p className="text-[11px] text-slate-500 font-bold leading-relaxed">
+              HTML5, CSS3, JavaScript ES6+, LocalStorage API, Font Awesome 6, Google Fonts
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-primary">
+              <Icon name="star" className="text-xs" />
+              <h4 className="text-[10px] font-black uppercase tracking-widest">Destaques da Versão 1.0.9</h4>
+            </div>
+            <ul className="space-y-3">
+              {['Sistema completo de permissões de usuário', 'Controle de acesso administrativo', 'Interface totalmente redesenhada', 'Dashboard com métricas avançadas', 'Sistema de backup e restore'].map((item, i) => (
+                <li key={i} className="text-[11px] text-slate-600 font-medium flex items-center gap-2 border-b border-slate-50 pb-2 last:border-0">
+                  <div className="w-1 h-1 bg-primary rounded-full" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Column 2: Características Técnicas */}
+        <div className="bg-slate-50/50 rounded-3xl p-8 border border-slate-100 space-y-8">
+          <div className="flex items-center gap-2 text-primary">
+            <Icon name="settings" className="text-lg" />
+            <h3 className="font-black uppercase tracking-widest text-xs">Características Técnicas</h3>
+          </div>
+
+          <div className="space-y-5">
+            {[
+              { label: 'Arquitetura', value: 'Single Page Application (SPA)' },
+              { label: 'Persistência', value: 'LocalStorage com backup automático' },
+              { label: 'Segurança', value: 'Autenticação multi-nível com criptografia' },
+              { label: 'Performance', value: 'Carregamento assíncrono e cache inteligente' },
+              { label: 'Compatibilidade', value: 'Todos os navegadores modernos' },
+              { label: 'Responsividade', value: 'Mobile-first design' },
+              { label: 'Acessibilidade', value: 'WCAG 2.1 Level AA' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <Icon name="check" className="text-primary text-xs mt-1" />
+                <div className="flex-1 flex justify-between gap-2">
+                  <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">{item.label}:</span>
+                  <span className="text-[11px] text-slate-500 font-medium text-right">{item.value}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-4 pt-6 border-t border-slate-200">
+            <div className="flex items-center gap-2">
+              <Icon name="pie-chart" className="text-slate-400 text-xs" />
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estatísticas do Sistema</h4>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Total de Usuários', value: users.length },
+                { label: 'Total de Clientes', value: clients.length },
+                { label: 'Total de Tarefas', value: tasks.length },
+                { label: 'Mensagens', value: history.length },
+              ].map((stat, i) => (
+                <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 text-center shadow-sm">
+                  <p className="text-xl font-black text-primary">{stat.value}</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Column 3: Segurança e Privacidade */}
+        <div className="bg-slate-50/50 rounded-3xl p-8 border border-slate-100 space-y-8">
+          <div className="flex items-center gap-2 text-primary">
+            <Icon name="shield-alt" className="text-lg" />
+            <h3 className="font-black uppercase tracking-widest text-xs">Segurança e Privacidade</h3>
+          </div>
+
+          <ul className="space-y-5">
+            {[
+              'Sistema de autenticação robusto',
+              'Controle de acesso baseado em perfis',
+              'Permissões granulares por módulo',
+              'Dados armazenados localmente no navegador',
+              'Validação de formulários em tempo real',
+              'Proteção contra XSS e injection',
+              'Logs de atividades detalhados',
+              'Backup automático dos dados',
+            ].map((item, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <Icon name="check" className="text-primary text-xs mt-1" />
+                <span className="text-[11px] text-slate-600 font-medium">{item}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100 space-y-3">
+            <div className="flex items-center gap-2 text-amber-600">
+              <Icon name="alert-triangle" className="text-xs" />
+              <h4 className="text-[10px] font-black uppercase tracking-widest">Importante</h4>
+            </div>
+            <p className="text-[11px] text-amber-700 font-medium leading-relaxed">
+              Os dados são armazenados localmente no seu navegador. Recomendamos fazer backup regularmente e evitar limpar os dados do navegador.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Funcionalidades Principais */}
+      <div className="space-y-8">
+        <div className="flex items-center gap-2 text-primary">
+          <Icon name="star" className="text-lg" />
+          <h3 className="text-sm font-black uppercase tracking-widest">Funcionalidades Principais</h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { icon: 'pie-chart', title: 'Dashboard Inteligente', desc: 'Visão geral com métricas em tempo real, gráficos interativos e KPIs do negócio' },
+            { icon: 'user', title: 'Gestão de Clientes', desc: 'Cadastro completo com histórico de interações, segmentação e dados de contato' },
+            { icon: 'tarefas', title: 'Gestão de Tarefas', desc: 'Organização de atividades com prioridades, prazos e atribuição de responsáveis' },
+            { icon: 'email', title: 'Mala Direta', desc: 'Comunicação em massa por e-mail e WhatsApp com templates personalizáveis' },
+            { icon: 'users', title: 'Gestão de Usuários', desc: 'Controle de acesso multi-nível com permissões granulares por módulo' },
+            { icon: 'smartphone', title: 'Design Responsivo', desc: 'Interface adaptável para todos os dispositivos com experiência otimizada' },
+          ].map((func, i) => (
+            <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm text-center space-y-4 hover:border-primary/30 transition-all group">
+              <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                <Icon name={func.icon} />
+              </div>
+              <h4 className="font-black text-slate-800 tracking-tight">{func.title}</h4>
+              <p className="text-xs text-slate-400 font-medium leading-relaxed">{func.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer / Contato */}
+      <div className="bg-slate-50/50 rounded-[3rem] p-10 border border-slate-100 space-y-10">
+        <div className="flex items-center gap-2 text-primary">
+          <Icon name="message-square" className="text-lg" />
+          <h3 className="text-sm font-black uppercase tracking-widest">Contato & Suporte</h3>
+        </div>
+
+        <p className="text-center text-xs text-slate-500 font-medium">Para mais informações sobre o SenseIRM ou outros produtos da NelMac Sistemas:</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="text-center space-y-3">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto text-primary shadow-sm border border-slate-100">
+              <Icon name="email" className="text-sm" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">E-mail:</p>
+              <p className="text-xs font-bold text-slate-800">contato@nelmacsistemas.com.br</p>
+            </div>
+          </div>
+          <div className="text-center space-y-3">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto text-primary shadow-sm border border-slate-100">
+              <Icon name="globe" className="text-sm" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Site:</p>
+              <p className="text-xs font-bold text-slate-800">www.nelmacsistemas.com.br</p>
+            </div>
+          </div>
+          <div className="text-center space-y-3">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto text-primary shadow-sm border border-slate-100">
+              <Icon name="phone" className="text-sm" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Telefone:</p>
+              <p className="text-xs font-bold text-slate-800">(51) 99273-3121</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-slate-200 text-center space-y-2">
+          <p className="text-[11px] font-black text-slate-800 uppercase tracking-widest">Desenvolvido por NelMac Sistemas</p>
+          <p className="text-[10px] text-slate-400 font-medium">Transformando ideias em soluções tecnológicas inovadoras desde 2023</p>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const LoginPage = () => {
   const { login, currentUser } = useApp();
