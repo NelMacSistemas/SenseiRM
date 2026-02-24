@@ -2410,7 +2410,7 @@ const SobrePage = () => {
           </div>
 
           <p className="text-sm text-slate-600 leading-relaxed font-medium">
-            O <span className="font-bold text-slate-800">SenseIRM</span> é um sistema de CRM (Customer Relationship Management) compacto desenvolvido para otimizar a gestão de relacionamento com clientes, tarefas e comunicação empresarial.
+            O <span className="font-bold text-slate-800">SenseiRM</span> é um sistema de CRM (Customer Relationship Management) compacto desenvolvido para otimizar a gestão de relacionamento com clientes, tarefas e comunicação empresarial.
           </p>
 
           <div className="space-y-4">
@@ -2579,7 +2579,7 @@ const SobrePage = () => {
           <h3 className="text-sm font-black uppercase tracking-widest">Contato & Suporte</h3>
         </div>
 
-        <p className="text-center text-xs text-slate-500 font-medium">Para mais informações sobre o SenseIRM ou outros produtos da NelMac Sistemas:</p>
+        <p className="text-center text-xs text-slate-500 font-medium">Para mais informações sobre o SenseiRM ou outros produtos da NelMac Sistemas:</p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center space-y-3">
@@ -2636,7 +2636,7 @@ const LoginPage = () => {
         <div className="inline-block p-7 bg-primary rounded-[2.5rem] mb-10 shadow-primary/20">
           <Icon name="users-cog" className="text-5xl text-white" />
         </div>
-        <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-12 italic">SenseiRM <span className="text-primary">PRO</span></h2>
+        <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-12 italic">SenseiRM <span className="text-primary"></span></h2>
         <form onSubmit={handleLogin} className="space-y-8 text-left">
           <input name="email" type="email" required className="w-full px-7 py-5 rounded-3xl border border-slate-100 bg-slate-50 outline-none focus:border-primary focus:bg-white font-bold transition-all shadow-inner" placeholder="ex: admin@senseirm.com" />
           <input name="pass" type="password" required className="w-full px-7 py-5 rounded-3xl border border-slate-100 bg-slate-50 outline-none focus:border-primary focus:bg-white font-bold transition-all shadow-inner" placeholder="••••••••" />
@@ -2811,7 +2811,7 @@ const MainLayout = () => {
     '/usuarios': 'Usuários do Sistema',
     '/configuracoes': 'Definições do Sistema',
     '/auditoria': 'Segurança de Dados',
-    '/sobre': 'Sobre o SenseIRM'
+    '/sobre': 'Sobre o SenseiRM'
   };
   if (!currentUser) return <Navigate to="/login" />;
   return (
