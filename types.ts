@@ -43,6 +43,14 @@ export interface Sector {
   dataCriacao: string;
 }
 
+export interface ClientCategory {
+  id: string;
+  nome: string;
+  descricao?: string;
+  cor?: string;
+  dataCriacao: string;
+}
+
 export interface TaskLog {
   id: string;
   timestamp: string;

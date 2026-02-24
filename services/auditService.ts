@@ -16,8 +16,15 @@ export const auditService = {
 
   log: (userId: string, userName: string, action: string, module: string, details: string) => {
     const logs = auditService.getLogs();
+    const generateId = () => {
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+      return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+    };
+
     const newEntry: AuditEntry = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       timestamp: new Date().toISOString(),
       userId,
       userName,

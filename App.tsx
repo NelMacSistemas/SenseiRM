@@ -1,13 +1,62 @@
 import React, { useState, useEffect, useMemo, createContext, useContext, useRef } from 'react';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
-import { User, Client, ContactPerson, AuditEntry, MailHistory, UserRole, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task } from './types';
+import { User, Client, ContactPerson, AuditEntry, MailHistory, UserRole, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory } from './types';
 import { INITIAL_USER, THEMES } from './constants';
 import { auditService } from './services/auditService';
 
-// Icons from FontAwesome
-const Icon: React.FC<{ name: string; className?: string; title?: string }> = ({ name, className = "", title }) => (
-  <i className={`fas fa-${name} ${className}`} title={title}></i>
-);
+import { 
+  Edit, Trash2, Plus, Tag, Building2, Clock, Palette, Shield, Check, 
+  Users, LayoutDashboard, Mail, FileText, Settings, ShieldAlert, Info,
+  Search, Filter, Download, Upload, LogOut, User as UserIcon, Phone, Mail as MailIcon,
+  Globe, MapPin, CreditCard, PieChart, Activity, AlertTriangle, ChevronRight,
+  ChevronLeft, MoreVertical, X, Calendar, MessageSquare, ExternalLink, HelpCircle
+} from 'lucide-react';
+
+// Icons from Lucide
+const iconMap: Record<string, any> = {
+  'edit': Edit,
+  'trash': Trash2,
+  'plus': Plus,
+  'tag': Tag,
+  'building': Building2,
+  'clock': Clock,
+  'palette': Palette,
+  'shield-alt': Shield,
+  'check': Check,
+  'users': Users,
+  'dashboard': LayoutDashboard,
+  'mala-direta': Mail,
+  'tarefas': FileText,
+  'configuracoes': Settings,
+  'auditoria': ShieldAlert,
+  'sobre': Info,
+  'search': Search,
+  'filter': Filter,
+  'download': Download,
+  'upload': Upload,
+  'logout': LogOut,
+  'user': UserIcon,
+  'phone': Phone,
+  'email': MailIcon,
+  'globe': Globe,
+  'map-pin': MapPin,
+  'credit-card': CreditCard,
+  'pie-chart': PieChart,
+  'activity': Activity,
+  'alert-triangle': AlertTriangle,
+  'chevron-right': ChevronRight,
+  'chevron-left': ChevronLeft,
+  'more-vertical': MoreVertical,
+  'x': X,
+  'calendar': Calendar,
+  'message-square': MessageSquare,
+  'external-link': ExternalLink
+};
+
+const Icon: React.FC<{ name: string; className?: string; title?: string }> = ({ name, className = "", title }) => {
+  const LucideIcon = iconMap[name] || HelpCircle;
+  return <LucideIcon className={`${className} pointer-events-none`} size={18} />;
+};
 
 // --- Helpers for Detailed Audit ---
 const getDetailedDiff = (oldObj: any, newObj: any, labels: Record<string, string>): string => {
@@ -67,7 +116,7 @@ interface AppState {
   clients: Client[];
   tasks: Task[];
   sectors: Sector[];
-  clientCategories: string[];
+  clientCategories: ClientCategory[];
   auditLogs: AuditEntry[];
   history: MailHistory[];
   slaSettings: SLASettings;
@@ -85,9 +134,11 @@ interface AppState {
   addSector: (sector: Sector) => void;
   updateSector: (sector: Sector) => void;
   deleteSector: (id: string) => void;
+  addClientCategory: (category: ClientCategory) => void;
+  updateClientCategory: (category: ClientCategory) => void;
+  deleteClientCategory: (id: string) => void;
   addMailHistory: (entry: MailHistory) => void;
   updateSLASettings: (settings: SLASettings) => void;
-  updateClientCategories: (categories: string[]) => void;
 }
 
 const AppContext = createContext<AppState | undefined>(undefined);
@@ -125,9 +176,22 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return stored ? JSON.parse(stored) : [];
   });
 
-  const [clientCategories, setClientCategories] = useState<string[]>(() => {
+  const [clientCategories, setClientCategories] = useState<ClientCategory[]>(() => {
     const stored = localStorage.getItem('senseirm_client_categories');
-    return stored ? JSON.parse(stored) : ['VIP', 'Atacadista', 'Revenda', 'Estratégico', 'Consumidor Geral'];
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (e) {
+        console.error('Error parsing categories:', e);
+      }
+    }
+    return [
+      { id: '1', nome: 'VIP', dataCriacao: new Date().toISOString() },
+      { id: '2', nome: 'Atacadista', dataCriacao: new Date().toISOString() },
+      { id: '3', nome: 'Revenda', dataCriacao: new Date().toISOString() },
+      { id: '4', nome: 'Estratégico', dataCriacao: new Date().toISOString() },
+      { id: '5', nome: 'Consumidor Geral', dataCriacao: new Date().toISOString() }
+    ];
   });
 
   const [history, setHistory] = useState<MailHistory[]>(() => {
@@ -263,9 +327,38 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const deleteSector = (id: string) => {
-    const target = sectors.find(s => s.id === id);
     setSectors(prev => prev.filter(s => s.id !== id));
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'SETORES', `Setor "${target?.nome}" removido.`);
+    setTasks(prev => prev.map(task => task.setorId === id ? { ...task, setorId: '' } : task));
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'SETORES', `Setor removido.`);
+    refreshAudit();
+  };
+
+  const addClientCategory = (c: ClientCategory) => {
+    setClientCategories(prev => [...prev, c]);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'CONFIG', `Categoria "${c.nome}" criada.`);
+    refreshAudit();
+  };
+
+  const updateClientCategory = (c: ClientCategory) => {
+    setClientCategories(prevCategories => {
+      const old = prevCategories.find(item => item.id === c.id);
+      if (old && old.nome !== c.nome) {
+        setClients(prevClients => prevClients.map(client => 
+          client.categoria === old.nome ? { ...client, categoria: c.nome } : client
+        ));
+      }
+      
+      auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Categoria "${c.nome}" atualizada.`);
+      refreshAudit();
+      
+      return prevCategories.map(item => item.id === c.id ? c : item);
+    });
+  };
+
+  const deleteClientCategory = (id: string) => {
+    setClientCategories(prev => prev.filter(c => c.id !== id));
+    setClients(prev => prev.map(client => client.categoria === id ? { ...client, categoria: '' } : client));
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'CONFIG', `Categoria removida.`);
     refreshAudit();
   };
 
@@ -282,18 +375,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     refreshAudit();
   };
 
-  const updateClientCategories = (categories: string[]) => {
-    const added = categories.filter(c => !clientCategories.includes(c));
-    const removed = clientCategories.filter(c => !categories.includes(c));
-    let detail = '';
-    if (added.length) detail += `Adicionadas: [${added.join(', ')}] `;
-    if (removed.length) detail += `Removidas: [${removed.join(', ')}]`;
-    
-    setClientCategories(categories);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Categorias comerciais alteradas. ${detail}`);
-    refreshAudit();
-  };
-
   return (
     <AppContext.Provider value={{
       currentUser, users, clients, tasks, sectors, auditLogs, history, slaSettings, clientCategories,
@@ -301,7 +382,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       addClient, updateClient, deleteClient,
       addTask, updateTask, deleteTask, 
       addSector, updateSector, deleteSector,
-      addMailHistory, updateSLASettings, updateClientCategories
+      addClientCategory, updateClientCategory, deleteClientCategory,
+      addMailHistory, updateSLASettings
     }}>
       <style>{`
         :root { --primary-color: #10b981; }
@@ -1126,8 +1208,8 @@ const ClientsPage = () => {
                     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                        <div className="space-y-1">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Categoria Comercial</label>
-                          <select name="categoria" defaultValue={editingClient?.categoria || (clientCategories[0] || 'Geral')} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
-                             {clientCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                          <select name="categoria" defaultValue={editingClient?.categoria || (clientCategories[0]?.nome || 'Geral')} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
+                             {clientCategories.map(cat => <option key={cat.id} value={cat.nome}>{cat.nome}</option>)}
                           </select>
                        </div>
                        <div className="space-y-1">
@@ -1884,18 +1966,19 @@ const UsersPage = () => {
 };
 
 const ConfiguracoesPage = () => {
-  const { currentUser, updateUser, slaSettings, updateSLASettings, sectors, addSector, updateSector, deleteSector, users, clientCategories, updateClientCategories } = useApp();
+  const { currentUser, updateUser, slaSettings, updateSLASettings, sectors, addSector, updateSector, deleteSector, users, clientCategories, addClientCategory, updateClientCategory, deleteClientCategory } = useApp();
   const [activeTab, setActiveTab] = useState('perfil');
   const [editingSector, setEditingSector] = useState<Sector | null>(null);
   const [isSectorModalOpen, setIsSectorModalOpen] = useState(false);
-  const [newCat, setNewCat] = useState('');
+  const [editingCategory, setEditingCategory] = useState<ClientCategory | null>(null);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
 
   const tabs = [
     { id: 'perfil', label: 'Segurança', icon: 'shield-alt' },
     ...(isAdmin ? [{ id: 'setores', label: 'Setores', icon: 'building' }] : []),
-    ...(isAdmin ? [{ id: 'crm', label: 'CRM', icon: 'funnel-dollar' }] : []),
+    ...(isAdmin ? [{ id: 'categorias', label: 'Categorias', icon: 'tag' }] : []),
     ...(isAdmin ? [{ id: 'sla', label: 'Regras de SLA', icon: 'clock' }] : []),
     { id: 'aparencia', label: 'Aparência', icon: 'palette' }
   ];
@@ -1906,10 +1989,11 @@ const ConfiguracoesPage = () => {
     const nome = data.get('nome') as string;
     const responsavelId = data.get('responsavelId') as string;
     const descricao = data.get('descricao') as string;
+    const newId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
     if (editingSector) {
       updateSector({ ...editingSector, nome, responsavelId, descricao });
     } else {
-      addSector({ id: crypto.randomUUID(), nome, responsavelId, descricao, dataCriacao: new Date().toISOString() });
+      addSector({ id: newId, nome, responsavelId, descricao, dataCriacao: new Date().toISOString() });
     }
     setIsSectorModalOpen(false);
     setEditingSector(null);
@@ -1926,17 +2010,21 @@ const ConfiguracoesPage = () => {
     alert('Parametrização de SLA atualizada com sucesso!');
   };
 
-  const addCategory = () => {
-    if (!newCat.trim()) return;
-    if (clientCategories.includes(newCat.trim())) return;
-    updateClientCategories([...clientCategories, newCat.trim()]);
-    setNewCat('');
-  };
+  const handleSaveCategory = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    const nome = data.get('nome') as string;
+    const descricao = data.get('descricao') as string;
+    const cor = data.get('cor') as string;
 
-  const removeCategory = (cat: string) => {
-    if (confirm(`Remover categoria "${cat}"?`)) {
-      updateClientCategories(clientCategories.filter(c => c !== cat));
+    const newId = Math.random().toString(36).substring(2, 11);
+    if (editingCategory) {
+      updateClientCategory({ ...editingCategory, nome, descricao, cor });
+    } else {
+      addClientCategory({ id: newId, nome, descricao, cor, dataCriacao: new Date().toISOString() });
     }
+    setIsCategoryModalOpen(false);
+    setEditingCategory(null);
   };
 
   return (
@@ -1984,9 +2072,28 @@ const ConfiguracoesPage = () => {
                       <p className="text-sm text-slate-400 mt-2 font-medium italic line-clamp-2">{s.descricao || 'Sem descrição definida.'}</p>
                       <p className="text-[9px] text-slate-300 mt-4 font-black uppercase tracking-widest">Desde {new Date(s.dataCriacao).toLocaleDateString()}</p>
                     </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                      <button onClick={() => { setEditingSector(s); setIsSectorModalOpen(true); }} className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl" title="Editar"><Icon name="edit" /></button>
-                      <button onClick={() => { if(confirm('Remover setor definitivamente?')) deleteSector(s.id); }} className="p-2 text-red-500 hover:bg-red-50 rounded-xl" title="Excluir"><Icon name="trash" /></button>
+                    <div className="flex gap-2 relative z-20">
+                      <button 
+                        type="button" 
+                        onClick={(e) => { e.stopPropagation(); setEditingSector(s); setIsSectorModalOpen(true); }} 
+                        className="p-3 text-blue-600 hover:bg-blue-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-blue-50" 
+                        title="Editar"
+                      >
+                        <Edit size={20} className="pointer-events-none" />
+                      </button>
+                      <button 
+                        type="button" 
+                        onClickCapture={(e) => { 
+                          e.stopPropagation(); 
+                          if (window.confirm(`Remover setor "${s.nome}" definitivamente?`)) {
+                            deleteSector(s.id);
+                          }
+                        }} 
+                        className="p-3 text-red-600 hover:bg-red-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-red-50" 
+                        title="Excluir"
+                      >
+                        <Trash2 size={20} className="pointer-events-none" />
+                      </button>
                     </div>
                   </div>
                 );
@@ -1996,25 +2103,74 @@ const ConfiguracoesPage = () => {
           </div>
         )}
 
-        {activeTab === 'crm' && isAdmin && (
+        {activeTab === 'categorias' && isAdmin && (
           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
-            <div>
-              <h3 className="text-2xl font-black text-slate-800 tracking-tight">Configurações de CRM</h3>
-              <p className="text-sm text-slate-400 font-medium">Gerencie as categorias comerciais utilizadas na segmentação de clientes.</p>
+            <div className="flex justify-between items-center">
+               <div>
+                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Categorias de Clientes</h3>
+                 <p className="text-sm text-slate-400 font-medium">Gerencie as segmentações para organizar sua base de clientes.</p>
+               </div>
+               <button onClick={() => { setEditingCategory(null); setIsCategoryModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-lg hover:brightness-110 transition-all flex items-center gap-2">
+                 <Icon name="plus" /> Cadastrar Nova
+               </button>
             </div>
-            <div className="space-y-6 max-w-xl">
-               <div className="flex gap-3">
-                  <input value={newCat} onChange={(e) => setNewCat(e.target.value)} placeholder="Nova Categoria (ex: VIP, Parceiro...)" className="flex-1 px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" />
-                  <button onClick={addCategory} className="px-6 bg-primary text-white rounded-2xl font-black text-xs uppercase shadow-lg hover:brightness-110">Adicionar</button>
-               </div>
-               <div className="flex flex-wrap gap-3">
-                  {clientCategories.map(cat => (
-                    <div key={cat} className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-xl border border-slate-200 group">
-                       <span className="text-sm font-bold text-slate-700">{cat}</span>
-                       <button onClick={() => removeCategory(cat)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-xs" /></button>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {clientCategories.map(cat => (
+                <div key={cat.id} className="p-6 rounded-[2.5rem] border border-slate-100 bg-slate-50/50 flex justify-between items-start group hover:bg-white hover:border-primary/30 transition-all shadow-sm">
+                  <div className="flex-1 overflow-hidden pr-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: cat.cor || 'var(--primary-color)' }}>
+                        <Icon name="tag" className="text-sm" />
+                      </div>
+                      <h4 className="font-extrabold text-slate-800 uppercase tracking-tighter text-lg truncate">{cat.nome}</h4>
                     </div>
-                  ))}
-               </div>
+                    <p className="text-sm text-slate-400 mt-2 font-medium italic line-clamp-2">{cat.descricao || 'Sem descrição definida.'}</p>
+                  </div>
+                  <div className="flex gap-2 relative z-20">
+                    <button 
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setEditingCategory(cat); setIsCategoryModalOpen(true); }} 
+                      className="p-3 text-blue-600 hover:bg-blue-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-blue-50" 
+                      title="Editar"
+                    >
+                      <Edit size={20} className="pointer-events-none" />
+                    </button>
+                    <button 
+                      type="button"
+                      onClickCapture={(e) => { 
+                        e.stopPropagation(); 
+                        if (window.confirm(`Remover categoria "${cat.nome}"?`)) {
+                          deleteClientCategory(cat.id);
+                        }
+                      }} 
+                      className="p-3 text-red-600 hover:bg-red-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-red-50" 
+                      title="Excluir"
+                    >
+                      <Trash2 size={20} className="pointer-events-none" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {clientCategories.length === 0 && (
+                <div className="col-span-full py-12 text-center text-slate-400 italic font-medium">
+                  Nenhuma categoria cadastrada.
+                </div>
+              )}
+            </div>
+            
+            <div className="pt-8 border-t border-slate-100 flex justify-center">
+               <button 
+                 onClick={() => { 
+                   if(confirm('Deseja resetar todas as categorias para o padrão?')) {
+                     localStorage.removeItem('senseirm_client_categories');
+                     window.location.reload();
+                   }
+                 }}
+                 className="text-[10px] font-black text-slate-300 hover:text-red-400 transition-colors uppercase tracking-widest"
+               >
+                 Restaurar Padrões do Sistema
+               </button>
             </div>
           </div>
         )}
@@ -2086,6 +2242,35 @@ const ConfiguracoesPage = () => {
               </div>
               <div className="flex justify-end gap-3 pt-6">
                  <button type="button" onClick={() => setIsSectorModalOpen(false)} className="px-8 py-3 rounded-xl border border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all">Desistir</button>
+                 <button type="submit" className="px-10 py-3 rounded-xl bg-primary text-white font-black hover:brightness-110 shadow-lg transition-all">Confirmar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isCategoryModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl p-10 animate-in zoom-in duration-300">
+            <div className="flex justify-between items-center mb-8">
+               <h3 className="text-2xl font-black text-slate-800">{editingCategory ? 'Configurar Categoria' : 'Nova Categoria'}</h3>
+               <button onClick={() => setIsCategoryModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
+            </div>
+            <form onSubmit={handleSaveCategory} className="space-y-6">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome da Categoria</label>
+                <input name="nome" required defaultValue={editingCategory?.nome} placeholder="Ex: VIP, Atacadista..." className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cor de Identificação</label>
+                <input name="cor" type="color" defaultValue={editingCategory?.cor || '#10b981'} className="w-full h-12 p-1 rounded-xl border border-slate-100 bg-slate-50 cursor-pointer" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
+                <textarea name="descricao" rows={3} defaultValue={editingCategory?.descricao} placeholder="Defina o perfil desta categoria..." className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium resize-none focus:border-primary shadow-inner" />
+              </div>
+              <div className="flex justify-end gap-3 pt-6">
+                 <button type="button" onClick={() => setIsCategoryModalOpen(false)} className="px-8 py-3 rounded-xl border border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all">Desistir</button>
                  <button type="submit" className="px-10 py-3 rounded-xl bg-primary text-white font-black hover:brightness-110 shadow-lg transition-all">Confirmar</button>
               </div>
             </form>
