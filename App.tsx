@@ -1203,7 +1203,7 @@ const ClientsPage = () => {
                              <option value="Outros">Outros Canais</option>
                           </select>
                        </div>
-                       <div className="space-y-1 group relative">
+                       <div className="space-y-1">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Avaliação Interna (Rating)</label>
                           <input 
                             name="avaliacaoInterna" 
@@ -2652,9 +2652,33 @@ const MailListPage = () => {
   const { clients, addMailHistory, currentUser } = useApp();
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
   const [type, setType] = useState<'email' | 'whatsapp'>('email');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRating, setFilterRating] = useState<number | 'all'>('all');
+
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
   const perms = currentUser?.permissoes.malaDireta;
   const canSend = isAdmin || perms?.incluir;
+
+  const filteredClients = useMemo(() => {
+    return clients.filter(c => {
+      const matchesSearch = c.nomeRazaoSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            (c.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                            (c.whatsapp || '').includes(searchTerm);
+      const matchesRating = filterRating === 'all' || c.avaliacaoInterna === filterRating;
+      return matchesSearch && matchesRating;
+    });
+  }, [clients, searchTerm, filterRating]);
+
+  const selectAll = () => {
+    const ids = filteredClients.map(c => c.id);
+    setSelectedClients(prev => Array.from(new Set([...prev, ...ids])));
+  };
+
+  const deselectAll = () => {
+    const ids = filteredClients.map(c => c.id);
+    setSelectedClients(prev => prev.filter(id => !ids.includes(id)));
+  };
+
   const handleSend = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!canSend) return alert('Restrição de acesso.');
@@ -2672,35 +2696,104 @@ const MailListPage = () => {
     alert('Disparo executado.');
     setSelectedClients([]);
   };
+
   return (
-    <div className="p-8 flex gap-8 animate-in fade-in duration-500">
-      <div className="flex-1 bg-white p-12 rounded-[3.5rem] shadow-sm border border-slate-200 space-y-10">
-         <div className="flex bg-slate-50 p-2 rounded-3xl border border-slate-100 shadow-inner">
+    <div className="p-8 flex gap-8 animate-in fade-in duration-500 h-[calc(100vh-100px)]">
+      <div className="flex-1 bg-white p-12 rounded-[3.5rem] shadow-sm border border-slate-200 flex flex-col space-y-10 overflow-hidden">
+         <div className="flex bg-slate-50 p-2 rounded-3xl border border-slate-100 shadow-inner shrink-0">
             <button onClick={() => setType('email')} className={`flex-1 py-5 rounded-2xl font-black tracking-widest text-sm transition-all ${type === 'email' ? 'bg-white text-primary shadow-xl' : 'text-slate-400'}`}>MAIL SERVICE</button>
             <button onClick={() => setType('whatsapp')} className={`flex-1 py-5 rounded-2xl font-black tracking-widest text-sm transition-all ${type === 'whatsapp' ? 'bg-white text-primary shadow-xl' : 'text-slate-400'}`}>WHATSAPP API</button>
          </div>
-         <form onSubmit={handleSend} className="space-y-8">
-            <input name="assunto" required className="w-full px-7 py-5 rounded-3xl border border-slate-200 outline-none font-bold focus:border-primary shadow-inner" placeholder="Assunto da Comunicação" />
-            <textarea name="mensagem" required rows={8} className="w-full px-7 py-6 rounded-[2.5rem] border border-slate-200 outline-none resize-none font-medium focus:border-primary shadow-inner" placeholder="Mensagem estruturada..." />
-            <button type="submit" disabled={!canSend} className={`w-full py-6 rounded-3xl font-black text-xl shadow-2xl transition-all ${canSend ? 'bg-primary text-white hover:brightness-110' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>
+         <form onSubmit={handleSend} className="flex-1 flex flex-col space-y-8 overflow-hidden">
+            <input name="assunto" required className="w-full px-7 py-5 rounded-3xl border border-slate-200 outline-none font-bold focus:border-primary shadow-inner shrink-0" placeholder="Assunto da Comunicação" />
+            <textarea name="mensagem" required className="flex-1 w-full px-7 py-6 rounded-[2.5rem] border border-slate-200 outline-none resize-none font-medium focus:border-primary shadow-inner" placeholder="Mensagem estruturada..." />
+            <button type="submit" disabled={!canSend} className={`w-full py-6 rounded-3xl font-black text-xl shadow-2xl transition-all shrink-0 ${canSend ? 'bg-primary text-white hover:brightness-110' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>
                Broadcast ({selectedClients.length})
             </button>
          </form>
       </div>
-      <div className="w-96 bg-white p-8 rounded-[3.5rem] border border-slate-200 overflow-y-auto max-h-[800px] shadow-sm">
-        <h4 className="font-black text-slate-800 mb-6 uppercase tracking-widest text-xs border-b border-slate-50 pb-4">Destinos</h4>
-        <div className="space-y-3">
-          {clients.map(c => (
-            <label key={c.id} className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${selectedClients.includes(c.id) ? 'bg-primary/5 border-primary/20 shadow-sm' : 'border-slate-50 hover:bg-slate-50'}`}>
-              <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${selectedClients.includes(c.id) ? 'bg-primary border-primary' : 'border-slate-300'}`}>
-                {selectedClients.includes(c.id) && <Icon name="check" className="text-white text-[10px]" />}
-              </div>
-              <input type="checkbox" className="hidden" checked={selectedClients.includes(c.id)} onChange={() => setSelectedClients(prev => prev.includes(c.id) ? prev.filter(i => i !== c.id) : [...prev, c.id])} />
-              <div className="overflow-hidden">
-                <span className="text-xs font-extrabold text-slate-700 block truncate">{c.nomeRazaoSocial}</span>
-              </div>
-            </label>
-          ))}
+      
+      <div className="w-96 bg-white p-8 rounded-[3.5rem] border border-slate-200 flex flex-col shadow-sm overflow-hidden">
+        <h4 className="font-black text-slate-800 mb-6 uppercase tracking-widest text-xs border-b border-slate-50 pb-4 shrink-0">Destinos</h4>
+        
+        {/* Search and Filters */}
+        <div className="space-y-4 mb-6 shrink-0">
+          <div className="relative">
+            <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+            <input 
+              type="text" 
+              placeholder="Buscar cliente..." 
+              className="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-100 text-xs font-bold outline-none focus:border-primary"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex gap-2">
+            <select 
+              className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-100 text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary"
+              value={filterRating}
+              onChange={(e) => setFilterRating(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+            >
+              <option value="all">Todos Ratings</option>
+              <option value="1">1 - Baixo Potencial</option>
+              <option value="2">2 - Potencial Médio</option>
+              <option value="3">3 - Bom Cliente</option>
+              <option value="4">4 - Prioritário</option>
+              <option value="5">5 - Cliente VIP</option>
+            </select>
+          </div>
+
+          <div className="flex gap-2">
+            <button 
+              type="button"
+              onClick={selectAll}
+              className="flex-1 py-2 rounded-xl bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all"
+            >
+              Selecionar Filtrados
+            </button>
+            <button 
+              type="button"
+              onClick={deselectAll}
+              className="flex-1 py-2 rounded-xl bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+            >
+              Limpar Filtrados
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+          {filteredClients.length === 0 ? (
+            <div className="text-center py-10 opacity-30">
+              <Icon name="search" className="text-3xl mb-2 mx-auto" />
+              <p className="text-[10px] font-black uppercase tracking-widest">Nenhum cliente encontrado</p>
+            </div>
+          ) : (
+            filteredClients.map(c => (
+              <label key={c.id} className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${selectedClients.includes(c.id) ? 'bg-primary/5 border-primary/20 shadow-sm' : 'border-slate-50 hover:bg-slate-50'}`}>
+                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${selectedClients.includes(c.id) ? 'bg-primary border-primary' : 'border-slate-300'}`}>
+                  {selectedClients.includes(c.id) && <Icon name="check" className="text-white text-[10px]" />}
+                </div>
+                <input type="checkbox" className="hidden" checked={selectedClients.includes(c.id)} onChange={() => setSelectedClients(prev => prev.includes(c.id) ? prev.filter(i => i !== c.id) : [...prev, c.id])} />
+                <div className="overflow-hidden flex-1">
+                  <span className="text-xs font-extrabold text-slate-700 block truncate">{c.nomeRazaoSocial}</span>
+                  <span className="text-[9px] text-slate-400 font-bold block truncate">
+                    {type === 'email' ? (c.email || 'Sem e-mail') : (c.whatsapp || 'Sem WhatsApp')}
+                  </span>
+                </div>
+                {c.avaliacaoInterna > 0 && (
+                  <div className="bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full text-[8px] font-black">
+                    {c.avaliacaoInterna}★
+                  </div>
+                )}
+              </label>
+            ))
+          )}
+        </div>
+        
+        <div className="mt-6 pt-4 border-t border-slate-50 flex justify-between items-center shrink-0">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Selecionado</span>
+          <span className="text-lg font-black text-primary">{selectedClients.length}</span>
         </div>
       </div>
     </div>
