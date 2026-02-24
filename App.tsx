@@ -2415,12 +2415,6 @@ const SobrePage = () => {
 
   return (
     <div className="p-8 space-y-10 animate-in fade-in duration-700 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-3 border-b border-slate-200 pb-4">
-        <Icon name="info" className="text-slate-800" />
-        <h2 className="text-xl font-black text-slate-800 tracking-tight">Sobre o SenseIRM</h2>
-      </div>
-
       {/* Banner */}
       <div className="bg-[#337ab7] rounded-xl p-10 text-white text-center space-y-4 shadow-lg">
         <div className="flex items-center justify-center gap-3">
@@ -2753,7 +2747,7 @@ const MainLayout = () => {
     '/usuarios': 'Usuários do Sistema',
     '/configuracoes': 'Definições do Sistema',
     '/auditoria': 'Segurança de Dados',
-    '/sobre': 'Release Ecosystem'
+    '/sobre': 'Sobre o SenseIRM'
   };
   if (!currentUser) return <Navigate to="/login" />;
   return (
