@@ -327,9 +327,14 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const deleteSector = (id: string) => {
+    console.log('Deleting sector:', id);
+    const target = sectors.find(s => s.id === id);
+    if (!target) return;
+
     setSectors(prev => prev.filter(s => s.id !== id));
     setTasks(prev => prev.map(task => task.setorId === id ? { ...task, setorId: '' } : task));
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'SETORES', `Setor removido.`);
+    
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'SETORES', `Setor "${target.nome}" removido.`);
     refreshAudit();
   };
 
@@ -356,9 +361,14 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const deleteClientCategory = (id: string) => {
+    console.log('Deleting category:', id);
+    const target = clientCategories.find(c => c.id === id);
+    if (!target) return;
+
     setClientCategories(prev => prev.filter(c => c.id !== id));
-    setClients(prev => prev.map(client => client.categoria === id ? { ...client, categoria: '' } : client));
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'CONFIG', `Categoria removida.`);
+    setClients(prev => prev.map(client => client.categoria === target.nome ? { ...client, categoria: '' } : client));
+    
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'CONFIG', `Categoria "${target.nome}" removida.`);
     refreshAudit();
   };
 
@@ -1278,8 +1288,8 @@ const ClientsPage = () => {
             </form>
 
             <div className="p-8 border-t border-slate-100 flex justify-end gap-4 bg-slate-50/50">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-white transition-all uppercase text-[10px] tracking-widest">Descartar</button>
-                <button type="submit" form="clientForm" className="px-14 py-4 rounded-2xl bg-primary text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest">Efetivar Operação</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-white transition-all uppercase text-[10px] tracking-widest">Cancelar</button>
+                <button type="submit" form="clientForm" className="px-14 py-4 rounded-2xl bg-primary text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest">Confirmar</button>
             </div>
           </div>
         </div>
@@ -1679,7 +1689,7 @@ const TasksPage = () => {
             </form>
             <div className="p-10 border-t border-slate-100 flex justify-end gap-4 bg-slate-50/50">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-white transition-all">Cancelar</button>
-                <button type="submit" form="taskForm" className="px-14 py-4 rounded-2xl bg-primary text-white font-extrabold shadow-xl hover:brightness-110 transition-all">Salvar Operação</button>
+                <button type="submit" form="taskForm" className="px-14 py-4 rounded-2xl bg-primary text-white font-extrabold shadow-xl hover:brightness-110 transition-all">Confirmar</button>
             </div>
           </div>
         </div>
@@ -1955,8 +1965,8 @@ const UsersPage = () => {
               )}
             </form>
             <div className="flex justify-end gap-4 pt-8 border-t border-slate-50">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-10 py-4 rounded-2xl border-2 border-slate-200 text-slate-500 font-black text-xs uppercase hover:bg-slate-50 transition-all">Fechar</button>
-                <button type="submit" form="userForm" className="px-14 py-4 rounded-2xl bg-primary text-white font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all">Salvar Alterações</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-10 py-4 rounded-2xl border-2 border-slate-200 text-slate-500 font-black text-xs uppercase hover:bg-slate-50 transition-all">Cancelar</button>
+                <button type="submit" form="userForm" className="px-14 py-4 rounded-2xl bg-primary text-white font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all">Confirmar</button>
             </div>
           </div>
         </div>
@@ -1972,6 +1982,7 @@ const ConfiguracoesPage = () => {
   const [isSectorModalOpen, setIsSectorModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<ClientCategory | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; type: 'sector' | 'category'; name: string } | null>(null);
   
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
 
@@ -2072,10 +2083,15 @@ const ConfiguracoesPage = () => {
                       <p className="text-sm text-slate-400 mt-2 font-medium italic line-clamp-2">{s.descricao || 'Sem descrição definida.'}</p>
                       <p className="text-[9px] text-slate-300 mt-4 font-black uppercase tracking-widest">Desde {new Date(s.dataCriacao).toLocaleDateString()}</p>
                     </div>
-                    <div className="flex gap-2 relative z-20">
+                    <div className="flex gap-2 relative z-50">
                       <button 
                         type="button" 
-                        onClick={(e) => { e.stopPropagation(); setEditingSector(s); setIsSectorModalOpen(true); }} 
+                        onClick={(e) => { 
+                          e.preventDefault();
+                          e.stopPropagation(); 
+                          setEditingSector(s); 
+                          setIsSectorModalOpen(true); 
+                        }} 
                         className="p-3 text-blue-600 hover:bg-blue-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-blue-50" 
                         title="Editar"
                       >
@@ -2083,11 +2099,10 @@ const ConfiguracoesPage = () => {
                       </button>
                       <button 
                         type="button" 
-                        onClickCapture={(e) => { 
+                        onClick={(e) => { 
+                          e.preventDefault();
                           e.stopPropagation(); 
-                          if (window.confirm(`Remover setor "${s.nome}" definitivamente?`)) {
-                            deleteSector(s.id);
-                          }
+                          setDeleteConfirm({ id: s.id, type: 'sector', name: s.nome });
                         }} 
                         className="p-3 text-red-600 hover:bg-red-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-red-50" 
                         title="Excluir"
@@ -2127,10 +2142,15 @@ const ConfiguracoesPage = () => {
                     </div>
                     <p className="text-sm text-slate-400 mt-2 font-medium italic line-clamp-2">{cat.descricao || 'Sem descrição definida.'}</p>
                   </div>
-                  <div className="flex gap-2 relative z-20">
+                  <div className="flex gap-2 relative z-50">
                     <button 
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); setEditingCategory(cat); setIsCategoryModalOpen(true); }} 
+                      onClick={(e) => { 
+                        e.preventDefault();
+                        e.stopPropagation(); 
+                        setEditingCategory(cat); 
+                        setIsCategoryModalOpen(true); 
+                      }} 
                       className="p-3 text-blue-600 hover:bg-blue-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-blue-50" 
                       title="Editar"
                     >
@@ -2138,11 +2158,10 @@ const ConfiguracoesPage = () => {
                     </button>
                     <button 
                       type="button"
-                      onClickCapture={(e) => { 
+                      onClick={(e) => { 
+                        e.preventDefault();
                         e.stopPropagation(); 
-                        if (window.confirm(`Remover categoria "${cat.nome}"?`)) {
-                          deleteClientCategory(cat.id);
-                        }
+                        setDeleteConfirm({ id: cat.id, type: 'category', name: cat.nome });
                       }} 
                       className="p-3 text-red-600 hover:bg-red-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-red-50" 
                       title="Excluir"
@@ -2274,6 +2293,37 @@ const ConfiguracoesPage = () => {
                  <button type="submit" className="px-10 py-3 rounded-xl bg-primary text-white font-black hover:brightness-110 shadow-lg transition-all">Confirmar</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl space-y-8 animate-in zoom-in duration-200">
+            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto">
+              <AlertTriangle size={40} className="text-red-500" />
+            </div>
+            <div className="text-center space-y-2">
+              <h3 className="text-2xl font-black text-slate-800">Confirmar Exclusão</h3>
+              <p className="text-slate-500 font-medium">Você tem certeza que deseja remover {deleteConfirm.type === 'sector' ? 'o setor' : 'a categoria'} <span className="font-bold text-slate-800">"{deleteConfirm.name}"</span>? Esta ação não pode ser desfeita.</p>
+            </div>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 py-4 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-all"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={() => {
+                  if (deleteConfirm.type === 'sector') deleteSector(deleteConfirm.id);
+                  else deleteClientCategory(deleteConfirm.id);
+                  setDeleteConfirm(null);
+                }}
+                className="flex-1 py-4 rounded-2xl bg-red-500 text-white font-bold shadow-lg shadow-red-200 hover:bg-red-600 transition-all"
+              >
+                Confirmar
+              </button>
+            </div>
           </div>
         </div>
       )}
