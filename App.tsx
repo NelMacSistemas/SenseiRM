@@ -680,35 +680,6 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* SEÇÃO EXTRA: SAÚDE DA CARTEIRA */}
-      <section className="bg-slate-900 p-10 rounded-[4rem] shadow-2xl space-y-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-             <div className="space-y-6">
-                <h3 className="text-xl font-black text-white tracking-tight">Qualidade da Carteira</h3>
-                <div className="space-y-4">
-                   <div className="flex justify-between items-end">
-                      <span className="text-xs font-black text-slate-400 uppercase">Taxa de Adimplência</span>
-                      <span className="text-2xl font-black text-primary">{kpis.adimplenceRate}%</span>
-                   </div>
-                   <ProgressBar progress={kpis.adimplenceRate} color="bg-primary" />
-                </div>
-                <p className="text-xs text-slate-500 italic">Clientes com situação de crédito liberada em relação ao total da base.</p>
-             </div>
-             <div className="space-y-6">
-                <h3 className="text-xl font-black text-white tracking-tight">Rating de Satisfação</h3>
-                <div className="flex items-center gap-6">
-                   <div className="text-6xl font-black text-amber-400 leading-none">{kpis.avgRating}</div>
-                   <div className="space-y-2">
-                      <div className="flex gap-1 text-amber-400 text-lg">
-                        {[1,2,3,4,5].map(i => <Icon key={i} name="star" className={i <= Math.round(Number(kpis.avgRating)) ? 'fas' : 'far'} />)}
-                      </div>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Score Médio por Perfil</p>
-                   </div>
-                </div>
-             </div>
-          </div>
-      </section>
-
     </div>
   );
 };
