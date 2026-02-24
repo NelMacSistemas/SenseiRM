@@ -1977,7 +1977,7 @@ const UsersPage = () => {
 
 const ConfiguracoesPage = () => {
   const { currentUser, updateUser, slaSettings, updateSLASettings, sectors, addSector, updateSector, deleteSector, users, clientCategories, addClientCategory, updateClientCategory, deleteClientCategory } = useApp();
-  const [activeTab, setActiveTab] = useState('perfil');
+  const [activeTab, setActiveTab] = useState('aparencia');
   const [editingSector, setEditingSector] = useState<Sector | null>(null);
   const [isSectorModalOpen, setIsSectorModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<ClientCategory | null>(null);
@@ -1987,7 +1987,6 @@ const ConfiguracoesPage = () => {
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
 
   const tabs = [
-    { id: 'perfil', label: 'Segurança', icon: 'shield-alt' },
     ...(isAdmin ? [{ id: 'setores', label: 'Setores', icon: 'building' }] : []),
     ...(isAdmin ? [{ id: 'categorias', label: 'Categorias', icon: 'tag' }] : []),
     ...(isAdmin ? [{ id: 'sla', label: 'Regras de SLA', icon: 'clock' }] : []),
@@ -2049,23 +2048,6 @@ const ConfiguracoesPage = () => {
       </div>
       
       <div className="max-w-5xl">
-        {activeTab === 'perfil' && (
-           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
-              <h3 className="text-2xl font-black text-slate-800 tracking-tight">Privacidade da Conta</h3>
-              <form className="space-y-6 max-w-md">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Usuário Logado</label>
-                  <input readOnly defaultValue={currentUser?.email} className="w-full px-5 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-400 outline-none cursor-not-allowed font-bold" />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nova Senha Corporativa</label>
-                  <input type="password" placeholder="••••••••" required className="w-full px-5 py-3 rounded-2xl border border-slate-100 focus:border-primary outline-none font-bold" />
-                </div>
-                <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl hover:brightness-125 transition-all">Redefinir Chave</button>
-              </form>
-           </div>
-        )}
-
         {activeTab === 'setores' && isAdmin && (
           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
             <div className="flex justify-between items-center">
