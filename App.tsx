@@ -222,6 +222,27 @@ const formatDocumento = (doc: string) => {
   return doc;
 };
 
+const RATING_LABELS: Record<number, string> = {
+  1: 'Baixo Potencial / Risco Alto',
+  2: 'Potencial Médio / Regular',
+  3: 'Bom Cliente / Estável',
+  4: 'Cliente Prioritário / Potencial Alto',
+  5: 'Cliente VIP / Master'
+};
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
+}
+
 // --- Context ---
 interface AppState {
   currentUser: User | null;
@@ -322,13 +343,16 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const refreshAudit = () => setAuditLogs(auditService.getLogs());
 
   useEffect(() => {
-    localStorage.setItem('senseirm_users', JSON.stringify(users));
-    localStorage.setItem('senseirm_clients', JSON.stringify(clients));
-    localStorage.setItem('senseirm_tasks', JSON.stringify(tasks));
-    localStorage.setItem('senseirm_sectors', JSON.stringify(sectors));
-    localStorage.setItem('senseirm_history', JSON.stringify(history));
-    localStorage.setItem('senseirm_sla_settings', JSON.stringify(slaSettings));
-    localStorage.setItem('senseirm_client_categories', JSON.stringify(clientCategories));
+    const handler = setTimeout(() => {
+      localStorage.setItem('senseirm_users', JSON.stringify(users));
+      localStorage.setItem('senseirm_clients', JSON.stringify(clients));
+      localStorage.setItem('senseirm_tasks', JSON.stringify(tasks));
+      localStorage.setItem('senseirm_sectors', JSON.stringify(sectors));
+      localStorage.setItem('senseirm_history', JSON.stringify(history));
+      localStorage.setItem('senseirm_sla_settings', JSON.stringify(slaSettings));
+      localStorage.setItem('senseirm_client_categories', JSON.stringify(clientCategories));
+    }, 500);
+    return () => clearTimeout(handler);
   }, [users, clients, tasks, sectors, history, slaSettings, clientCategories]);
 
   useEffect(() => {
@@ -498,16 +522,20 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     refreshAudit();
   };
 
+  const contextValue = useMemo(() => ({
+    currentUser, users, clients, tasks, sectors, auditLogs, history, slaSettings, clientCategories,
+    login, logout, updateUser, addUser, deleteUser,
+    addClient, updateClient, deleteClient,
+    addTask, updateTask, deleteTask, 
+    addSector, updateSector, deleteSector,
+    addClientCategory, updateClientCategory, deleteClientCategory,
+    addMailHistory, updateSLASettings
+  }), [
+    currentUser, users, clients, tasks, sectors, auditLogs, history, slaSettings, clientCategories
+  ]);
+
   return (
-    <AppContext.Provider value={{
-      currentUser, users, clients, tasks, sectors, auditLogs, history, slaSettings, clientCategories,
-      login, logout, updateUser, addUser, deleteUser,
-      addClient, updateClient, deleteClient,
-      addTask, updateTask, deleteTask, 
-      addSector, updateSector, deleteSector,
-      addClientCategory, updateClientCategory, deleteClientCategory,
-      addMailHistory, updateSLASettings
-    }}>
+    <AppContext.Provider value={contextValue}>
       <style>{`
         :root { --primary-color: #10b981; }
         .bg-primary { background-color: var(--primary-color); }
@@ -2780,6 +2808,7 @@ const MailListPage = () => {
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
   const [type, setType] = useState<'email' | 'whatsapp'>('email');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [filterRating, setFilterRating] = useState<number | 'all'>('all');
 
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
@@ -2788,13 +2817,13 @@ const MailListPage = () => {
 
   const filteredClients = useMemo(() => {
     return clients.filter(c => {
-      const matchesSearch = c.nomeRazaoSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (c.emailPrincipal?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-                            (c.telefoneSecundario || '').includes(searchTerm);
+      const matchesSearch = c.nomeRazaoSocial.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                            (c.emailPrincipal?.toLowerCase() || '').includes(debouncedSearchTerm.toLowerCase()) ||
+                            (c.telefoneSecundario || '').includes(debouncedSearchTerm);
       const matchesRating = filterRating === 'all' || c.avaliacaoInterna === filterRating;
       return matchesSearch && matchesRating;
     });
-  }, [clients, searchTerm, filterRating]);
+  }, [clients, debouncedSearchTerm, filterRating]);
 
   const selectAll = () => {
     const ids = filteredClients.map(c => c.id);
