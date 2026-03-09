@@ -47,21 +47,28 @@ if (fs.existsSync(DATA_FILE)) {
   // Initialize with default admin
   const salt = bcrypt.genSaltSync(10);
   const hash = bcrypt.hashSync('admin123', salt);
+  const fullPermission = { acesso: true, leitura: false, incluir: true, editar: true, excluir: true };
   db.users.push({
     id: '1',
     nome: 'Administrador',
     email: 'admin@senseirm.com',
     senha: hash, // Hashed password
-    perfil: 'Administrador',
-    status: 'Ativo',
+    perfil: 'admin',
+    status: 'ativo',
     tema: 'verde',
+    dataCriacao: new Date().toISOString(),
+    foto: 'https://picsum.photos/200',
+    telefone: '5133334444',
+    celular: '51992733121',
+    possuiWhatsapp: true,
     permissoes: {
-      clientes: { visualizar: true, incluir: true, editar: true, excluir: true },
-      tarefas: { visualizar: true, incluir: true, editar: true, excluir: true },
-      usuarios: { visualizar: true, incluir: true, editar: true, excluir: true },
-      setores: { visualizar: true, incluir: true, editar: true, excluir: true },
-      malaDireta: { visualizar: true, incluir: true, editar: true, excluir: true },
-      relatorios: { visualizar: true, incluir: true, editar: true, excluir: true }
+      dashboard: fullPermission,
+      clientes: fullPermission,
+      malaDireta: fullPermission,
+      tarefas: fullPermission,
+      usuarios: fullPermission,
+      configuracoes: fullPermission,
+      auditoria: fullPermission
     }
   });
   saveData();
@@ -89,7 +96,7 @@ const authenticateToken = (req: any, res: any, next: any) => {
 // Auth
 app.post('/api/auth/login', (req, res) => {
   const { email, pass } = req.body;
-  const user = db.users.find((u: any) => u.email === email && u.status === 'Ativo');
+  const user = db.users.find((u: any) => u.email === email && u.status === 'ativo');
   
   if (user && bcrypt.compareSync(pass, user.senha)) {
     const token = jwt.sign({ id: user.id, email: user.email, perfil: user.perfil }, JWT_SECRET, { expiresIn: '24h' });

@@ -308,6 +308,21 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     try {
       const token = localStorage.getItem('senseirm_token');
       if (!token) return;
+      
+      // Fetch current user to ensure we have the latest permissions and profile
+      const meRes = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (meRes.ok) {
+        const meData = await meRes.json();
+        setCurrentUser(meData);
+        localStorage.setItem('senseirm_current_user', JSON.stringify(meData));
+      } else if (meRes.status === 401 || meRes.status === 403 || meRes.status === 404) {
+        logout();
+        return;
+      }
+
       const res = await fetch('/api/data', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -330,10 +345,11 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   useEffect(() => {
-    if (currentUser) {
+    const token = localStorage.getItem('senseirm_token');
+    if (token) {
       loadData();
     }
-  }, [currentUser]);
+  }, []);
 
   const apiSync = async (type: string, action: 'ADD' | 'UPDATE' | 'DELETE' | 'SET', payload: any) => {
     try {
@@ -374,6 +390,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         localStorage.setItem('senseirm_token', data.token);
         localStorage.setItem('senseirm_current_user', JSON.stringify(data.user));
         setCurrentUser(data.user);
+        await loadData();
         return true;
       }
       return false;
