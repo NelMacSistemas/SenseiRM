@@ -109,6 +109,119 @@ const TASK_LABELS = {
   tempoGasto: 'Tempo Gasto'
 };
 
+const phoneMask = (value: string) => {
+  if (!value) return "";
+  let v = value.replace(/\D/g, "");
+  if (v.startsWith("55")) v = v.substring(2);
+  v = v.substring(0, 11);
+  if (v.length === 0) return "";
+  if (v.length > 10) {
+    return `+55 (${v.substring(0, 2)}) ${v.substring(2, 7)}-${v.substring(7)}`;
+  } else if (v.length > 6) {
+    return `+55 (${v.substring(0, 2)}) ${v.substring(2, 6)}-${v.substring(6)}`;
+  } else if (v.length > 2) {
+    return `+55 (${v.substring(0, 2)}) ${v.substring(2)}`;
+  } else {
+    return `+55 (${v}`;
+  }
+};
+
+const PhoneInput: React.FC<{
+  name: string;
+  defaultValue?: string;
+  required?: boolean;
+  placeholder?: string;
+  className?: string;
+  onChange?: (val: string) => void;
+}> = ({ name, defaultValue, required, placeholder, className, onChange }) => {
+  const [value, setValue] = useState(phoneMask(defaultValue || ""));
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const masked = phoneMask(e.target.value);
+    setValue(masked);
+    if (onChange) onChange(masked);
+  };
+
+  return (
+    <input
+      name={name}
+      required={required}
+      value={value}
+      onChange={handleChange}
+      placeholder={placeholder || "+55 (00) 00000-0000"}
+      className={className}
+    />
+  );
+};
+
+const validateCPF = (cpf: string) => {
+  const v = cpf.replace(/\D/g, "");
+  if (v.length !== 11 || !!v.match(/(\d)\1{10}/)) return false;
+  let s = 0;
+  for (let i = 1; i <= 9; i++) s += parseInt(v.substring(i - 1, i)) * (11 - i);
+  let r = (s * 10) % 11;
+  if (r === 10 || r === 11) r = 0;
+  if (r !== parseInt(v.substring(9, 10))) return false;
+  s = 0;
+  for (let i = 1; i <= 10; i++) s += parseInt(v.substring(i - 1, i)) * (12 - i);
+  r = (s * 10) % 11;
+  if (r === 10 || r === 11) r = 0;
+  if (r !== parseInt(v.substring(10, 11))) return false;
+  return true;
+};
+
+const validateCNPJ = (cnpj: string) => {
+  const v = cnpj.replace(/\D/g, "");
+  if (v.length !== 14 || !!v.match(/(\d)\1{13}/)) return false;
+  let size = v.length - 2;
+  let numbers = v.substring(0, size);
+  const digits = v.substring(size);
+  let sum = 0;
+  let pos = size - 7;
+  for (let i = size; i >= 1; i--) {
+    sum += parseInt(numbers.charAt(size - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+  let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  if (result !== parseInt(digits.charAt(0))) return false;
+  size = size + 1;
+  numbers = v.substring(0, size);
+  sum = 0;
+  pos = size - 7;
+  for (let i = size; i >= 1; i--) {
+    sum += parseInt(numbers.charAt(size - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+  result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  if (result !== parseInt(digits.charAt(1))) return false;
+  return true;
+};
+
+const maskCPF = (v: string) => {
+  v = v.replace(/\D/g, "");
+  if (v.length <= 3) return v;
+  if (v.length <= 6) return v.replace(/(\d{3})(\d{0,3})/, "$1.$2");
+  if (v.length <= 9) return v.replace(/(\d{3})(\d{3})(\d{0,3})/, "$1.$2.$3");
+  return v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, "$1.$2.$3-$4").substring(0, 14);
+};
+
+const maskCNPJ = (v: string) => {
+  v = v.replace(/\D/g, "");
+  if (v.length <= 2) return v;
+  if (v.length <= 5) return v.replace(/(\d{2})(\d{0,3})/, "$1.$2");
+  if (v.length <= 8) return v.replace(/(\d{2})(\d{3})(\d{0,3})/, "$1.$2.$3");
+  if (v.length <= 12) return v.replace(/(\d{2})(\d{3})(\d{3})(\d{0,4})/, "$1.$2.$3/$4");
+  return v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/, "$1.$2.$3/$4-$5").substring(0, 18);
+};
+
+const formatDocumento = (doc: string) => {
+  if (!doc) return "";
+  const v = doc.replace(/\D/g, "");
+  if (v.length === 11) return maskCPF(v);
+  if (v.length === 14) return maskCNPJ(v);
+  return doc;
+};
+
 // --- Context ---
 interface AppState {
   currentUser: User | null;
@@ -696,6 +809,7 @@ const ClientsPage = () => {
   const [nomeRazaoSocial, setNomeRazaoSocial] = useState('');
   const [nomeFantasia, setNomeFantasia] = useState('');
   const [documento, setDocumento] = useState('');
+  const [isDocumentoValid, setIsDocumentoValid] = useState(true);
   const [inscricaoEstadual, setInscricaoEstadual] = useState('');
   const [status, setStatus] = useState<EntityStatus>(EntityStatus.ACTIVE);
 
@@ -892,7 +1006,7 @@ const ClientsPage = () => {
                       <span className="text-[10px] text-slate-400 uppercase font-black">{c.categoria || 'Geral'}</span>
                    </div>
                 </td>
-                <td className="px-6 py-5 text-slate-600 font-medium">{c.documento}</td>
+                <td className="px-6 py-5 text-slate-600 font-medium">{formatDocumento(c.documento)}</td>
                 <td className="px-6 py-5 text-slate-500 text-sm font-medium">{c.cidade ? `${c.cidade}/${c.uf}` : 'Não inf.'}</td>
                 <td className="px-6 py-5">
                   <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase border ${c.status === EntityStatus.ACTIVE ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
@@ -975,10 +1089,23 @@ const ClientsPage = () => {
                             name="documento" 
                             required 
                             value={documento} 
-                            onChange={(e) => setDocumento(e.target.value)}
+                            onChange={(e) => {
+                               const val = e.target.value;
+                               const masked = tipoPessoa === 'Jurídica' ? maskCNPJ(val) : maskCPF(val);
+                               setDocumento(masked);
+                               const raw = val.replace(/\D/g, "");
+                               if (raw.length > 0) {
+                                 setIsDocumentoValid(tipoPessoa === 'Jurídica' ? validateCNPJ(masked) : validateCPF(masked));
+                               } else {
+                                 setIsDocumentoValid(true);
+                               }
+                             }}
                             placeholder={tipoPessoa === 'Jurídica' ? '00.000.000/0000-00' : '000.000.000-00'} 
-                            className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" 
+                            className={`w-full px-6 py-4 rounded-2xl border font-bold outline-none focus:border-primary transition-colors ${!isDocumentoValid && documento.length > 0 ? 'border-red-300 bg-red-50 text-red-900' : 'border-slate-100 bg-slate-50'}`} 
                          />
+                         {!isDocumentoValid && documento.length > 0 && (
+                           <span className="text-[9px] font-bold text-red-500 uppercase tracking-tighter ml-2 animate-pulse">Documento Inválido</span>
+                         )}
                        </div>
                        {tipoPessoa === 'Jurídica' && (
                          <div className="space-y-1">
@@ -1083,11 +1210,11 @@ const ClientsPage = () => {
                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                           <div className="space-y-1">
                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Telefone Principal</label>
-                             <input name="telefonePrincipal" required defaultValue={editingClient?.telefonePrincipal} placeholder="(00) 0000-0000" className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" />
+                             <PhoneInput name="telefonePrincipal" required defaultValue={editingClient?.telefonePrincipal} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" />
                           </div>
                           <div className="space-y-1">
                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">WhatsApp / Secundário</label>
-                             <input name="telefoneSecundario" defaultValue={editingClient?.telefoneSecundario} placeholder="(00) 00000-0000" className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" />
+                             <PhoneInput name="telefoneSecundario" defaultValue={editingClient?.telefoneSecundario} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" />
                           </div>
                           <div className="space-y-1">
                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Site / URL</label>
@@ -1127,7 +1254,7 @@ const ClientsPage = () => {
                                 </div>
                                 <div className="md:col-span-2 space-y-1">
                                    <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Telefone</label>
-                                   <input value={person.telefone} onChange={(e) => updateContactPerson(person.id, 'telefone', e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary outline-none text-sm font-bold" />
+                                   <input value={phoneMask(person.telefone)} onChange={(e) => updateContactPerson(person.id, 'telefone', phoneMask(e.target.value))} placeholder="+55 (00) 00000-0000" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary outline-none text-sm font-bold" />
                                 </div>
                                 <div className="md:col-span-1 flex items-end justify-center pb-1">
                                    <button type="button" onClick={() => removeContactPerson(person.id)} className="p-2 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"><Icon name="trash" /></button>
@@ -1907,7 +2034,7 @@ const UsersPage = () => {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                    <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Celular</label>
-                    <input name="celular" defaultValue={editingUser?.celular} placeholder="(00) 00000-0000" className={`w-full px-6 py-4 rounded-3xl border border-slate-100 outline-none font-bold transition-colors shadow-inner ${hasWhatsapp ? 'bg-emerald-100 border-emerald-300' : 'bg-slate-50'}`} />
+                    <PhoneInput name="celular" defaultValue={editingUser?.celular} className={`w-full px-6 py-4 rounded-3xl border border-slate-100 outline-none font-bold transition-colors shadow-inner ${hasWhatsapp ? 'bg-emerald-100 border-emerald-300' : 'bg-slate-50'}`} />
                    </div>
                    <div className="flex items-center gap-3 pt-6">
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -2662,8 +2789,8 @@ const MailListPage = () => {
   const filteredClients = useMemo(() => {
     return clients.filter(c => {
       const matchesSearch = c.nomeRazaoSocial.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (c.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-                            (c.whatsapp || '').includes(searchTerm);
+                            (c.emailPrincipal?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                            (c.telefoneSecundario || '').includes(searchTerm);
       const matchesRating = filterRating === 'all' || c.avaliacaoInterna === filterRating;
       return matchesSearch && matchesRating;
     });
@@ -2684,16 +2811,44 @@ const MailListPage = () => {
     if (!canSend) return alert('Restrição de acesso.');
     if (selectedClients.length === 0) return alert('Selecione destinos.');
     const formData = new FormData(e.currentTarget);
+    const assunto = formData.get('assunto') as string;
+    const mensagem = formData.get('mensagem') as string;
+
     const entry: MailHistory = { 
       id: crypto.randomUUID(), 
       data: new Date().toISOString(), 
       tipo: type, 
       destinatarios: selectedClients, 
-      assunto: formData.get('assunto') as string, 
-      mensagem: formData.get('mensagem') as string 
+      assunto, 
+      mensagem 
     };
     addMailHistory(entry);
-    alert('Disparo executado.');
+
+    // Functional part: Trigger sending
+    if (type === 'whatsapp') {
+      // For WhatsApp, we can't easily broadcast to many at once from browser, 
+      // but we can open the first one and provide links for others.
+      const firstClientId = selectedClients[0];
+      const firstClient = clients.find(c => c.id === firstClientId);
+      if (firstClient?.telefoneSecundario) {
+        const phone = firstClient.telefoneSecundario.replace(/\D/g, '');
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensagem)}`;
+        window.open(url, '_blank');
+      }
+      alert(`Disparo registrado no histórico. O primeiro WhatsApp foi aberto. Se houver mais destinatários, use os botões individuais na lista.`);
+    } else {
+      // For Email, we can use mailto with BCC for multiple recipients
+      const emails = selectedClients
+        .map(id => clients.find(c => c.id === id)?.emailPrincipal)
+        .filter(Boolean);
+      
+      if (emails.length > 0) {
+        const mailto = `mailto:${emails[0]}?bcc=${emails.slice(1).join(',')}&subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(mensagem)}`;
+        window.location.href = mailto;
+      }
+      alert('Disparo registrado no histórico. Seu cliente de e-mail padrão foi aberto.');
+    }
+
     setSelectedClients([]);
   };
 
@@ -2770,7 +2925,11 @@ const MailListPage = () => {
             </div>
           ) : (
             filteredClients.map(c => (
-              <label key={c.id} className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${selectedClients.includes(c.id) ? 'bg-primary/5 border-primary/20 shadow-sm' : 'border-slate-50 hover:bg-slate-50'}`}>
+              <label 
+                key={c.id} 
+                title={type === 'email' ? `E-mail: ${c.emailPrincipal || 'Não informado'}` : `WhatsApp: ${c.telefoneSecundario || 'Não informado'}`}
+                className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${selectedClients.includes(c.id) ? 'bg-primary/5 border-primary/20 shadow-sm' : 'border-slate-50 hover:bg-slate-50'}`}
+              >
                 <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${selectedClients.includes(c.id) ? 'bg-primary border-primary' : 'border-slate-300'}`}>
                   {selectedClients.includes(c.id) && <Icon name="check" className="text-white text-[10px]" />}
                 </div>
@@ -2778,9 +2937,31 @@ const MailListPage = () => {
                 <div className="overflow-hidden flex-1">
                   <span className="text-xs font-extrabold text-slate-700 block truncate">{c.nomeRazaoSocial}</span>
                   <span className="text-[9px] text-slate-400 font-bold block truncate">
-                    {type === 'email' ? (c.email || 'Sem e-mail') : (c.whatsapp || 'Sem WhatsApp')}
+                    {type === 'email' ? (c.emailPrincipal || 'Sem e-mail') : (c.telefoneSecundario || 'Sem WhatsApp')}
                   </span>
                 </div>
+                {selectedClients.includes(c.id) && (
+                  <button 
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      const form = document.querySelector('form') as HTMLFormElement;
+                      const msg = (form.querySelector('textarea[name="mensagem"]') as HTMLTextAreaElement)?.value || '';
+                      if (type === 'whatsapp' && c.telefoneSecundario) {
+                        const phone = c.telefoneSecundario.replace(/\D/g, '');
+                        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+                      } else if (type === 'email' && c.emailPrincipal) {
+                        const subj = (form.querySelector('input[name="assunto"]') as HTMLInputElement)?.value || '';
+                        window.location.href = `mailto:${c.emailPrincipal}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(msg)}`;
+                      }
+                    }}
+                    className="p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-white transition-all"
+                    title="Enviar individualmente"
+                  >
+                    <Icon name={type === 'email' ? 'email' : 'message-square'} className="w-3 h-3" />
+                  </button>
+                )}
                 {c.avaliacaoInterna > 0 && (
                   <div className="bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full text-[8px] font-black">
                     {c.avaliacaoInterna}★
