@@ -1,43 +1,50 @@
 
 import { AuditEntry } from '../types';
 
-const AUDIT_KEY = 'senseirm_audit_logs';
-
 export const auditService = {
-  getLogs: (): AuditEntry[] => {
+  getLogs: async (): Promise<AuditEntry[]> => {
     try {
-      const logs = localStorage.getItem(AUDIT_KEY);
-      return logs ? JSON.parse(logs) : [];
+      const token = localStorage.getItem('senseirm_token');
+      const res = await fetch('/api/data', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.auditLogs || [];
+      } else if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('senseirm_token');
+        localStorage.removeItem('senseirm_current_user');
+        window.location.reload();
+      }
+      return [];
     } catch (e) {
       console.error("Error loading audit logs", e);
       return [];
     }
   },
 
-  log: (userId: string, userName: string, action: string, module: string, details: string) => {
-    const logs = auditService.getLogs();
-    const generateId = () => {
-      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-        return crypto.randomUUID();
+  log: async (userId: string, userName: string, action: string, module: string, details: string) => {
+    try {
+      const token = localStorage.getItem('senseirm_token');
+      const res = await fetch('/api/audit', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ action, module, details })
+      });
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('senseirm_token');
+        localStorage.removeItem('senseirm_current_user');
+        window.location.reload();
       }
-      return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
-    };
-
-    const newEntry: AuditEntry = {
-      id: generateId(),
-      timestamp: new Date().toISOString(),
-      userId,
-      userName,
-      action,
-      module,
-      details,
-    };
-    // Mantém os últimos 1000 registros para performance
-    const updatedLogs = [newEntry, ...logs].slice(0, 1000);
-    localStorage.setItem(AUDIT_KEY, JSON.stringify(updatedLogs));
+    } catch (e) {
+      console.error("Error saving audit log", e);
+    }
   },
 
   clearLogs: () => {
-    localStorage.removeItem(AUDIT_KEY);
+    // Not implemented in backend for security reasons
   }
 };

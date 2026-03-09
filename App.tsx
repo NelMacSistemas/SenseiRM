@@ -290,70 +290,69 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return stored ? JSON.parse(stored) : null;
   });
 
-  const [users, setUsers] = useState<User[]>(() => {
-    const stored = localStorage.getItem('senseirm_users');
-    return stored ? JSON.parse(stored) : [INITIAL_USER];
-  });
+  const [users, setUsers] = useState<User[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [sectors, setSectors] = useState<Sector[]>([]);
+  const [clientCategories, setClientCategories] = useState<ClientCategory[]>([]);
+  const [history, setHistory] = useState<MailHistory[]>([]);
+  const [slaSettings, setSlaSettings] = useState<SLASettings>({ Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
+  const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([]);
 
-  const [clients, setClients] = useState<Client[]>(() => {
-    const stored = localStorage.getItem('senseirm_clients');
-    return stored ? JSON.parse(stored) : [];
-  });
+  const refreshAudit = async () => {
+    const logs = await auditService.getLogs();
+    setAuditLogs(logs);
+  };
 
-  const [tasks, setTasks] = useState<Task[]>(() => {
-    const stored = localStorage.getItem('senseirm_tasks');
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  const [sectors, setSectors] = useState<Sector[]>(() => {
-    const stored = localStorage.getItem('senseirm_sectors');
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  const [clientCategories, setClientCategories] = useState<ClientCategory[]>(() => {
-    const stored = localStorage.getItem('senseirm_client_categories');
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch (e) {
-        console.error('Error parsing categories:', e);
+  const loadData = async () => {
+    try {
+      const token = localStorage.getItem('senseirm_token');
+      if (!token) return;
+      const res = await fetch('/api/data', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data.users || []);
+        setClients(data.clients || []);
+        setTasks(data.tasks || []);
+        setSectors(data.sectors || []);
+        setClientCategories(data.clientCategories || []);
+        setHistory(data.history || []);
+        setSlaSettings(data.slaSettings || { Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
+        setAuditLogs(data.auditLogs || []);
+      } else if (res.status === 401 || res.status === 403) {
+        logout();
       }
+    } catch (e) {
+      console.error('Failed to load data', e);
     }
-    return [
-      { id: '1', nome: 'VIP', dataCriacao: new Date().toISOString() },
-      { id: '2', nome: 'Atacadista', dataCriacao: new Date().toISOString() },
-      { id: '3', nome: 'Revenda', dataCriacao: new Date().toISOString() },
-      { id: '4', nome: 'Estratégico', dataCriacao: new Date().toISOString() },
-      { id: '5', nome: 'Consumidor Geral', dataCriacao: new Date().toISOString() }
-    ];
-  });
-
-  const [history, setHistory] = useState<MailHistory[]>(() => {
-    const stored = localStorage.getItem('senseirm_history');
-    return stored ? JSON.parse(stored) : [];
-  });
-
-  const [slaSettings, setSlaSettings] = useState<SLASettings>(() => {
-    const stored = localStorage.getItem('senseirm_sla_settings');
-    return stored ? JSON.parse(stored) : { Baixa: 15, Média: 7, Alta: 3, Crítica: 1 };
-  });
-
-  const [auditLogs, setAuditLogs] = useState<AuditEntry[]>(() => auditService.getLogs());
-
-  const refreshAudit = () => setAuditLogs(auditService.getLogs());
+  };
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      localStorage.setItem('senseirm_users', JSON.stringify(users));
-      localStorage.setItem('senseirm_clients', JSON.stringify(clients));
-      localStorage.setItem('senseirm_tasks', JSON.stringify(tasks));
-      localStorage.setItem('senseirm_sectors', JSON.stringify(sectors));
-      localStorage.setItem('senseirm_history', JSON.stringify(history));
-      localStorage.setItem('senseirm_sla_settings', JSON.stringify(slaSettings));
-      localStorage.setItem('senseirm_client_categories', JSON.stringify(clientCategories));
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [users, clients, tasks, sectors, history, slaSettings, clientCategories]);
+    if (currentUser) {
+      loadData();
+    }
+  }, [currentUser]);
+
+  const apiSync = async (type: string, action: 'ADD' | 'UPDATE' | 'DELETE' | 'SET', payload: any) => {
+    try {
+      const token = localStorage.getItem('senseirm_token');
+      const res = await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ type, action, payload })
+      });
+      if (res.status === 401 || res.status === 403) {
+        logout();
+      }
+    } catch (e) {
+      console.error('Failed to sync data', e);
+    }
+  };
 
   useEffect(() => {
     const themeId = currentUser?.tema || 'verde';
@@ -363,27 +362,37 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     document.body.classList.add(`theme-${themeId}`);
   }, [currentUser?.tema]);
 
-  const login = (email: string, pass: string) => {
-    const user = users.find(u => u.email === email && u.senha === pass && u.status === EntityStatus.ACTIVE);
-    if (user) {
-      setCurrentUser(user);
-      localStorage.setItem('senseirm_current_user', JSON.stringify(user));
-      auditService.log(user.id, user.nome, 'LOGIN', 'AUTH', `Usuário ${user.nome} autenticou.`);
-      refreshAudit();
-      return true;
+  const login = async (email: string, pass: string) => {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, pass })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem('senseirm_token', data.token);
+        localStorage.setItem('senseirm_current_user', JSON.stringify(data.user));
+        setCurrentUser(data.user);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error('Login error', e);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
     if (currentUser) auditService.log(currentUser.id, currentUser.nome, 'LOGOUT', 'AUTH', 'Sessão encerrada.');
     setCurrentUser(null);
     localStorage.removeItem('senseirm_current_user');
-    refreshAudit();
+    localStorage.removeItem('senseirm_token');
   };
 
   const addUser = (u: User) => {
     setUsers(prev => [...prev, u]);
+    apiSync('users', 'ADD', u);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'USUARIOS', `Usuário ${u.nome} criado.`);
     refreshAudit();
   };
@@ -392,6 +401,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const oldUser = users.find(item => item.id === u.id);
     const diff = oldUser ? getDetailedDiff(oldUser, u, USER_LABELS) : '';
     setUsers(prev => prev.map(item => item.id === u.id ? u : item));
+    apiSync('users', 'UPDATE', u);
     if (currentUser?.id === u.id) {
       setCurrentUser(u);
       localStorage.setItem('senseirm_current_user', JSON.stringify(u));
@@ -403,12 +413,14 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const deleteUser = (id: string) => {
     const target = users.find(u => u.id === id);
     setUsers(prev => prev.filter(u => u.id !== id));
+    apiSync('users', 'DELETE', { id });
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'USUARIOS', `Usuário removido: ${target?.nome} (${target?.email})`);
     refreshAudit();
   };
 
   const addClient = (c: Client) => {
     setClients(prev => [...prev, c]);
+    apiSync('clients', 'ADD', c);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'CLIENTES', `Cliente ${c.nomeRazaoSocial} (${c.clientCode}) criado.`);
     refreshAudit();
   };
@@ -417,6 +429,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const oldClient = clients.find(item => item.id === c.id);
     const diff = oldClient ? getDetailedDiff(oldClient, c, CLIENT_LABELS) : '';
     setClients(prev => prev.map(item => item.id === c.id ? c : item));
+    apiSync('clients', 'UPDATE', c);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CLIENTES', `Cliente ${c.nomeRazaoSocial} atualizado. ${diff}`);
     refreshAudit();
   };
@@ -424,12 +437,14 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const deleteClient = (id: string) => {
     const target = clients.find(c => c.id === id);
     setClients(prev => prev.filter(c => c.id !== id));
+    apiSync('clients', 'DELETE', { id });
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'CLIENTES', `Cliente removido: ${target?.nomeRazaoSocial} (${target?.clientCode})`);
     refreshAudit();
   };
 
   const addTask = (t: Task) => {
     setTasks(prev => [...prev, t]);
+    apiSync('tasks', 'ADD', t);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'TAREFAS', `Tarefa ${t.taskNumber}: "${t.titulo}" criada.`);
     refreshAudit();
   };
@@ -438,6 +453,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const oldTask = tasks.find(item => item.id === t.id);
     const diff = oldTask ? getDetailedDiff(oldTask, t, TASK_LABELS) : '';
     setTasks(prev => prev.map(item => item.id === t.id ? t : item));
+    apiSync('tasks', 'UPDATE', t);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'TAREFAS', `Tarefa ${t.taskNumber} alterada. ${diff}`);
     refreshAudit();
   };
@@ -445,12 +461,14 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const deleteTask = (id: string) => {
     const target = tasks.find(t => t.id === id);
     setTasks(prev => prev.filter(t => t.id !== id));
+    apiSync('tasks', 'DELETE', { id });
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'TAREFAS', `Tarefa excluída: ${target?.taskNumber} - ${target?.titulo}`);
     refreshAudit();
   };
 
   const addSector = (s: Sector) => {
     setSectors(prev => [...prev, s]);
+    apiSync('sectors', 'ADD', s);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'SETORES', `Setor "${s.nome}" criado.`);
     refreshAudit();
   };
@@ -459,6 +477,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const oldSec = sectors.find(item => item.id === s.id);
     const diff = oldSec ? getDetailedDiff(oldSec, s, { nome: 'Nome', descricao: 'Descrição', responsavelId: 'Gestor' }) : '';
     setSectors(prev => prev.map(item => item.id === s.id ? s : item));
+    apiSync('sectors', 'UPDATE', s);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'SETORES', `Setor "${s.nome}" atualizado. ${diff}`);
     refreshAudit();
   };
@@ -469,6 +488,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!target) return;
 
     setSectors(prev => prev.filter(s => s.id !== id));
+    apiSync('sectors', 'DELETE', { id });
     setTasks(prev => prev.map(task => task.setorId === id ? { ...task, setorId: '' } : task));
     
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'SETORES', `Setor "${target.nome}" removido.`);
@@ -477,6 +497,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const addClientCategory = (c: ClientCategory) => {
     setClientCategories(prev => [...prev, c]);
+    apiSync('clientCategories', 'ADD', c);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'CONFIG', `Categoria "${c.nome}" criada.`);
     refreshAudit();
   };
@@ -485,11 +506,16 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     setClientCategories(prevCategories => {
       const old = prevCategories.find(item => item.id === c.id);
       if (old && old.nome !== c.nome) {
-        setClients(prevClients => prevClients.map(client => 
-          client.categoria === old.nome ? { ...client, categoria: c.nome } : client
-        ));
+        setClients(prevClients => {
+          const newClients = prevClients.map(client => 
+            client.categoria === old.nome ? { ...client, categoria: c.nome } : client
+          );
+          apiSync('clients', 'SET', newClients);
+          return newClients;
+        });
       }
       
+      apiSync('clientCategories', 'UPDATE', c);
       auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Categoria "${c.nome}" atualizada.`);
       refreshAudit();
       
@@ -503,7 +529,12 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!target) return;
 
     setClientCategories(prev => prev.filter(c => c.id !== id));
-    setClients(prev => prev.map(client => client.categoria === target.nome ? { ...client, categoria: '' } : client));
+    apiSync('clientCategories', 'DELETE', { id });
+    setClients(prev => {
+      const newClients = prev.map(client => client.categoria === target.nome ? { ...client, categoria: '' } : client);
+      apiSync('clients', 'SET', newClients);
+      return newClients;
+    });
     
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'CONFIG', `Categoria "${target.nome}" removida.`);
     refreshAudit();
@@ -511,6 +542,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const addMailHistory = (h: MailHistory) => {
     setHistory(prev => [h, ...prev]);
+    apiSync('history', 'ADD', h);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'SEND', 'COMUNICACAO', `Envio em massa (${h.tipo}) para ${h.destinatarios.length} destinos. Assunto: ${h.assunto}`);
     refreshAudit();
   };
@@ -518,6 +550,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const updateSLASettings = (settings: SLASettings) => {
     const diff = getDetailedDiff(slaSettings, settings, { Baixa: 'SLA Baixa', Média: 'SLA Média', Alta: 'SLA Alta', Crítica: 'SLA Crítica' });
     setSlaSettings(settings);
+    apiSync('slaSettings', 'SET', settings);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Prazos de SLA redefinidos. ${diff}`);
     refreshAudit();
   };
@@ -2284,20 +2317,6 @@ const ConfiguracoesPage = () => {
                   Nenhuma categoria cadastrada.
                 </div>
               )}
-            </div>
-            
-            <div className="pt-8 border-t border-slate-100 flex justify-center">
-               <button 
-                 onClick={() => { 
-                   if(confirm('Deseja resetar todas as categorias para o padrão?')) {
-                     localStorage.removeItem('senseirm_client_categories');
-                     window.location.reload();
-                   }
-                 }}
-                 className="text-[10px] font-black text-slate-300 hover:text-red-400 transition-colors uppercase tracking-widest"
-               >
-                 Restaurar Padrões do Sistema
-               </button>
             </div>
           </div>
         )}
