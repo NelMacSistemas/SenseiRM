@@ -1481,6 +1481,7 @@ const TasksPage = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [historyTask, setHistoryTask] = useState<Task | null>(null);
   const [showLogInput, setShowLogInput] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   
   // Local Form States
   const [startDate, setStartDate] = useState<string>('');
@@ -1609,7 +1610,6 @@ const TasksPage = () => {
     if (editingTask) {
       const details = getChangeDetails(editingTask, newTaskPartial);
       if (details.length > 0) {
-        const changesStr = details.join(' | ');
         const justificativa = (needsLogEntry && actionRef.current?.value) ? actionRef.current.value : 'Ajuste de parâmetros técnicos.';
         
         logs.push({
@@ -1617,11 +1617,25 @@ const TasksPage = () => {
           timestamp: new Date().toISOString(),
           fromStatus: editingTask.status,
           toStatus: currentStatus,
-          action: `[Alterações: ${changesStr}] - Justificativa: ${justificativa}`,
+          action: `Atualização de tarefa`,
+          changes: details,
+          justification: justificativa,
           userId: currentUser?.id || 'sys',
           userName: currentUser?.nome || 'Sistema'
         });
       }
+    } else {
+      logs.push({
+        id: crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
+        fromStatus: currentStatus,
+        toStatus: currentStatus,
+        action: `Criação da tarefa`,
+        changes: ['Tarefa inicializada com os dados básicos.'],
+        justification: 'Criação inicial',
+        userId: currentUser?.id || 'sys',
+        userName: currentUser?.nome || 'Sistema'
+      });
     }
 
     const task: Task = {
@@ -1653,10 +1667,97 @@ const TasksPage = () => {
     setIsHistoryModalOpen(true);
   };
 
+  const handleDragStart = (e: React.DragEvent, taskId: string) => {
+    e.dataTransfer.setData('taskId', taskId);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, status: TaskStatus) => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData('taskId');
+    const task = tasks.find(t => t.id === taskId);
+    if (task && task.status !== status && canEdit) {
+      const logs = [...(task.logs || [])];
+      logs.push({
+        id: crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
+        fromStatus: task.status,
+        toStatus: status,
+        action: `Movido via Kanban`,
+        changes: [`Status: "${task.status}" → "${status}"`],
+        justification: 'Movimentação rápida pelo quadro Kanban',
+        userId: currentUser?.id || 'sys',
+        userName: currentUser?.nome || 'Sistema'
+      });
+      
+      let dataConclusaoReal = task.dataConclusaoReal;
+      if (status === TaskStatus.COMPLETED && !dataConclusaoReal) {
+        dataConclusaoReal = new Date().toISOString().split('T')[0];
+      }
+
+      updateTask({ ...task, status, dataConclusaoReal, logs });
+    }
+  };
+
+  const renderTaskCard = (t: Task, isKanban: boolean = false) => {
+    const owner = users.find(u => u.id === t.responsavelId);
+    const progress = calculateProgress(t);
+    return (
+      <div 
+        key={t.id} 
+        draggable={canEdit && isKanban}
+        onDragStart={(e) => handleDragStart(e, t.id)}
+        className={`bg-white p-6 rounded-[2.5rem] border border-slate-200 hover:shadow-xl transition-all relative overflow-hidden group ${isKanban ? 'cursor-grab active:cursor-grabbing mb-4' : ''}`}
+      >
+        <div className={`absolute left-0 top-0 bottom-0 w-2 ${t.prioridade === TaskPriority.CRITICAL ? 'bg-red-600' : t.prioridade === TaskPriority.HIGH ? 'bg-orange-500' : 'bg-blue-400'}`} />
+        <div className="flex justify-between items-start pl-3 mb-4">
+          <div>
+             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.taskNumber} • {t.tipo}</span>
+             <h4 className="text-lg font-extrabold text-slate-800 leading-tight mt-1">{t.titulo}</h4>
+          </div>
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+             <button onClick={() => openHistoryModal(t)} className="p-2 text-amber-500 hover:bg-amber-50 rounded-xl" title="Ver Histórico"><Icon name="history" /></button>
+             {canEdit && <button onClick={() => openTaskModal(t)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl" title="Editar"><Icon name="edit" /></button>}
+             {canDelete && <button onClick={() => { if(confirm('Remover?')) deleteTask(t.id); }} className="p-2 text-red-500 hover:bg-red-50 rounded-xl" title="Excluir"><Icon name="trash" /></button>}
+          </div>
+        </div>
+        <div className="pl-3 space-y-4">
+           <ProgressBar progress={progress} />
+           <div className="flex justify-between items-center pt-2">
+              <div className="flex items-center gap-2">
+                 <img src={owner?.foto || 'https://picsum.photos/seed/default/40'} className="w-6 h-6 rounded-full border border-slate-100 shadow-sm" />
+                 <span className="text-xs font-bold text-slate-600 truncate max-w-[150px]">{owner?.nome}</span>
+              </div>
+              {!isKanban && <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase border-2 ${t.status === TaskStatus.COMPLETED ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>{t.status}</span>}
+           </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6 flex flex-col h-full">
       <div className="flex justify-between items-center">
-        <p className="text-slate-500 font-medium">Ciclo de vida operacional das tarefas.</p>
+        <div className="flex items-center gap-4">
+          <p className="text-slate-500 font-medium">Ciclo de vida operacional das tarefas.</p>
+          <div className="flex bg-slate-200 p-1 rounded-xl">
+            <button 
+              onClick={() => setViewMode('list')} 
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              Lista
+            </button>
+            <button 
+              onClick={() => setViewMode('kanban')} 
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === 'kanban' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              Kanban
+            </button>
+          </div>
+        </div>
         {canInclude && (
           <button onClick={() => openTaskModal(null)} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
             <Icon name="plus" /> Adicionar Atividade
@@ -1664,39 +1765,39 @@ const TasksPage = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {filteredTasks.map(t => {
-          const owner = users.find(u => u.id === t.responsavelId);
-          const progress = calculateProgress(t);
-          return (
-            <div key={t.id} className="bg-white p-6 rounded-[2.5rem] border border-slate-200 hover:shadow-xl transition-all relative overflow-hidden group">
-              <div className={`absolute left-0 top-0 bottom-0 w-2 ${t.prioridade === TaskPriority.CRITICAL ? 'bg-red-600' : t.prioridade === TaskPriority.HIGH ? 'bg-orange-500' : 'bg-blue-400'}`} />
-              <div className="flex justify-between items-start pl-3 mb-4">
-                <div>
-                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.taskNumber} • {t.tipo}</span>
-                   <h4 className="text-lg font-extrabold text-slate-800 leading-tight mt-1">{t.titulo}</h4>
+      {viewMode === 'list' ? (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {filteredTasks.map(t => renderTaskCard(t, false))}
+          {filteredTasks.length === 0 && <div className="col-span-2 py-20 text-center text-slate-400 font-medium">Nenhuma tarefa encontrada no seu escopo.</div>}
+        </div>
+      ) : (
+        <div className="flex gap-6 overflow-x-auto pb-4 flex-1 items-start min-h-[600px]">
+          {Object.values(TaskStatus).map(status => {
+            const statusTasks = filteredTasks.filter(t => t.status === status);
+            return (
+              <div 
+                key={status} 
+                className="flex-shrink-0 w-80 bg-slate-100/50 rounded-[3rem] p-4 border border-slate-200 flex flex-col h-full"
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, status)}
+              >
+                <div className="flex justify-between items-center mb-4 px-4 pt-2">
+                  <h3 className="font-black text-slate-700 uppercase tracking-widest text-xs">{status}</h3>
+                  <span className="bg-white text-slate-500 text-[10px] font-bold px-2 py-1 rounded-lg shadow-sm border border-slate-100">{statusTasks.length}</span>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                   <button onClick={() => openHistoryModal(t)} className="p-2 text-amber-500 hover:bg-amber-50 rounded-xl" title="Ver Histórico"><Icon name="history" /></button>
-                   {canEdit && <button onClick={() => openTaskModal(t)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl" title="Editar"><Icon name="edit" /></button>}
-                   {canDelete && <button onClick={() => { if(confirm('Remover?')) deleteTask(t.id); }} className="p-2 text-red-500 hover:bg-red-50 rounded-xl" title="Excluir"><Icon name="trash" /></button>}
-                </div>
-              </div>
-              <div className="pl-3 space-y-4">
-                 <ProgressBar progress={progress} />
-                 <div className="flex justify-between items-center pt-2">
-                    <div className="flex items-center gap-2">
-                       <img src={owner?.foto || 'https://picsum.photos/seed/default/40'} className="w-6 h-6 rounded-full border border-slate-100 shadow-sm" />
-                       <span className="text-xs font-bold text-slate-600 truncate max-w-[150px]">{owner?.nome}</span>
+                <div className="flex-1 overflow-y-auto">
+                  {statusTasks.map(t => renderTaskCard(t, true))}
+                  {statusTasks.length === 0 && (
+                    <div className="border-2 border-dashed border-slate-200 rounded-[2rem] h-24 flex items-center justify-center text-slate-400 text-xs font-medium">
+                      Arraste tarefas para cá
                     </div>
-                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase border-2 ${t.status === TaskStatus.COMPLETED ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>{t.status}</span>
-                 </div>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-        {filteredTasks.length === 0 && <div className="col-span-2 py-20 text-center text-slate-400 font-medium">Nenhuma tarefa encontrada no seu escopo.</div>}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {isHistoryModalOpen && historyTask && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[110] flex items-center justify-center p-4">
@@ -1723,7 +1824,32 @@ const TasksPage = () => {
                         </div>
                       </div>
                       <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-                        <p className="text-slate-700 font-medium text-sm leading-relaxed mb-4 whitespace-pre-wrap">{log.action}</p>
+                        <div className="mb-4">
+                          {/* Fallback for old logs without changes/justification */}
+                          {(!log.changes && !log.justification) ? (
+                            <p className="text-slate-700 font-medium text-sm leading-relaxed whitespace-pre-wrap">{log.action}</p>
+                          ) : (
+                            <p className="text-slate-800 font-bold text-sm mb-2">{log.action}</p>
+                          )}
+                          
+                          {log.changes && log.changes.length > 0 && (
+                            <div className="mb-3 space-y-1">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Alterações:</p>
+                              <ul className="list-disc list-inside text-xs text-slate-600 space-y-1 ml-1">
+                                {log.changes.map((change, i) => (
+                                  <li key={i}>{change}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {log.justification && (
+                            <div className="bg-white p-3 rounded-xl border border-slate-100">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Justificativa:</p>
+                              <p className="text-xs text-slate-700 italic">"{log.justification}"</p>
+                            </div>
+                          )}
+                        </div>
                         <div className="flex items-center gap-2 border-t border-slate-100 pt-3">
                            <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[8px] text-primary font-black uppercase">
                               {log.userName.charAt(0)}

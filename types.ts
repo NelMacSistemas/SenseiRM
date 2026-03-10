@@ -59,6 +59,8 @@ export interface TaskLog {
   action: string;
   userId: string;
   userName: string;
+  changes?: string[];
+  justification?: string;
 }
 
 export interface Permission {
