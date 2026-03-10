@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, createContext, useContext, useRef } from 'react';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
-import { User, Client, ContactPerson, AuditEntry, MailHistory, UserRole, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory } from './types';
+import { User, Client, ContactPerson, AuditEntry, MailHistory, UserRole, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory, Attachment } from './types';
 import { INITIAL_USER, THEMES } from './constants';
 import { auditService } from './services/auditService';
 
@@ -616,6 +616,114 @@ const ProgressBar = ({ progress, color = "bg-primary" }: { progress: number, col
   </div>
 );
 
+const AttachmentsManager = ({ attachments = [], onUpdate, canEdit }: { attachments?: Attachment[], onUpdate: (atts: Attachment[]) => void, canEdit: boolean }) => {
+  const { currentUser } = useApp();
+  const [uploading, setUploading] = useState(false);
+
+  const formatSize = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const token = localStorage.getItem('senseirm_token');
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const newAttachment: Attachment = {
+          id: crypto.randomUUID(),
+          name: data.name,
+          url: data.url,
+          size: data.size,
+          type: data.type,
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: currentUser?.nome || 'Sistema'
+        };
+        onUpdate([...attachments, newAttachment]);
+      } else {
+        alert('Erro ao fazer upload do arquivo.');
+      }
+    } catch (err) {
+      console.error('Upload error', err);
+      alert('Erro ao fazer upload do arquivo.');
+    } finally {
+      setUploading(false);
+      e.target.value = ''; // Reset input
+    }
+  };
+
+  const handleRemove = (id: string) => {
+    if (confirm('Deseja realmente remover este anexo?')) {
+      onUpdate(attachments.filter(a => a.id !== id));
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Anexos e Documentos</h4>
+        {canEdit && (
+          <div>
+            <input type="file" id="fileUpload" className="hidden" onChange={handleFileChange} disabled={uploading} />
+            <label htmlFor="fileUpload" className={`cursor-pointer px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all flex items-center gap-2 ${uploading ? 'bg-slate-100 text-slate-400 border-slate-200' : 'bg-white text-primary border-primary hover:bg-primary hover:text-white'}`}>
+              <Icon name={uploading ? 'spinner' : 'upload'} className={uploading ? 'animate-spin' : ''} />
+              {uploading ? 'Enviando...' : 'Anexar Arquivo'}
+            </label>
+          </div>
+        )}
+      </div>
+
+      {attachments.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {attachments.map(att => (
+            <div key={att.id} className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex items-center justify-between group hover:shadow-md transition-all">
+              <div className="flex items-center gap-3 overflow-hidden">
+                <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                  <Icon name={att.type.includes('image') ? 'image' : att.type.includes('pdf') ? 'file-pdf' : 'file-alt'} className="text-xl" />
+                </div>
+                <div className="min-w-0">
+                  <a href={att.url} target="_blank" rel="noreferrer" className="text-sm font-bold text-slate-700 hover:text-primary truncate block" title={att.name}>
+                    {att.name}
+                  </a>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                    {formatSize(att.size)} • {new Date(att.uploadedAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              {canEdit && (
+                <button type="button" onClick={() => handleRemove(att.id)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all shrink-0">
+                  <Icon name="trash" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center bg-slate-50/50">
+          <Icon name="folder-open" className="text-3xl text-slate-300 mb-2" />
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Nenhum anexo encontrado</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const StatMiniCard = ({ label, value, color }: { label: string; value: number | string; color: string }) => (
   <div className={`p-4 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-col hover:shadow-md transition-all cursor-pointer`}>
      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
@@ -898,6 +1006,7 @@ const ClientsPage = () => {
   const [cidade, setCidade] = useState('');
   const [uf, setUf] = useState('');
   const [loadingCep, setLoadingCep] = useState(false);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   // Today for date validations
   const today = new Date().toISOString().split('T')[0];
@@ -924,6 +1033,7 @@ const ClientsPage = () => {
       setBairro(editingClient.bairro || '');
       setCidade(editingClient.cidade || '');
       setUf(editingClient.uf || '');
+      setAttachments(editingClient.attachments || []);
     } else {
       setContactPeople([]);
       setTipoPessoa('Jurídica');
@@ -938,6 +1048,7 @@ const ClientsPage = () => {
       setBairro('');
       setCidade('');
       setUf('');
+      setAttachments([]);
     }
   }, [editingClient, isModalOpen]);
 
@@ -1011,7 +1122,8 @@ const ClientsPage = () => {
       situacao: data.situacao || 'Ativo',
       motivoBloqueio: data.motivoBloqueio,
       dataUltimaVenda: data.dataUltimaVenda,
-      avaliacaoInterna: Number(data.avaliacaoInterna) || 0
+      avaliacaoInterna: Number(data.avaliacaoInterna) || 0,
+      attachments: attachments
     } as Client;
 
     if (editingClient) updateClient(client); else addClient(client);
@@ -1459,6 +1571,14 @@ const ClientsPage = () => {
                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Observações Gerais</label>
                        <textarea name="observacoes" rows={4} defaultValue={editingClient?.observacoes} placeholder="Notas internas sobre o relacionamento, histórico e peculiaridades..." className="w-full px-7 py-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 outline-none resize-none font-medium focus:border-primary shadow-inner" />
                     </section>
+
+                    <section className="space-y-6">
+                      <AttachmentsManager 
+                        attachments={attachments} 
+                        onUpdate={setAttachments} 
+                        canEdit={canEdit} 
+                      />
+                    </section>
                  </div>
                )}
             </form>
@@ -1488,6 +1608,7 @@ const TasksPage = () => {
   const [priority, setPriority] = useState<TaskPriority>(TaskPriority.MEDIUM);
   const [currentStatus, setCurrentStatus] = useState<TaskStatus>(TaskStatus.OPEN);
   const [conclusaoReal, setConclusaoReal] = useState<string>('');
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   
   const actionRef = useRef<HTMLTextAreaElement>(null);
 
@@ -1603,6 +1724,7 @@ const TasksPage = () => {
       dataInicio: startDate,
       dataConclusaoReal: conclusaoReal,
       tempoGasto: data.tempoGasto,
+      attachments: attachments
     };
 
     const logs: TaskLog[] = [...(editingTask?.logs || [])];
@@ -1659,6 +1781,7 @@ const TasksPage = () => {
     setPriority(t?.prioridade || TaskPriority.MEDIUM);
     setCurrentStatus(t?.status || TaskStatus.OPEN);
     setConclusaoReal(t?.dataConclusaoReal || '');
+    setAttachments(t?.attachments || []);
     setIsModalOpen(true);
   };
 
@@ -1980,6 +2103,14 @@ const TasksPage = () => {
                     </select>
                   </div>
                 </div>
+              </section>
+
+              <section className="space-y-6">
+                <AttachmentsManager 
+                  attachments={attachments} 
+                  onUpdate={setAttachments} 
+                  canEdit={canEdit} 
+                />
               </section>
 
               {showLogInput && (

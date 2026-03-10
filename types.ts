@@ -112,6 +112,16 @@ export interface ContactPerson {
   email: string;
 }
 
+export interface Attachment {
+  id: string;
+  name: string;
+  url: string;
+  size: number;
+  type: string;
+  uploadedAt: string;
+  uploadedBy: string;
+}
+
 export interface Client {
   id: string;
   clientCode: string; // Automático (CLI-001)
@@ -162,6 +172,7 @@ export interface Client {
   motivoBloqueio?: string;
   dataUltimaVenda?: string;
   avaliacaoInterna?: number;
+  attachments?: Attachment[];
 }
 
 export interface Task {
@@ -182,6 +193,7 @@ export interface Task {
   dataConclusaoReal?: string;
   tempoGasto: string; 
   logs: TaskLog[];
+  attachments?: Attachment[];
 }
 
 export interface AuditEntry {

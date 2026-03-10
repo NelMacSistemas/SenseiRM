@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,8 +16,26 @@ const PORT = 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-senseirm';
 const DATA_FILE = path.join(__dirname, 'data.json');
 
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir)
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    cb(null, uniqueSuffix + '-' + file.originalname)
+  }
+});
+const upload = multer({ storage: storage });
+
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); // For base64 images
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // --- Data Store ---
 let db = {
@@ -126,6 +145,14 @@ app.get('/api/auth/me', authenticateToken, (req: any, res: any) => {
   if (!user) return res.sendStatus(404);
   const { senha, ...userWithoutPass } = user;
   res.json(userWithoutPass);
+});
+
+app.post('/api/upload', authenticateToken, upload.single('file'), (req: any, res: any) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  const fileUrl = `/uploads/${req.file.filename}`;
+  res.json({ url: fileUrl, name: req.file.originalname, size: req.file.size, type: req.file.mimetype });
 });
 
 // Data Sync (Get all data for the SPA)
