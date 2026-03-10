@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, createContext, useContext, useRef } from 'react';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
-import { User, Client, ContactPerson, AuditEntry, MailHistory, UserRole, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory, Attachment } from './types';
+import { io, Socket } from 'socket.io-client';
+import { User, Client, ContactPerson, AuditEntry, MailHistory, UserRole, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory, Attachment, Notification } from './types';
 import { INITIAL_USER, THEMES } from './constants';
 import { auditService } from './services/auditService';
 
@@ -9,7 +10,8 @@ import {
   Users, LayoutDashboard, Mail, FileText, Settings, ShieldAlert, Info,
   Search, Filter, Download, Upload, LogOut, User as UserIcon, Phone, Mail as MailIcon,
   Globe, MapPin, CreditCard, PieChart, Activity, AlertTriangle, ChevronRight,
-  ChevronLeft, MoreVertical, X, Calendar, MessageSquare, ExternalLink, HelpCircle
+  ChevronLeft, MoreVertical, X, Calendar, MessageSquare, ExternalLink, HelpCircle,
+  Bell, BellOff
 } from 'lucide-react';
 
 // Icons from Lucide
@@ -50,7 +52,9 @@ const iconMap: Record<string, any> = {
   'x': X,
   'calendar': Calendar,
   'message-square': MessageSquare,
-  'external-link': ExternalLink
+  'external-link': ExternalLink,
+  'bell': Bell,
+  'bell-slash': BellOff
 };
 
 const Icon: React.FC<{ name: string; className?: string; title?: string }> = ({ name, className = "", title }) => {
@@ -254,6 +258,9 @@ interface AppState {
   auditLogs: AuditEntry[];
   history: MailHistory[];
   slaSettings: SLASettings;
+  notifications: Notification[];
+  markNotificationAsRead: (id: string) => void;
+  clearNotifications: () => void;
   login: (email: string, pass: string) => boolean;
   logout: () => void;
   updateUser: (user: User) => void;
@@ -298,6 +305,44 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [history, setHistory] = useState<MailHistory[]>([]);
   const [slaSettings, setSlaSettings] = useState<SLASettings>({ Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const socket = io();
+
+    socket.on('connect', () => {
+      socket.emit('join', currentUser.id);
+    });
+
+    socket.on('data_updated', () => {
+      loadData();
+    });
+
+    socket.on('notification', (data: { title: string, message: string }) => {
+      const newNotification: Notification = {
+        id: crypto.randomUUID(),
+        title: data.title,
+        message: data.message,
+        timestamp: new Date().toISOString(),
+        read: false
+      };
+      setNotifications(prev => [newNotification, ...prev]);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [currentUser]);
+
+  const markNotificationAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+  };
 
   const refreshAudit = async () => {
     const logs = await auditService.getLogs();
@@ -573,7 +618,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const contextValue = useMemo(() => ({
-    currentUser, users, clients, tasks, sectors, auditLogs, history, slaSettings, clientCategories,
+    currentUser, users, clients, tasks, sectors, auditLogs, history, slaSettings, clientCategories, notifications,
+    markNotificationAsRead, clearNotifications,
     login, logout, updateUser, addUser, deleteUser,
     addClient, updateClient, deleteClient,
     addTask, updateTask, deleteTask, 
@@ -581,7 +627,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     addClientCategory, updateClientCategory, deleteClientCategory,
     addMailHistory, updateSLASettings
   }), [
-    currentUser, users, clients, tasks, sectors, auditLogs, history, slaSettings, clientCategories
+    currentUser, users, clients, tasks, sectors, auditLogs, history, slaSettings, clientCategories, notifications
   ]);
 
   return (
@@ -797,9 +843,77 @@ const Sidebar = () => {
   );
 };
 
+const NotificationsPopover = () => {
+  const { notifications, markNotificationAsRead, clearNotifications } = useApp();
+  const [isOpen, setIsOpen] = useState(false);
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  return (
+    <div className="relative">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="relative p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-500"
+      >
+        <Icon name="bell" className="text-xl" />
+        {unreadCount > 0 && (
+          <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border-2 border-white">
+            {unreadCount}
+          </span>
+        )}
+      </button>
+
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h3 className="text-xs font-black text-slate-700 uppercase tracking-widest">Notificações</h3>
+              {notifications.length > 0 && (
+                <button onClick={clearNotifications} className="text-[10px] text-slate-400 hover:text-red-500 uppercase font-bold tracking-widest transition-colors">
+                  Limpar
+                </button>
+              )}
+            </div>
+            <div className="max-h-96 overflow-y-auto">
+              {notifications.length === 0 ? (
+                <div className="p-8 text-center text-slate-400">
+                  <Icon name="bell-slash" className="text-3xl mb-2 opacity-20 mx-auto" />
+                  <p className="text-xs font-bold uppercase tracking-widest">Nenhuma notificação</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-50">
+                  {notifications.map(n => (
+                    <div 
+                      key={n.id} 
+                      onClick={() => markNotificationAsRead(n.id)}
+                      className={`p-4 cursor-pointer transition-colors hover:bg-slate-50 ${!n.read ? 'bg-blue-50/30' : ''}`}
+                    >
+                      <div className="flex justify-between items-start mb-1">
+                        <h4 className={`text-xs font-bold ${!n.read ? 'text-slate-800' : 'text-slate-600'}`}>{n.title}</h4>
+                        {!n.read && <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1" />}
+                      </div>
+                      <p className="text-xs text-slate-500 mb-2">{n.message}</p>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                        {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 const Header = ({ title }: { title: string }) => (
   <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-40">
     <h2 className="text-xl font-extrabold text-slate-800 tracking-tight">{title}</h2>
+    <div className="flex items-center gap-4">
+      <NotificationsPopover />
+    </div>
   </header>
 );
 

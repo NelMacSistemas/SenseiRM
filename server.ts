@@ -7,14 +7,38 @@ import { createServer as createViteServer } from 'vite';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import multer from 'multer';
+import http from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const server = http.createServer(app);
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
+
 const PORT = 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-senseirm';
 const DATA_FILE = path.join(__dirname, 'data.json');
+
+// Handle Socket.IO connections
+io.on('connection', (socket) => {
+  console.log('A user connected:', socket.id);
+
+  socket.on('join', (userId) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined their personal room`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
+});
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -180,6 +204,13 @@ app.post('/api/sync', authenticateToken, (req: any, res: any) => {
       payload.senha = bcrypt.hashSync(payload.senha, 10);
     }
     (db as any)[type].push(payload);
+    
+    if (type === 'tasks') {
+      io.to(payload.responsavelId).emit('notification', {
+        title: 'Nova Tarefa',
+        message: `Você foi designado para a tarefa: ${payload.titulo}`
+      });
+    }
   } else if (action === 'UPDATE') {
     const index = (db as any)[type].findIndex((item: any) => item.id === payload.id);
     if (index !== -1) {
@@ -188,7 +219,27 @@ app.post('/api/sync', authenticateToken, (req: any, res: any) => {
       } else if (type === 'users' && !payload.senha) {
         payload.senha = (db as any)[type][index].senha; // Keep old password if not provided
       }
+      
+      const oldItem = (db as any)[type][index];
       (db as any)[type][index] = payload;
+      
+      if (type === 'tasks') {
+        if (oldItem.responsavelId !== payload.responsavelId) {
+          io.to(payload.responsavelId).emit('notification', {
+            title: 'Tarefa Reatribuída',
+            message: `Você foi designado para a tarefa: ${payload.titulo}`
+          });
+        } else if (oldItem.status !== payload.status) {
+          io.to(payload.solicitanteId).emit('notification', {
+            title: 'Status da Tarefa Atualizado',
+            message: `A tarefa "${payload.titulo}" mudou para ${payload.status}`
+          });
+          io.to(payload.responsavelId).emit('notification', {
+            title: 'Status da Tarefa Atualizado',
+            message: `A tarefa "${payload.titulo}" mudou para ${payload.status}`
+          });
+        }
+      }
     }
   } else if (action === 'DELETE') {
     (db as any)[type] = (db as any)[type].filter((item: any) => item.id !== payload.id);
@@ -197,6 +248,10 @@ app.post('/api/sync', authenticateToken, (req: any, res: any) => {
   }
   
   saveData();
+  
+  // Broadcast to all clients that data has changed
+  io.emit('data_updated', { type, action });
+  
   res.json({ success: true });
 });
 
@@ -237,7 +292,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }

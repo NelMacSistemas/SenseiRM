@@ -214,3 +214,11 @@ export interface MailHistory {
   assunto: string;
   mensagem: string;
 }
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+}
