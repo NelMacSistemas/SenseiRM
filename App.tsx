@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, createContext, useContext, useRef } from 'react';
+import React, { useState, useEffect, useMemo, createContext, useContext, useRef, useCallback } from 'react';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { User, Client, ContactPerson, AuditEntry, MailHistory, UserRole, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory, Attachment, Notification } from './types';
@@ -266,6 +266,159 @@ function useDebounce<T>(value: T, delay: number): T {
   }, [value, delay]);
   return debouncedValue;
 }
+
+// --- Toast & Confirm Contexts ---
+type ToastType = 'success' | 'error' | 'info' | 'warning';
+
+interface ToastMessage {
+  id: string;
+  message: string;
+  type: ToastType;
+}
+
+interface ToastContextData {
+  success: (message: string) => void;
+  error: (message: string) => void;
+  info: (message: string) => void;
+  warning: (message: string) => void;
+}
+
+const ToastContext = createContext<ToastContextData | undefined>(undefined);
+
+export const useToast = () => {
+  const context = useContext(ToastContext);
+  if (!context) throw new Error("useToast deve ser usado dentro de um ToastProvider");
+  return context;
+};
+
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const addToast = useCallback((message: string, type: ToastType = 'info') => {
+    const id = crypto.randomUUID();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 4000);
+  }, []);
+
+  const removeToast = useCallback((id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  const value = useMemo(() => ({
+    success: (msg: string) => addToast(msg, 'success'),
+    error: (msg: string) => addToast(msg, 'error'),
+    info: (msg: string) => addToast(msg, 'info'),
+    warning: (msg: string) => addToast(msg, 'warning')
+  }), [addToast]);
+
+  return (
+    <ToastContext.Provider value={value}>
+      {children}
+      <div className="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
+        {toasts.map(t => (
+          <div 
+            key={t.id} 
+            className={`pointer-events-auto flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-right-8 fade-in duration-300
+              ${t.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-900' : 
+                t.type === 'error' ? 'bg-red-50 border-red-100 text-red-900' : 
+                t.type === 'warning' ? 'bg-amber-50 border-amber-100 text-amber-900' : 
+                'bg-blue-50 border-blue-100 text-blue-900'}`}
+          >
+            <Icon 
+              name={t.type === 'success' ? 'check-circle' : t.type === 'error' ? 'exclamation-circle' : t.type === 'warning' ? 'exclamation-triangle' : 'info-circle'} 
+              className={`text-xl ${t.type === 'success' ? 'text-emerald-500' : t.type === 'error' ? 'text-red-500' : t.type === 'warning' ? 'text-amber-500' : 'text-blue-500'}`}
+            />
+            <p className="font-bold text-sm">{t.message}</p>
+            <button onClick={() => removeToast(t.id)} className="ml-4 opacity-50 hover:opacity-100 transition-opacity">
+              <Icon name="times" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </ToastContext.Provider>
+  );
+};
+
+interface ConfirmOptions {
+  title?: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  onConfirm: () => void;
+  isDestructive?: boolean;
+}
+
+interface ConfirmContextData {
+  confirm: (options: ConfirmOptions) => void;
+}
+
+const ConfirmContext = createContext<ConfirmContextData | undefined>(undefined);
+
+export const useConfirm = () => {
+  const context = useContext(ConfirmContext);
+  if (!context) throw new Error("useConfirm deve ser usado dentro de um ConfirmProvider");
+  return context;
+};
+
+export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [options, setOptions] = useState<ConfirmOptions | null>(null);
+
+  const confirm = useCallback((opts: ConfirmOptions) => {
+    setOptions(opts);
+  }, []);
+
+  const handleConfirm = () => {
+    if (options) {
+      options.onConfirm();
+      setOptions(null);
+    }
+  };
+
+  const handleCancel = () => {
+    setOptions(null);
+  };
+
+  return (
+    <ConfirmContext.Provider value={{ confirm }}>
+      {children}
+      {options && (
+        <div className="fixed inset-0 z-[9999] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className={`p-6 border-b ${options.isDestructive ? 'bg-red-50 border-red-100' : 'bg-slate-50 border-slate-100'}`}>
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${options.isDestructive ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                  <Icon name={options.isDestructive ? 'exclamation-triangle' : 'question-circle'} className="text-xl" />
+                </div>
+                <h3 className={`font-black text-lg ${options.isDestructive ? 'text-red-900' : 'text-slate-900'}`}>
+                  {options.title || 'Confirmação'}
+                </h3>
+              </div>
+            </div>
+            <div className="p-6">
+              <p className="text-slate-600 font-medium leading-relaxed">{options.message}</p>
+            </div>
+            <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+              <button 
+                onClick={handleCancel}
+                className="px-6 py-3 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition-colors"
+              >
+                {options.cancelLabel || 'Cancelar'}
+              </button>
+              <button 
+                onClick={handleConfirm}
+                className={`px-6 py-3 rounded-xl font-black text-white shadow-lg hover:brightness-110 transition-all ${options.isDestructive ? 'bg-red-500 shadow-red-500/20' : 'bg-primary shadow-primary/20'}`}
+              >
+                {options.confirmLabel || 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </ConfirmContext.Provider>
+  );
+};
 
 // --- Context ---
 interface AppState {
@@ -684,6 +837,8 @@ const ProgressBar = ({ progress, color = "bg-primary" }: { progress: number, col
 
 const AttachmentsManager = ({ attachments = [], onUpdate, canEdit }: { attachments?: Attachment[], onUpdate: (atts: Attachment[]) => void, canEdit: boolean }) => {
   const { currentUser } = useApp();
+  const { error } = useToast();
+  const { confirm } = useConfirm();
   const [uploading, setUploading] = useState(false);
 
   const formatSize = (bytes: number) => {
@@ -723,11 +878,11 @@ const AttachmentsManager = ({ attachments = [], onUpdate, canEdit }: { attachmen
         };
         onUpdate([...attachments, newAttachment]);
       } else {
-        alert('Erro ao fazer upload do arquivo.');
+        error('Erro ao fazer upload do arquivo.');
       }
     } catch (err) {
       console.error('Upload error', err);
-      alert('Erro ao fazer upload do arquivo.');
+      error('Erro ao fazer upload do arquivo.');
     } finally {
       setUploading(false);
       e.target.value = ''; // Reset input
@@ -735,9 +890,15 @@ const AttachmentsManager = ({ attachments = [], onUpdate, canEdit }: { attachmen
   };
 
   const handleRemove = (id: string) => {
-    if (confirm('Deseja realmente remover este anexo?')) {
-      onUpdate(attachments.filter(a => a.id !== id));
-    }
+    confirm({
+      title: 'Remover Anexo',
+      message: 'Deseja realmente remover este anexo?',
+      confirmLabel: 'Remover',
+      isDestructive: true,
+      onConfirm: () => {
+        onUpdate(attachments.filter(a => a.id !== id));
+      }
+    });
   };
 
   return (
@@ -1119,6 +1280,7 @@ const Dashboard = () => {
 
 const ClientsPage = () => {
   const { clients, addClient, updateClient, deleteClient, currentUser, clientCategories } = useApp();
+  const { confirm } = useConfirm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [activeTab, setActiveTab] = useState<'id' | 'end' | 'cont' | 'fin' | 'crm'>('id');
@@ -1142,6 +1304,7 @@ const ClientsPage = () => {
   const [cidade, setCidade] = useState('');
   const [uf, setUf] = useState('');
   const [loadingCep, setLoadingCep] = useState(false);
+  const [loadingCnpj, setLoadingCnpj] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   // Today for date validations
@@ -1190,6 +1353,38 @@ const ClientsPage = () => {
     }
   }, [editingClient, isModalOpen]);
 
+  const handleDocumentoBlur = async () => {
+    if (tipoPessoa !== 'Jurídica') return;
+    const cleanCnpj = documento.replace(/\D/g, '');
+    if (cleanCnpj.length === 14) {
+      setLoadingCnpj(true);
+      try {
+        // Try publica.cnpj.ws first for Inscrição Estadual
+        const resPublica = await fetch(`https://publica.cnpj.ws/cnpj/${cleanCnpj}`);
+        if (resPublica.ok) {
+          const data = await resPublica.json();
+          setNomeRazaoSocial(data.razao_social || '');
+          setNomeFantasia(data.estabelecimento?.nome_fantasia || '');
+          const ie = data.estabelecimento?.inscricoes_estaduais?.[0]?.inscricao_estadual;
+          setInscricaoEstadual(ie || '');
+        } else {
+          // Fallback to BrasilAPI if rate limited
+          const resBrasil = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`);
+          if (resBrasil.ok) {
+            const data = await resBrasil.json();
+            setNomeRazaoSocial(data.razao_social || '');
+            setNomeFantasia(data.nome_fantasia || '');
+            setInscricaoEstadual('');
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao buscar CNPJ", err);
+      } finally {
+        setLoadingCnpj(false);
+      }
+    }
+  };
+
   const handleCepBlur = async () => {
     const cleanCep = cep.replace(/\D/g, '');
     if (cleanCep.length === 8) {
@@ -1213,6 +1408,28 @@ const ClientsPage = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Manual validation for all tabs
+    const form = e.currentTarget;
+    const inputs = Array.from(form.querySelectorAll('input, select, textarea')) as HTMLInputElement[];
+    const firstInvalid = inputs.find(input => !input.checkValidity());
+    
+    if (firstInvalid) {
+      // Find which tab contains the invalid input
+      const tabContainer = firstInvalid.closest('[data-tab-id]');
+      if (tabContainer) {
+        const tabId = tabContainer.getAttribute('data-tab-id') as any;
+        setActiveTab(tabId);
+        // Need to wait for React to render the tab before reporting validity
+        setTimeout(() => {
+          firstInvalid.reportValidity();
+        }, 100);
+      } else {
+        firstInvalid.reportValidity();
+      }
+      return;
+    }
+
     const formData = new FormData(e.currentTarget);
     const data: any = Object.fromEntries(formData.entries());
     
@@ -1289,13 +1506,51 @@ const ClientsPage = () => {
     setContactPeople(contactPeople.filter(p => p.id !== id));
   };
 
-  const TabButton = ({ id, label, icon }: { id: any, label: string, icon: string }) => (
+  const clientTabs = [
+    { id: 'id', label: 'Identificação', icon: 'id-card' },
+    { id: 'end', label: 'Endereço', icon: 'map-marker-alt' },
+    { id: 'cont', label: 'Contatos', icon: 'phone' },
+    { id: 'fin', label: 'Financeiro', icon: 'wallet' },
+    { id: 'crm', label: 'CRM & Gov', icon: 'shield-alt' }
+  ] as const;
+
+  const currentTabIndex = clientTabs.findIndex(t => t.id === activeTab);
+
+  const handleNextTab = () => {
+    const form = document.getElementById('clientForm') as HTMLFormElement;
+    if (form) {
+      const currentTabContainer = form.querySelector(`[data-tab-id="${activeTab}"]`);
+      if (currentTabContainer) {
+        const inputs = Array.from(currentTabContainer.querySelectorAll('input, select, textarea')) as HTMLInputElement[];
+        const firstInvalid = inputs.find(input => !input.checkValidity());
+        if (firstInvalid) {
+          firstInvalid.reportValidity();
+          return;
+        }
+      }
+    }
+
+    if (currentTabIndex < clientTabs.length - 1) {
+      setActiveTab(clientTabs[currentTabIndex + 1].id);
+    }
+  };
+
+  const handlePrevTab = () => {
+    if (currentTabIndex > 0) {
+      setActiveTab(clientTabs[currentTabIndex - 1].id);
+    }
+  };
+
+  const TabButton = ({ id, label, icon, index }: { id: any, label: string, icon: string, index: number }) => (
     <button
       type="button"
       onClick={() => setActiveTab(id)}
-      className={`flex items-center gap-2 px-6 py-4 border-b-4 transition-all font-black text-[10px] uppercase tracking-widest ${activeTab === id ? 'border-primary text-primary bg-primary/5' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+      className={`flex items-center gap-2 px-6 py-4 border-b-4 transition-all font-black text-[10px] uppercase tracking-widest ${activeTab === id ? 'border-primary text-primary bg-primary/5' : 'border-transparent text-slate-400 hover:text-slate-600'} ${index < currentTabIndex ? 'text-slate-600' : ''}`}
     >
-      <Icon name={icon} /> {label}
+      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] ${activeTab === id ? 'bg-primary text-white' : (index < currentTabIndex ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400')}`}>
+        {index < currentTabIndex ? <Icon name="check" /> : index + 1}
+      </div>
+      <Icon name={icon} className={activeTab === id ? 'text-primary' : ''} /> {label}
     </button>
   );
 
@@ -1306,7 +1561,7 @@ const ClientsPage = () => {
            <p className="text-slate-500 font-medium">Gestão avançada da carteira de clientes e parceiros.</p>
         </div>
         {canInclude && (
-          <button onClick={() => { setEditingClient(null); setIsModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
+          <button onClick={() => { setEditingClient(null); setActiveTab('id'); setIsModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
             <Icon name="plus" /> Novo Registro
           </button>
         )}
@@ -1343,8 +1598,8 @@ const ClientsPage = () => {
                 </td>
                 <td className="px-6 py-5 text-right">
                   <div className="flex justify-end gap-1">
-                    {canEdit && <button onClick={() => { setEditingClient(c); setIsModalOpen(true); }} className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-all"><Icon name="edit" /></button>}
-                    {canDelete && <button onClick={() => { if(confirm('Excluir registro definitivamente?')) deleteClient(c.id); }} className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all"><Icon name="trash" /></button>}
+                    {canEdit && <button onClick={() => { setEditingClient(c); setActiveTab('id'); setIsModalOpen(true); }} className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-all"><Icon name="edit" /></button>}
+                    {canDelete && <button onClick={() => { confirm({ title: 'Excluir Cliente', message: 'Excluir registro definitivamente?', onConfirm: () => deleteClient(c.id) }); }} className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all"><Icon name="trash" /></button>}
                   </div>
                 </td>
               </tr>
@@ -1366,20 +1621,19 @@ const ClientsPage = () => {
             </div>
 
             <div className="flex bg-white border-b border-slate-100 px-4 overflow-x-auto scrollbar-hide">
-               <TabButton id="id" label="Identificação" icon="id-card" />
-               <TabButton id="end" label="Endereço" icon="map-marker-alt" />
-               <TabButton id="cont" label="Contatos" icon="phone" />
-               <TabButton id="fin" label="Financeiro" icon="wallet" />
-               <TabButton id="crm" label="CRM & Governança" icon="shield-alt" />
+               {clientTabs.map((tab, index) => (
+                 <TabButton key={tab.id} id={tab.id} label={tab.label} icon={tab.icon} index={index} />
+               ))}
             </div>
 
             <form 
               id="clientForm" 
               key={editingClient?.id || 'new'} 
               onSubmit={handleSubmit} 
+              noValidate
               className="flex-1 overflow-y-auto p-10 bg-white"
             >
-               {activeTab === 'id' && (
+               <div data-tab-id="id" className={activeTab === 'id' ? 'block' : 'hidden'}>
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                        <div className="space-y-1">
@@ -1412,7 +1666,10 @@ const ClientsPage = () => {
                          />
                        </div>
                        <div className="space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{tipoPessoa === 'Jurídica' ? 'CNPJ' : 'CPF'}</label>
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex justify-between items-center">
+                           {tipoPessoa === 'Jurídica' ? 'CNPJ' : 'CPF'}
+                           {loadingCnpj && <Icon name="spinner" className="animate-spin text-primary" />}
+                         </label>
                          <input 
                             name="documento" 
                             required 
@@ -1428,6 +1685,7 @@ const ClientsPage = () => {
                                  setIsDocumentoValid(true);
                                }
                              }}
+                            onBlur={handleDocumentoBlur}
                             placeholder={tipoPessoa === 'Jurídica' ? '00.000.000/0000-00' : '000.000.000-00'} 
                             className={`w-full px-6 py-4 rounded-2xl border font-bold outline-none focus:border-primary transition-colors ${!isDocumentoValid && documento.length > 0 ? 'border-red-300 bg-red-50 text-red-900' : 'border-slate-100 bg-slate-50'}`} 
                          />
@@ -1461,9 +1719,9 @@ const ClientsPage = () => {
                        </div>
                     </div>
                  </div>
-               )}
+               </div>
 
-               {activeTab === 'end' && (
+               <div data-tab-id="end" className={activeTab === 'end' ? 'block' : 'hidden'}>
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                        <div className="space-y-1">
@@ -1529,9 +1787,9 @@ const ClientsPage = () => {
                        </div>
                     </div>
                  </div>
-               )}
+               </div>
 
-               {activeTab === 'cont' && (
+               <div data-tab-id="cont" className={activeTab === 'cont' ? 'block' : 'hidden'}>
                  <div className="space-y-10 animate-in slide-in-from-left-4 duration-300">
                     <section className="space-y-6">
                        <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Canais de Contato Institucional</h4>
@@ -1603,9 +1861,9 @@ const ClientsPage = () => {
                        </div>
                     </section>
                  </div>
-               )}
+               </div>
 
-               {activeTab === 'fin' && (
+               <div data-tab-id="fin" className={activeTab === 'fin' ? 'block' : 'hidden'}>
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                        <div className="space-y-4">
@@ -1670,9 +1928,9 @@ const ClientsPage = () => {
                        </div>
                     </div>
                  </div>
-               )}
+               </div>
 
-               {activeTab === 'crm' && (
+               <div data-tab-id="crm" className={activeTab === 'crm' ? 'block' : 'hidden'}>
                  <div className="space-y-10 animate-in slide-in-from-left-4 duration-300">
                     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                        <div className="space-y-1">
@@ -1751,12 +2009,27 @@ const ClientsPage = () => {
                       />
                     </section>
                  </div>
-               )}
+               </div>
             </form>
 
-            <div className="p-8 border-t border-slate-100 flex justify-end gap-4 bg-slate-50/50">
+            <div className="p-8 border-t border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-white transition-all uppercase text-[10px] tracking-widest">Cancelar</button>
-                <button type="submit" form="clientForm" className="px-14 py-4 rounded-2xl bg-primary text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest">Confirmar</button>
+                <div className="flex gap-4">
+                  {currentTabIndex > 0 && (
+                    <button type="button" onClick={handlePrevTab} className="px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-600 hover:bg-white transition-all uppercase text-[10px] tracking-widest flex items-center gap-2">
+                      <Icon name="arrow-left" /> Anterior
+                    </button>
+                  )}
+                  {currentTabIndex < clientTabs.length - 1 ? (
+                    <button type="button" onClick={handleNextTab} className="px-14 py-4 rounded-2xl bg-primary text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center gap-2">
+                      Próximo <Icon name="arrow-right" />
+                    </button>
+                  ) : (
+                    <button type="submit" form="clientForm" className="px-14 py-4 rounded-2xl bg-emerald-500 text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center gap-2">
+                      <Icon name="check" /> Confirmar
+                    </button>
+                  )}
+                </div>
             </div>
           </div>
         </div>
@@ -1767,6 +2040,7 @@ const ClientsPage = () => {
 
 const TasksPage = () => {
   const { tasks, addTask, updateTask, deleteTask, users, currentUser, slaSettings, sectors } = useApp();
+  const { confirm } = useConfirm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -2017,7 +2291,7 @@ const TasksPage = () => {
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
              <button onClick={() => openHistoryModal(t)} className="p-2 text-amber-500 hover:bg-amber-50 rounded-xl" title="Ver Histórico"><Icon name="history" /></button>
              {canEdit && <button onClick={() => openTaskModal(t)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl" title="Editar"><Icon name="edit" /></button>}
-             {canDelete && <button onClick={() => { if(confirm('Remover?')) deleteTask(t.id); }} className="p-2 text-red-500 hover:bg-red-50 rounded-xl" title="Excluir"><Icon name="trash" /></button>}
+             {canDelete && <button onClick={() => { confirm({ title: 'Excluir Tarefa', message: 'Remover?', onConfirm: () => deleteTask(t.id) }); }} className="p-2 text-red-500 hover:bg-red-50 rounded-xl" title="Excluir"><Icon name="trash" /></button>}
           </div>
         </div>
         <div className="pl-3 space-y-4">
@@ -2583,6 +2857,7 @@ const UsersPage = () => {
 
 const ConfiguracoesPage = () => {
   const { currentUser, updateUser, slaSettings, updateSLASettings, sectors, addSector, updateSector, deleteSector, users, clientCategories, addClientCategory, updateClientCategory, deleteClientCategory } = useApp();
+  const { success } = useToast();
   const [activeTab, setActiveTab] = useState('aparencia');
   const [editingSector, setEditingSector] = useState<Sector | null>(null);
   const [isSectorModalOpen, setIsSectorModalOpen] = useState(false);
@@ -2623,7 +2898,7 @@ const ConfiguracoesPage = () => {
       newSla[key] = Number(formData.get(key));
     });
     updateSLASettings(newSla);
-    alert('Parametrização de SLA atualizada com sucesso!');
+    success('Parametrização de SLA atualizada com sucesso!');
   };
 
   const handleSaveCategory = (e: React.FormEvent<HTMLFormElement>) => {
@@ -2907,6 +3182,7 @@ const ConfiguracoesPage = () => {
 
 const AuditoriaPage = () => {
   const { auditLogs, currentUser } = useApp();
+  const { confirm } = useConfirm();
   const filteredLogs = useMemo(() => 
     currentUser?.perfil === UserRole.ADMIN ? auditLogs : auditLogs.filter(log => log.userId === currentUser?.id), 
   [auditLogs, currentUser]);
@@ -2943,7 +3219,7 @@ const AuditoriaPage = () => {
         <div>
            <p className="text-slate-500 font-medium">Log completo de segurança e rastreabilidade de dados.</p>
         </div>
-        {isAdmin && <button onClick={() => { if(confirm('Limpar logs permanentemente?')) { auditService.clearLogs(); window.location.reload(); } }} className="text-red-600 bg-red-50 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm">Limpar Histórico</button>}
+        {isAdmin && <button onClick={() => { confirm({ title: 'Limpar Histórico', message: 'Limpar logs permanentemente?', onConfirm: () => { auditService.clearLogs(); window.location.reload(); } }); }} className="text-red-600 bg-red-50 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm">Limpar Histórico</button>}
       </div>
 
       <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
@@ -3271,6 +3547,7 @@ const LoginPage = () => {
 
 const MailListPage = () => {
   const { clients, addMailHistory, currentUser } = useApp();
+  const { error, success, warning } = useToast();
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
   const [type, setType] = useState<'email' | 'whatsapp'>('email');
   const [searchTerm, setSearchTerm] = useState('');
@@ -3303,8 +3580,8 @@ const MailListPage = () => {
 
   const handleSend = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!canSend) return alert('Restrição de acesso.');
-    if (selectedClients.length === 0) return alert('Selecione destinos.');
+    if (!canSend) return error('Restrição de acesso.');
+    if (selectedClients.length === 0) return warning('Selecione destinos.');
     const formData = new FormData(e.currentTarget);
     const assunto = formData.get('assunto') as string;
     const mensagem = formData.get('mensagem') as string;
@@ -3330,7 +3607,7 @@ const MailListPage = () => {
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensagem)}`;
         window.open(url, '_blank');
       }
-      alert(`Disparo registrado no histórico. O primeiro WhatsApp foi aberto. Se houver mais destinatários, use os botões individuais na lista.`);
+      success(`Disparo registrado no histórico. O primeiro WhatsApp foi aberto. Se houver mais destinatários, use os botões individuais na lista.`);
     } else {
       // For Email, we can use mailto with BCC for multiple recipients
       const emails = selectedClients
@@ -3341,7 +3618,7 @@ const MailListPage = () => {
         const mailto = `mailto:${emails[0]}?bcc=${emails.slice(1).join(',')}&subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(mensagem)}`;
         window.location.href = mailto;
       }
-      alert('Disparo registrado no histórico. Seu cliente de e-mail padrão foi aberto.');
+      success('Disparo registrado no histórico. Seu cliente de e-mail padrão foi aberto.');
     }
 
     setSelectedClients([]);
@@ -3515,14 +3792,18 @@ const MainLayout = () => {
 
 const App: React.FC = () => {
   return (
-    <AppProvider>
-      <HashRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/*" element={<MainLayout />} />
-        </Routes>
-      </HashRouter>
-    </AppProvider>
+    <ToastProvider>
+      <ConfirmProvider>
+        <AppProvider>
+          <HashRouter>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/*" element={<MainLayout />} />
+            </Routes>
+          </HashRouter>
+        </AppProvider>
+      </ConfirmProvider>
+    </ToastProvider>
   );
 };
 
