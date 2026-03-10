@@ -218,12 +218,32 @@ const maskCNPJ = (v: string) => {
   return v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/, "$1.$2.$3/$4-$5").substring(0, 18);
 };
 
+const maskIE = (v: string) => {
+  return v.replace(/\D/g, "");
+};
+
+const capitalizeWords = (str: string) => {
+  return str.replace(/\b\w/g, l => l.toUpperCase());
+};
+
+const maskCEP = (v: string) => {
+  v = v.replace(/\D/g, "");
+  if (v.length <= 5) return v;
+  return v.replace(/(\d{5})(\d{0,3})/, "$1-$2").substring(0, 9);
+};
+
 const formatDocumento = (doc: string) => {
   if (!doc) return "";
   const v = doc.replace(/\D/g, "");
   if (v.length === 11) return maskCPF(v);
   if (v.length === 14) return maskCNPJ(v);
   return doc;
+};
+
+const maskTime = (v: string) => {
+  v = v.replace(/\D/g, "");
+  if (v.length <= 2) return v;
+  return v.replace(/(\d{2})(\d{0,2})/, "$1:$2").substring(0, 5);
 };
 
 const RATING_LABELS: Record<number, string> = {
@@ -1112,6 +1132,8 @@ const ClientsPage = () => {
   const [isDocumentoValid, setIsDocumentoValid] = useState(true);
   const [inscricaoEstadual, setInscricaoEstadual] = useState('');
   const [status, setStatus] = useState<EntityStatus>(EntityStatus.ACTIVE);
+  const [chavePix, setChavePix] = useState('');
+  const [tipoChavePix, setTipoChavePix] = useState<'CPF/CNPJ' | 'E-mail' | 'Telefone' | 'Aleatória'>('CPF/CNPJ');
 
   // Address lookup states
   const [cep, setCep] = useState('');
@@ -1141,6 +1163,8 @@ const ClientsPage = () => {
       setDocumento(editingClient.documento || '');
       setInscricaoEstadual(editingClient.inscricaoEstadual || '');
       setStatus(editingClient.status || EntityStatus.ACTIVE);
+      setChavePix(editingClient.chavePix || '');
+      setTipoChavePix(editingClient.tipoChavePix || 'CPF/CNPJ');
       
       setCep(editingClient.cep || '');
       setLogradouro(editingClient.logradouro || '');
@@ -1226,8 +1250,8 @@ const ClientsPage = () => {
       agencia: data.agencia,
       conta: data.conta,
       tipoConta: data.tipoConta,
-      chavePix: data.chavePix,
-      tipoChavePix: data.tipoChavePix,
+      chavePix: chavePix,
+      tipoChavePix: tipoChavePix,
 
       categoria: data.categoria,
       origem: data.origem,
@@ -1371,7 +1395,7 @@ const ClientsPage = () => {
                             name="nomeRazaoSocial" 
                             required 
                             value={nomeRazaoSocial} 
-                            onChange={(e) => setNomeRazaoSocial(e.target.value)}
+                            onChange={(e) => setNomeRazaoSocial(capitalizeWords(e.target.value))}
                             placeholder="Ex: Razão Social da Empresa" 
                             className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary shadow-inner" 
                          />
@@ -1383,7 +1407,7 @@ const ClientsPage = () => {
                          <input 
                             name="nomeFantasia" 
                             value={nomeFantasia} 
-                            onChange={(e) => setNomeFantasia(e.target.value)}
+                            onChange={(e) => setNomeFantasia(capitalizeWords(e.target.value))}
                             className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" 
                          />
                        </div>
@@ -1417,7 +1441,7 @@ const ClientsPage = () => {
                             <input 
                               name="inscricaoEstadual" 
                               value={inscricaoEstadual} 
-                              onChange={(e) => setInscricaoEstadual(e.target.value)}
+                              onChange={(e) => setInscricaoEstadual(maskIE(e.target.value))}
                               className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" 
                             />
                          </div>
@@ -1449,7 +1473,7 @@ const ClientsPage = () => {
                          <input 
                            name="cep" 
                            value={cep} 
-                           onChange={(e) => setCep(e.target.value)}
+                           onChange={(e) => setCep(maskCEP(e.target.value))}
                            onBlur={handleCepBlur}
                            placeholder="00000-000" 
                            className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary shadow-inner" 
@@ -1522,7 +1546,17 @@ const ClientsPage = () => {
                           </div>
                           <div className="space-y-1">
                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Site / URL</label>
-                             <input name="site" defaultValue={editingClient?.site} placeholder="https://..." className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" />
+                             <input 
+                               name="site" 
+                               defaultValue={editingClient?.site} 
+                               onBlur={(e) => {
+                                 if (e.target.value && !e.target.value.startsWith('http')) {
+                                   e.target.value = `https://${e.target.value}`;
+                                 }
+                               }}
+                               placeholder="https://..." 
+                               className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" 
+                             />
                           </div>
                           <div className="space-y-1">
                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-mail Principal</label>
@@ -1593,8 +1627,15 @@ const ClientsPage = () => {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                              <div className="space-y-1">
                                 <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Tipo da Chave</label>
-                                <select name="tipoChavePix" defaultValue={editingClient?.tipoChavePix} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
-                                   <option value="">Selecione...</option>
+                                <select 
+                                  name="tipoChavePix" 
+                                  value={tipoChavePix}
+                                  onChange={(e) => {
+                                    setTipoChavePix(e.target.value as any);
+                                    setChavePix('');
+                                  }}
+                                  className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary"
+                                >
                                    <option value="CPF/CNPJ">CPF/CNPJ</option>
                                    <option value="E-mail">E-mail</option>
                                    <option value="Telefone">Telefone</option>
@@ -1603,7 +1644,23 @@ const ClientsPage = () => {
                              </div>
                              <div className="space-y-1">
                                 <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Chave PIX</label>
-                                <input name="chavePix" defaultValue={editingClient?.chavePix} placeholder="Insira a chave registrada" className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary shadow-inner" />
+                                <input 
+                                  name="chavePix" 
+                                  value={chavePix}
+                                  onChange={(e) => {
+                                    let val = e.target.value;
+                                    if (tipoChavePix === 'CPF/CNPJ') {
+                                      val = val.replace(/\D/g, "");
+                                      if (val.length <= 11) val = maskCPF(val);
+                                      else val = maskCNPJ(val);
+                                    } else if (tipoChavePix === 'Telefone') {
+                                      val = phoneMask(val);
+                                    }
+                                    setChavePix(val);
+                                  }}
+                                  placeholder="Insira a chave registrada" 
+                                  className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary shadow-inner" 
+                                />
                              </div>
                           </div>
                           <div className="p-6 rounded-[2rem] bg-emerald-50 border border-emerald-100 flex gap-4 items-center">
@@ -1722,6 +1779,7 @@ const TasksPage = () => {
   const [priority, setPriority] = useState<TaskPriority>(TaskPriority.MEDIUM);
   const [currentStatus, setCurrentStatus] = useState<TaskStatus>(TaskStatus.OPEN);
   const [conclusaoReal, setConclusaoReal] = useState<string>('');
+  const [tempoGasto, setTempoGasto] = useState<string>('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   
   const actionRef = useRef<HTMLTextAreaElement>(null);
@@ -1837,7 +1895,7 @@ const TasksPage = () => {
       status: currentStatus,
       dataInicio: startDate,
       dataConclusaoReal: conclusaoReal,
-      tempoGasto: data.tempoGasto,
+      tempoGasto: tempoGasto,
       attachments: attachments
     };
 
@@ -1895,6 +1953,7 @@ const TasksPage = () => {
     setPriority(t?.prioridade || TaskPriority.MEDIUM);
     setCurrentStatus(t?.status || TaskStatus.OPEN);
     setConclusaoReal(t?.dataConclusaoReal || '');
+    setTempoGasto(t?.tempoGasto || '');
     setAttachments(t?.attachments || []);
     setIsModalOpen(true);
   };
@@ -2196,7 +2255,7 @@ const TasksPage = () => {
                   </div>
                    <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Esforço Gasto (H:M)</label>
-                    <input name="tempoGasto" placeholder="Ex: 08:30" defaultValue={editingTask?.tempoGasto} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold shadow-inner" />
+                    <input name="tempoGasto" placeholder="Ex: 08:30" value={tempoGasto} onChange={(e) => setTempoGasto(maskTime(e.target.value))} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold shadow-inner" />
                   </div>
                 </div>
               </section>
