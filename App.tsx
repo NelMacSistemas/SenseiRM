@@ -468,6 +468,8 @@ interface AppState {
   deleteClientCategory: (id: string) => void;
   addMailHistory: (entry: MailHistory) => void;
   updateSLASettings: (settings: SLASettings) => void;
+  emailSettings: EmailSettings;
+  updateEmailSettings: (settings: EmailSettings) => void;
 }
 
 const AppContext = createContext<AppState | undefined>(undefined);
@@ -492,6 +494,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [clientCategories, setClientCategories] = useState<ClientCategory[]>([]);
   const [history, setHistory] = useState<MailHistory[]>([]);
   const [slaSettings, setSlaSettings] = useState<SLASettings>({ Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
+  const [emailSettings, setEmailSettings] = useState<EmailSettings>({ provider: 'SMTP', host: '', port: 587, user: '', pass: '', secure: false });
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
@@ -568,6 +571,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         setClientCategories(data.clientCategories || []);
         setHistory(data.history || []);
         setSlaSettings(data.slaSettings || { Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
+        setEmailSettings(data.emailSettings || { provider: 'SMTP', host: '', port: 587, user: '', pass: '', secure: false });
         setAuditLogs(data.auditLogs || []);
       } else if (res.status === 401 || res.status === 403) {
         logout();
@@ -805,17 +809,24 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     refreshAudit();
   };
 
+  const updateEmailSettings = (settings: EmailSettings) => {
+    setEmailSettings(settings);
+    apiSync('emailSettings', 'SET', settings);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Configurações de E-mail atualizadas.`);
+    refreshAudit();
+  };
+
   const contextValue = useMemo(() => ({
-    currentUser, users, clients, tasks, sectors, auditLogs, history, slaSettings, clientCategories, notifications,
+    currentUser, users, clients, tasks, sectors, auditLogs, history, slaSettings, emailSettings, clientCategories, notifications,
     markNotificationAsRead, clearNotifications,
     login, logout, updateUser, addUser, deleteUser,
     addClient, updateClient, deleteClient,
     addTask, updateTask, deleteTask, 
     addSector, updateSector, deleteSector,
     addClientCategory, updateClientCategory, deleteClientCategory,
-    addMailHistory, updateSLASettings
+    addMailHistory, updateSLASettings, updateEmailSettings
   }), [
-    currentUser, users, clients, tasks, sectors, auditLogs, history, slaSettings, clientCategories, notifications
+    currentUser, users, clients, tasks, sectors, auditLogs, history, slaSettings, emailSettings, clientCategories, notifications
   ]);
 
   return (
@@ -3173,6 +3184,7 @@ const ConfiguracoesPage = () => {
     ...(isAdmin ? [{ id: 'setores', label: 'Setores', icon: 'building' }] : []),
     ...(isAdmin ? [{ id: 'categorias', label: 'Categorias', icon: 'tag' }] : []),
     ...(isAdmin ? [{ id: 'sla', label: 'Regras de SLA', icon: 'clock' }] : []),
+    ...(isAdmin ? [{ id: 'email', label: 'E-mail', icon: 'email' }] : []),
     { id: 'aparencia', label: 'Aparência', icon: 'palette' }
   ];
 
@@ -3218,6 +3230,23 @@ const ConfiguracoesPage = () => {
     }
     setIsCategoryModalOpen(false);
     setEditingCategory(null);
+  };
+
+  const { emailSettings, updateEmailSettings } = useApp();
+  const [selectedProvider, setSelectedProvider] = useState(emailSettings.provider);
+
+  const handleSaveEmail = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    const provider = data.get('provider') as string;
+    const host = data.get('host') as string;
+    const port = Number(data.get('port'));
+    const user = data.get('user') as string;
+    const pass = data.get('pass') as string;
+    const secure = data.get('secure') === 'on';
+
+    updateEmailSettings({ provider, host, port, user, pass, secure });
+    success('Configurações de E-mail atualizadas com sucesso!');
   };
 
   return (
@@ -3362,6 +3391,101 @@ const ConfiguracoesPage = () => {
                    </div>
                  ))}
                  <button type="submit" className="md:col-span-2 py-5 bg-primary text-white rounded-[2rem] font-black text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1">Efetivar Configurações de SLA</button>
+              </form>
+           </div>
+        )}
+
+        {activeTab === 'email' && isAdmin && (
+           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-10 animate-in slide-in-from-bottom-2">
+              <div>
+                <h3 className="text-2xl font-black text-slate-800 tracking-tight">Configurações de E-mail</h3>
+                <p className="text-sm text-slate-400 font-medium">Defina as credenciais do servidor SMTP para envio de mala direta.</p>
+              </div>
+              <form onSubmit={handleSaveEmail} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <div className="space-y-1 md:col-span-2">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Provedor</label>
+                    <select 
+                      name="provider" 
+                      defaultValue={emailSettings.provider} 
+                      className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner"
+                      onChange={(e) => {
+                        const provider = e.target.value;
+                        setSelectedProvider(provider);
+                        const form = e.target.closest('form');
+                        if (!form) return;
+                        const hostInput = form.querySelector('input[name="host"]') as HTMLInputElement;
+                        const portInput = form.querySelector('input[name="port"]') as HTMLInputElement;
+                        const secureInput = form.querySelector('input[name="secure"]') as HTMLInputElement;
+                        
+                        if (provider === 'GMail') {
+                          hostInput.value = 'smtp.gmail.com';
+                          portInput.value = '587';
+                          secureInput.checked = true;
+                        } else if (provider === 'Office365') {
+                          hostInput.value = 'smtp.office365.com';
+                          portInput.value = '587';
+                          secureInput.checked = true;
+                        } else if (provider === 'SendGrid') {
+                          hostInput.value = 'smtp.sendgrid.net';
+                          portInput.value = '587';
+                          secureInput.checked = true;
+                        } else if (provider === 'Amazon SES') {
+                          hostInput.value = 'email-smtp.us-east-1.amazonaws.com';
+                          portInput.value = '587';
+                          secureInput.checked = true;
+                        } else if (provider === 'Mailgun') {
+                          hostInput.value = 'smtp.mailgun.org';
+                          portInput.value = '587';
+                          secureInput.checked = true;
+                        } else if (provider === 'SMTP') {
+                          hostInput.value = '';
+                          portInput.value = '587';
+                          secureInput.checked = false;
+                        }
+                      }}
+                    >
+                      <option value="SMTP">SMTP Personalizado</option>
+                      <option value="GMail">GMail</option>
+                      <option value="Office365">Office365</option>
+                      <option value="SendGrid">SendGrid</option>
+                      <option value="Amazon SES">Amazon SES</option>
+                      <option value="Mailgun">Mailgun</option>
+                    </select>
+                 </div>
+                 <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Host SMTP</label>
+                    <input name="host" required defaultValue={emailSettings.host} placeholder="smtp.exemplo.com" className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner" />
+                 </div>
+                 <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Porta</label>
+                    <input name="port" type="number" required defaultValue={emailSettings.port} placeholder="587" className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner" />
+                 </div>
+                 <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Usuário</label>
+                    <input name="user" required defaultValue={emailSettings.user} placeholder="seu-email@exemplo.com" className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner" />
+                 </div>
+                 <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Senha</label>
+                    <input name="pass" type="password" required defaultValue={emailSettings.pass} placeholder="••••••••" className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner" />
+                 </div>
+                 <div className="space-y-1 md:col-span-2 flex items-center gap-3">
+                    <input name="secure" type="checkbox" id="secure" defaultChecked={emailSettings.secure} className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary" />
+                    <label htmlFor="secure" className="text-sm font-bold text-slate-700">Usar conexão segura (SSL/TLS)</label>
+                 </div>
+                 {(selectedProvider === 'GMail' || selectedProvider === 'Office365') && (
+                   <div className="md:col-span-2 bg-amber-50 border border-amber-200 p-6 rounded-2xl flex gap-4 items-start">
+                     <div className="text-amber-500 shrink-0 mt-1">
+                       <AlertTriangle size={24} />
+                     </div>
+                     <div>
+                       <h4 className="font-bold text-amber-800 text-sm mb-1">Atenção: Senha de Aplicativo Necessária</h4>
+                       <p className="text-xs text-amber-700 font-medium leading-relaxed">
+                         Para provedores como {selectedProvider}, você não pode usar a senha normal da sua conta se a Autenticação em Duas Etapas (2FA) estiver ativada. Você precisará gerar uma <strong>Senha de Aplicativo</strong> nas configurações de segurança da sua conta e inseri-la no campo "Senha" acima.
+                       </p>
+                     </div>
+                   </div>
+                 )}
+                 <button type="submit" className="md:col-span-2 py-5 bg-primary text-white rounded-[2rem] font-black text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1">Salvar Configurações</button>
               </form>
            </div>
         )}

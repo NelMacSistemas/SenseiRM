@@ -75,6 +75,14 @@ let db = {
     'Média': 48,
     'Alta': 24,
     'Crítica': 4
+  },
+  emailSettings: {
+    provider: 'SMTP',
+    host: '',
+    port: 587,
+    user: '',
+    pass: '',
+    secure: false
   }
 };
 
@@ -191,7 +199,8 @@ app.get('/api/data', authenticateToken, (req: any, res: any) => {
     clientCategories: db.clientCategories,
     auditLogs: db.auditLogs,
     history: db.history,
-    slaSettings: db.slaSettings
+    slaSettings: db.slaSettings,
+    emailSettings: db.emailSettings
   });
 });
 

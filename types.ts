@@ -222,3 +222,12 @@ export interface Notification {
   timestamp: string;
   read: boolean;
 }
+
+export interface EmailSettings {
+  provider: string;
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+  secure: boolean;
+}
