@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, createContext, useContext, useRef, useCallback } from 'react';
-import { HashRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { User, Client, ContactPerson, AuditEntry, MailHistory, UserRole, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory, Attachment, Notification } from './types';
 import { INITIAL_USER, THEMES } from './constants';
@@ -11,7 +11,8 @@ import {
   Search, Filter, Download, Upload, LogOut, User as UserIcon, Phone, Mail as MailIcon,
   Globe, MapPin, CreditCard, PieChart, Activity, AlertTriangle, ChevronRight,
   ChevronLeft, MoreVertical, X, Calendar, MessageSquare, ExternalLink, HelpCircle,
-  Bell, BellOff
+  Bell, BellOff, Zap, TrendingUp, Target, Briefcase, Star, Award, CheckCircle,
+  AlertCircle, PlayCircle, CheckSquare, ListTodo, UserPlus, FilePlus, Building
 } from 'lucide-react';
 
 // Icons from Lucide
@@ -54,7 +55,21 @@ const iconMap: Record<string, any> = {
   'message-square': MessageSquare,
   'external-link': ExternalLink,
   'bell': Bell,
-  'bell-slash': BellOff
+  'bell-slash': BellOff,
+  'zap': Zap,
+  'trending-up': TrendingUp,
+  'target': Target,
+  'briefcase': Briefcase,
+  'star': Star,
+  'award': Award,
+  'check-circle': CheckCircle,
+  'alert-circle': AlertCircle,
+  'play-circle': PlayCircle,
+  'check-square': CheckSquare,
+  'list-todo': ListTodo,
+  'user-plus': UserPlus,
+  'file-plus': FilePlus,
+  'building-plus': Building
 };
 
 const Icon: React.FC<{ name: string; className?: string; title?: string }> = ({ name, className = "", title }) => {
@@ -1115,11 +1130,15 @@ const StatCard = ({ label, value, icon, color, subText }: any) => (
 
 const Dashboard = () => {
   const { clients, tasks, users, currentUser } = useApp();
+  const navigate = useNavigate();
+
+  const isAdmin = currentUser?.perfil === UserRole.ADMIN;
+  const perms = currentUser?.permissoes;
 
   // Membros calculados para KPIs
   const kpis = useMemo(() => {
     // Escopo de tarefas
-    const scopeTasks = currentUser?.perfil === UserRole.ADMIN ? tasks : tasks.filter(t => t.responsavelId === currentUser?.id);
+    const scopeTasks = isAdmin ? tasks : tasks.filter(t => t.responsavelId === currentUser?.id);
     const now = new Date();
     
     // Indicadores de CLIENTES
@@ -1158,122 +1177,218 @@ const Dashboard = () => {
       totalClients, adimplenceRate, avgRating,
       rankedClients
     };
-  }, [clients, tasks, users, currentUser]);
+  }, [clients, tasks, users, currentUser, isAdmin]);
 
   return (
-    <div className="p-8 space-y-12 animate-in fade-in duration-700">
+    <div className="p-8 space-y-8 animate-in fade-in duration-700 max-w-7xl mx-auto">
       
-      {/* SEÇÃO 1: CLIENTES */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3">
-           <div className="h-8 w-1.5 bg-primary rounded-full" />
-           <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">CLIENTES</h3>
+      {/* HEADER & QUICK ACTIONS */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+        <div>
+          <h2 className="text-2xl font-black text-slate-800 tracking-tight">Olá, {currentUser?.nome.split(' ')[0]} 👋</h2>
+          <p className="text-slate-500 text-sm mt-1">Aqui está o resumo das suas operações hoje.</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-           <Link to="/clientes"><StatCard label="Total Geral" value={kpis.totalClients} icon="address-book" color="bg-primary" subText="Cadastros totais na base" /></Link>
-           <Link to="/clientes"><StatMiniCard label="Clientes Ativos" value={kpis.clientsActive} color="text-emerald-500" /></Link>
-           <Link to="/clientes"><StatMiniCard label="Clientes Inativos" value={kpis.clientsInactive} color="text-slate-400" /></Link>
-           <Link to="/clientes"><StatMiniCard label="Clientes Bloqueados" value={kpis.clientsBlocked} color="text-red-500" /></Link>
-        </div>
-      </section>
-
-      {/* SEÇÃO 2: USUÁRIOS */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3">
-           <div className="h-8 w-1.5 bg-purple-500 rounded-full" />
-           <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">USUÁRIOS</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-           <Link to="/usuarios" className="lg:col-span-2 bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-around hover:shadow-md transition-all">
-              <div className="text-center">
-                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ativo (s)</p>
-                 <p className="text-3xl font-black text-emerald-500">{kpis.usersActive}</p>
-              </div>
-              <div className="h-10 w-[1px] bg-slate-100" />
-              <div className="text-center">
-                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Inativo (s)</p>
-                 <p className="text-3xl font-black text-slate-300">{kpis.usersInactive}</p>
-              </div>
-           </Link>
-           <Link to="/usuarios"><StatCard label="Administradores" value={kpis.usersAdmin} icon="user-shield" color="bg-purple-600" /></Link>
-           <Link to="/usuarios"><StatCard label="Usuários Padrão" value={kpis.usersStandard} icon="user-tie" color="bg-indigo-500" /></Link>
-        </div>
-      </section>
-
-      {/* SEÇÃO 3: RANKING DE CLIENTES POR AVALIAÇÃO INTERNA */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3">
-           <div className="h-8 w-1.5 bg-amber-500 rounded-full" />
-           <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">RANKING DE CLIENTES POR AVALIAÇÃO INTERNA</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {kpis.rankedClients.map((c, idx) => (
-            <Link to="/clientes" key={c.id} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center text-center relative overflow-hidden transform hover:scale-105 transition-transform hover:shadow-md">
-              <div className="absolute top-0 left-0 bg-amber-100 text-amber-700 font-black text-[10px] px-3 py-1 rounded-br-2xl shadow-sm">
-                #{idx + 1}
-              </div>
-              <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 mb-3 mt-2">
-                <Icon name="user-tag" className="text-lg text-primary" />
-              </div>
-              <p className="text-xs font-black text-slate-800 line-clamp-1 h-8 flex items-center justify-center" title={c.nomeRazaoSocial}>
-                {c.nomeRazaoSocial}
-              </p>
-              <div className="flex gap-0.5 text-amber-400 mt-2 text-[10px]">
-                {[1,2,3,4,5].map(i => <Icon key={i} name="star" className={i <= (c.avaliacaoInterna || 0) ? 'fas' : 'far'} />)}
-              </div>
-              <span className="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-tighter">{c.categoria || 'Geral'}</span>
-            </Link>
-          ))}
-          {kpis.rankedClients.length === 0 && (
-            <div className="col-span-full py-12 bg-white rounded-3xl border border-slate-100 text-center text-slate-400 italic font-medium">
-              Nenhuma avaliação registrada para compor o ranking.
-            </div>
+        
+        <div className="flex flex-wrap gap-3">
+          {(isAdmin || perms?.clientes?.incluir) && (
+            <button 
+              onClick={() => navigate('/clientes', { state: { openModal: true } })}
+              className="flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all"
+            >
+              <Icon name="building-plus" className="w-4 h-4" />
+              Novo Cliente
+            </button>
+          )}
+          {(isAdmin || perms?.tarefas?.incluir) && (
+            <button 
+              onClick={() => navigate('/tarefas', { state: { openModal: true } })}
+              className="flex items-center gap-2 bg-blue-500/10 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all"
+            >
+              <Icon name="file-plus" className="w-4 h-4" />
+              Nova Tarefa
+            </button>
+          )}
+          {(isAdmin || perms?.malaDireta?.incluir) && (
+            <button 
+              onClick={() => navigate('/mala-direta')}
+              className="flex items-center gap-2 bg-amber-500/10 text-amber-600 hover:bg-amber-500 hover:text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all"
+            >
+              <Icon name="mala-direta" className="w-4 h-4" />
+              Mala Direta
+            </button>
+          )}
+          {isAdmin && (
+            <button 
+              onClick={() => navigate('/usuarios', { state: { openModal: true } })}
+              className="flex items-center gap-2 bg-purple-500/10 text-purple-600 hover:bg-purple-600 hover:text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all"
+            >
+              <Icon name="user-plus" className="w-4 h-4" />
+              Novo Usuário
+            </button>
           )}
         </div>
-      </section>
+      </div>
 
-      {/* SEÇÃO 4: OPERACIONAL E SLA */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-3">
-           <div className="h-8 w-1.5 bg-blue-500 rounded-full" />
-           <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Gestão Operacional e Eficiência</h3>
+      {/* BENTO GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        
+        {/* OPERACIONAL (Tarefas) - Ocupa 8 colunas */}
+        <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <Link to="/tarefas" className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full group-hover:scale-150 transition-transform duration-500 z-0" />
+            <div className="relative z-10">
+              <div className="flex justify-between items-start mb-4">
+                <div className="p-3 bg-emerald-100 text-emerald-600 rounded-2xl">
+                  <Icon name="check-circle" className="w-6 h-6" />
+                </div>
+                <span className="text-3xl font-black text-slate-800">{kpis.tasksCompleted}</span>
+              </div>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Concluídas</p>
+              <p className="text-[10px] text-slate-500 mt-1 font-medium">Tarefas finalizadas com sucesso</p>
+            </div>
+          </Link>
+
+          <Link to="/tarefas" className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full group-hover:scale-150 transition-transform duration-500 z-0" />
+            <div className="relative z-10">
+              <div className="flex justify-between items-start mb-4">
+                <div className="p-3 bg-blue-100 text-blue-600 rounded-2xl">
+                  <Icon name="play-circle" className="w-6 h-6" />
+                </div>
+                <span className="text-3xl font-black text-slate-800">{kpis.tasksInProgress}</span>
+              </div>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Em Andamento</p>
+              <p className="text-[10px] text-slate-500 mt-1 font-medium">Demandas em execução ativa</p>
+            </div>
+          </Link>
+
+          <Link to="/tarefas" className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-red-50 rounded-full group-hover:scale-150 transition-transform duration-500 z-0" />
+            <div className="relative z-10">
+              <div className="flex justify-between items-start mb-4">
+                <div className="p-3 bg-red-100 text-red-600 rounded-2xl">
+                  <Icon name="alert-circle" className="w-6 h-6" />
+                </div>
+                <span className="text-3xl font-black text-red-600">{kpis.tasksOverdue}</span>
+              </div>
+              <p className="text-xs font-black text-red-500 uppercase tracking-widest">Atrasadas</p>
+              <p className="text-[10px] text-red-400 mt-1 font-bold">Atenção urgente necessária</p>
+            </div>
+          </Link>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-           <Link to="/tarefas" className="bg-white p-8 rounded-[3rem] border-b-8 border-emerald-500 shadow-sm hover:shadow-md transition-shadow group">
-              <div className="flex justify-between items-start">
-                 <div>
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Tarefas Concluídas</p>
-                    <h4 className="text-4xl font-black text-slate-800 mt-2">{kpis.tasksCompleted}</h4>
-                 </div>
-                 <Icon name="check-double" className="text-4xl text-emerald-100 group-hover:text-emerald-200 transition-colors" />
-              </div>
-              <p className="text-xs text-slate-400 font-medium mt-4">Entregas realizadas com sucesso no período.</p>
-           </Link>
 
-           <Link to="/tarefas" className="bg-white p-8 rounded-[3rem] border-b-8 border-blue-500 shadow-sm hover:shadow-md transition-shadow group">
-              <div className="flex justify-between items-start">
-                 <div>
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Em Andamento</p>
-                    <h4 className="text-4xl font-black text-slate-800 mt-2">{kpis.tasksInProgress}</h4>
-                 </div>
-                 <Icon name="spinner" className="text-4xl text-blue-100 group-hover:animate-spin transition-colors" />
+        {/* CLIENTES OVERVIEW - Ocupa 4 colunas */}
+        <div className="md:col-span-4 bg-primary text-white p-6 rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between group">
+          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-700" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                <Icon name="briefcase" className="w-5 h-5 text-white" />
               </div>
-              <p className="text-xs text-slate-400 font-medium mt-4">Demandas em fila ou execução ativa.</p>
-           </Link>
+              <h3 className="text-sm font-black uppercase tracking-widest">Base de Clientes</h3>
+            </div>
+            
+            <div className="mb-6">
+              <span className="text-5xl font-black tracking-tighter">{kpis.totalClients}</span>
+              <span className="text-primary-foreground/70 text-sm ml-2 font-medium">total</span>
+            </div>
 
-           <Link to="/tarefas" className="bg-white p-8 rounded-[3rem] border-b-8 border-red-600 shadow-sm hover:shadow-md transition-shadow group">
-              <div className="flex justify-between items-start">
-                 <div>
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Tarefas Atrasadas</p>
-                    <h4 className="text-4xl font-black text-red-600 mt-2">{kpis.tasksOverdue}</h4>
-                 </div>
-                 <Icon name="history" className="text-4xl text-red-100 group-hover:text-red-200 transition-colors" />
+            <div className="space-y-3">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-primary-foreground/80 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400" /> Ativos</span>
+                <span className="font-bold">{kpis.clientsActive}</span>
               </div>
-              <p className="text-xs text-red-400 font-bold mt-4 uppercase tracking-tighter">Vencimentos excedidos • Atenção Urgente</p>
-           </Link>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-primary-foreground/80 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-white/40" /> Inativos</span>
+                <span className="font-bold">{kpis.clientsInactive}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-primary-foreground/80 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-400" /> Bloqueados</span>
+                <span className="font-bold">{kpis.clientsBlocked}</span>
+              </div>
+            </div>
+          </div>
+          
+          <Link to="/clientes" className="relative z-10 mt-6 w-full py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl text-center text-xs font-bold uppercase tracking-widest transition-colors">
+            Ver Todos
+          </Link>
         </div>
-      </section>
 
+        {/* RANKING DE CLIENTES - Ocupa 8 colunas */}
+        <div className="md:col-span-8 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-100 text-amber-600 rounded-xl">
+                <Icon name="award" className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Top Clientes (Avaliação)</h3>
+            </div>
+            <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-lg">Média: <span className="text-amber-500">{kpis.avgRating}</span> <Icon name="star" className="w-3 h-3 inline pb-0.5" /></span>
+          </div>
+          
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-5 gap-4">
+            {kpis.rankedClients.map((c, idx) => (
+              <Link to="/clientes" key={c.id} className="bg-slate-50 hover:bg-amber-50 p-4 rounded-2xl border border-slate-100 hover:border-amber-200 transition-all flex flex-col items-center text-center relative group">
+                <div className="absolute -top-2 -left-2 w-6 h-6 bg-amber-400 text-white font-black text-[10px] rounded-full flex items-center justify-center shadow-sm z-10">
+                  {idx + 1}
+                </div>
+                <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 mb-3 group-hover:scale-110 transition-transform shadow-sm">
+                  <Icon name="building" className="text-sm text-slate-600" />
+                </div>
+                <p className="text-[10px] font-black text-slate-800 line-clamp-2 h-8 flex items-center justify-center mb-2" title={c.nomeRazaoSocial}>
+                  {c.nomeRazaoSocial}
+                </p>
+                <div className="flex gap-0.5 text-amber-400">
+                  {[1,2,3,4,5].map(i => <Icon key={i} name="star" className={`w-3 h-3 ${i <= (c.avaliacaoInterna || 0) ? 'fill-current' : 'opacity-30'}`} />)}
+                </div>
+              </Link>
+            ))}
+            {kpis.rankedClients.length === 0 && (
+              <div className="col-span-full flex items-center justify-center text-slate-400 italic font-medium text-sm">
+                Nenhuma avaliação registrada para compor o ranking.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* USUÁRIOS OVERVIEW - Ocupa 4 colunas */}
+        <div className="md:col-span-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-purple-100 text-purple-600 rounded-xl">
+              <Icon name="users" className="w-5 h-5" />
+            </div>
+            <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Equipe</h3>
+          </div>
+
+          <div className="flex justify-around items-center mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <div className="text-center">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ativos</p>
+              <p className="text-3xl font-black text-emerald-500">{kpis.usersActive}</p>
+            </div>
+            <div className="w-[1px] h-12 bg-slate-200" />
+            <div className="text-center">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Inativos</p>
+              <p className="text-3xl font-black text-slate-400">{kpis.usersInactive}</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex justify-between items-center p-3 bg-purple-50/50 rounded-xl border border-purple-100/50">
+              <span className="text-xs font-bold text-purple-700 flex items-center gap-2">
+                <Icon name="shield-alt" className="w-4 h-4" /> Administradores
+              </span>
+              <span className="font-black text-purple-700">{kpis.usersAdmin}</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
+              <span className="text-xs font-bold text-indigo-700 flex items-center gap-2">
+                <Icon name="user" className="w-4 h-4" /> Usuários Padrão
+              </span>
+              <span className="font-black text-indigo-700">{kpis.usersStandard}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 };
@@ -1281,11 +1396,23 @@ const Dashboard = () => {
 const ClientsPage = () => {
   const { clients, addClient, updateClient, deleteClient, currentUser, clientCategories } = useApp();
   const { confirm } = useConfirm();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [activeTab, setActiveTab] = useState<'id' | 'end' | 'cont' | 'fin' | 'crm'>('id');
   const [contactPeople, setContactPeople] = useState<ContactPerson[]>([]);
   const [tipoPessoa, setTipoPessoa] = useState<'Física' | 'Jurídica'>('Jurídica');
+
+  useEffect(() => {
+    if (location.state?.openModal) {
+      setEditingClient(null);
+      setActiveTab('id');
+      setIsModalOpen(true);
+      // Clear state to prevent reopening on reload
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   // Controlled Identity states (Fixes the bug of not showing data on edit)
   const [nomeRazaoSocial, setNomeRazaoSocial] = useState('');
@@ -2087,6 +2214,8 @@ const getPriorityIcon = (priority: TaskPriority) => {
 const TasksPage = () => {
   const { tasks, addTask, updateTask, deleteTask, users, currentUser, slaSettings, sectors } = useApp();
   const { confirm } = useConfirm();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -2094,6 +2223,14 @@ const TasksPage = () => {
   const [showLogInput, setShowLogInput] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [draggedOverStatus, setDraggedOverStatus] = useState<TaskStatus | null>(null);
+
+  useEffect(() => {
+    if (location.state?.openModal) {
+      setEditingTask(null);
+      setIsModalOpen(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
   
   // Local Form States
   const [startDate, setStartDate] = useState<string>('');
@@ -2833,6 +2970,8 @@ const PermissionMatrix = ({ permissions, onChange, targetProfile }: { permission
 
 const UsersPage = () => {
   const { users, addUser, updateUser, currentUser } = useApp();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [modalPhoto, setModalPhoto] = useState<string>('');
@@ -2841,6 +2980,18 @@ const UsersPage = () => {
   const [hasWhatsapp, setHasWhatsapp] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
+
+  useEffect(() => {
+    if (location.state?.openModal && isAdmin) {
+      setEditingUser(null);
+      setModalPhoto('');
+      setModalPerms(INITIAL_USER.permissoes);
+      setModalProfile(UserRole.USER);
+      setHasWhatsapp(false);
+      setIsModalOpen(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname, isAdmin]);
 
   const filteredUsers = useMemo(() => isAdmin ? users : users.filter(u => u.id === currentUser?.id), [users, currentUser, isAdmin]);
 
