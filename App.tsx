@@ -2038,6 +2038,52 @@ const ClientsPage = () => {
   );
 };
 
+const getStatusColor = (status: TaskStatus) => {
+  switch (status) {
+    case TaskStatus.OPEN: return 'bg-blue-50 text-blue-600 border-blue-200';
+    case TaskStatus.ANALYSIS: return 'bg-purple-50 text-purple-600 border-purple-200';
+    case TaskStatus.EXECUTION: return 'bg-amber-50 text-amber-600 border-amber-200';
+    case TaskStatus.WAITING_THIRD: return 'bg-orange-50 text-orange-600 border-orange-200';
+    case TaskStatus.WAITING_USER: return 'bg-orange-50 text-orange-600 border-orange-200';
+    case TaskStatus.COMPLETED: return 'bg-emerald-50 text-emerald-600 border-emerald-200';
+    case TaskStatus.CANCELED: return 'bg-red-50 text-red-600 border-red-200';
+    default: return 'bg-slate-50 text-slate-600 border-slate-200';
+  }
+};
+
+const getStatusIcon = (status: TaskStatus) => {
+  switch (status) {
+    case TaskStatus.OPEN: return 'inbox';
+    case TaskStatus.ANALYSIS: return 'search';
+    case TaskStatus.EXECUTION: return 'play';
+    case TaskStatus.WAITING_THIRD: return 'clock';
+    case TaskStatus.WAITING_USER: return 'user';
+    case TaskStatus.COMPLETED: return 'check-circle';
+    case TaskStatus.CANCELED: return 'x-circle';
+    default: return 'circle';
+  }
+};
+
+const getPriorityColor = (priority: TaskPriority) => {
+  switch (priority) {
+    case TaskPriority.CRITICAL: return 'bg-red-50 text-red-600 border-red-200';
+    case TaskPriority.HIGH: return 'bg-orange-50 text-orange-600 border-orange-200';
+    case TaskPriority.MEDIUM: return 'bg-blue-50 text-blue-600 border-blue-200';
+    case TaskPriority.LOW: return 'bg-slate-50 text-slate-600 border-slate-200';
+    default: return 'bg-slate-50 text-slate-600 border-slate-200';
+  }
+};
+
+const getPriorityIcon = (priority: TaskPriority) => {
+  switch (priority) {
+    case TaskPriority.CRITICAL: return 'alert-triangle';
+    case TaskPriority.HIGH: return 'arrow-up';
+    case TaskPriority.MEDIUM: return 'minus';
+    case TaskPriority.LOW: return 'arrow-down';
+    default: return 'minus';
+  }
+};
+
 const TasksPage = () => {
   const { tasks, addTask, updateTask, deleteTask, users, currentUser, slaSettings, sectors } = useApp();
   const { confirm } = useConfirm();
@@ -2047,6 +2093,7 @@ const TasksPage = () => {
   const [historyTask, setHistoryTask] = useState<Task | null>(null);
   const [showLogInput, setShowLogInput] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
+  const [draggedOverStatus, setDraggedOverStatus] = useState<TaskStatus | null>(null);
   
   // Local Form States
   const [startDate, setStartDate] = useState<string>('');
@@ -2058,6 +2105,10 @@ const TasksPage = () => {
   
   const actionRef = useRef<HTMLTextAreaElement>(null);
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const [filterPriority, setFilterPriority] = useState<TaskPriority | 'all'>('all');
+
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
   const perms = currentUser?.permissoes.tarefas;
 
@@ -2068,9 +2119,23 @@ const TasksPage = () => {
   const activeUsers = useMemo(() => users.filter(u => u.status === EntityStatus.ACTIVE), [users]);
 
   const filteredTasks = useMemo(() => {
-    if (isAdmin) return tasks;
-    return tasks.filter(t => t.responsavelId === currentUser?.id);
-  }, [tasks, currentUser, isAdmin]);
+    let baseTasks = isAdmin ? tasks : tasks.filter(t => t.responsavelId === currentUser?.id);
+    
+    if (debouncedSearchTerm) {
+      const lowerSearch = debouncedSearchTerm.toLowerCase();
+      baseTasks = baseTasks.filter(t => 
+        t.titulo.toLowerCase().includes(lowerSearch) || 
+        t.taskNumber.toLowerCase().includes(lowerSearch) ||
+        t.descricao.toLowerCase().includes(lowerSearch)
+      );
+    }
+    
+    if (filterPriority !== 'all') {
+      baseTasks = baseTasks.filter(t => t.prioridade === filterPriority);
+    }
+    
+    return baseTasks;
+  }, [tasks, currentUser, isAdmin, debouncedSearchTerm, filterPriority]);
 
   const calculatedDeadline = useMemo(() => {
     if (!startDate) return '';
@@ -2241,12 +2306,21 @@ const TasksPage = () => {
     e.dataTransfer.setData('taskId', taskId);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent, status: TaskStatus) => {
     e.preventDefault();
+    if (draggedOverStatus !== status) {
+      setDraggedOverStatus(status);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDraggedOverStatus(null);
   };
 
   const handleDrop = (e: React.DragEvent, status: TaskStatus) => {
     e.preventDefault();
+    setDraggedOverStatus(null);
     const taskId = e.dataTransfer.getData('taskId');
     const task = tasks.find(t => t.id === taskId);
     if (task && task.status !== status && canEdit) {
@@ -2275,12 +2349,58 @@ const TasksPage = () => {
   const renderTaskCard = (t: Task, isKanban: boolean = false) => {
     const owner = users.find(u => u.id === t.responsavelId);
     const progress = calculateProgress(t);
+    const isOverdue = t.dataVencimento && new Date(t.dataVencimento) < new Date() && t.status !== TaskStatus.COMPLETED;
+    
+    if (isKanban) {
+      return (
+        <div 
+          key={t.id} 
+          draggable={canEdit}
+          onDragStart={(e) => handleDragStart(e, t.id)}
+          className="bg-white p-4 rounded-3xl border border-slate-200 hover:shadow-lg transition-all relative group cursor-grab active:cursor-grabbing mb-3"
+        >
+          <div className="flex justify-between items-start mb-3">
+            <div className="flex gap-2 items-center">
+              <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase border flex items-center gap-1 ${getPriorityColor(t.prioridade)}`}>
+                <Icon name={getPriorityIcon(t.prioridade)} className="w-3 h-3" />
+                {t.prioridade}
+              </span>
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t.taskNumber}</span>
+            </div>
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+               {canEdit && <button onClick={() => openTaskModal(t)} className="p-1 text-slate-400 hover:text-blue-500 transition-colors" title="Editar"><Icon name="edit" className="w-4 h-4" /></button>}
+            </div>
+          </div>
+          
+          <h4 className="text-sm font-extrabold text-slate-800 leading-tight mb-3 line-clamp-2">{t.titulo}</h4>
+          
+          <div className="space-y-3">
+             <ProgressBar progress={progress} />
+             
+             <div className="flex justify-between items-end pt-1">
+                <div className="flex flex-col gap-1.5">
+                  {t.dataVencimento && (
+                    <div className={`flex items-center gap-1 text-[10px] font-bold ${isOverdue ? 'text-red-500' : 'text-slate-500'}`}>
+                      <Icon name="calendar" className="w-3 h-3" />
+                      {new Date(t.dataVencimento).toLocaleDateString()}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                    <Icon name="paperclip" className="w-3 h-3" />
+                    {t.attachments?.length || 0}
+                  </div>
+                </div>
+                <img src={owner?.foto || 'https://picsum.photos/seed/default/40'} className="w-7 h-7 rounded-full border-2 border-white shadow-sm" title={owner?.nome} />
+             </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div 
         key={t.id} 
-        draggable={canEdit && isKanban}
-        onDragStart={(e) => handleDragStart(e, t.id)}
-        className={`bg-white p-6 rounded-[2.5rem] border border-slate-200 hover:shadow-xl transition-all relative overflow-hidden group ${isKanban ? 'cursor-grab active:cursor-grabbing mb-4' : ''}`}
+        className="bg-white p-6 rounded-[2.5rem] border border-slate-200 hover:shadow-xl transition-all relative overflow-hidden group"
       >
         <div className={`absolute left-0 top-0 bottom-0 w-2 ${t.prioridade === TaskPriority.CRITICAL ? 'bg-red-600' : t.prioridade === TaskPriority.HIGH ? 'bg-orange-500' : 'bg-blue-400'}`} />
         <div className="flex justify-between items-start pl-3 mb-4">
@@ -2301,7 +2421,7 @@ const TasksPage = () => {
                  <img src={owner?.foto || 'https://picsum.photos/seed/default/40'} className="w-6 h-6 rounded-full border border-slate-100 shadow-sm" />
                  <span className="text-xs font-bold text-slate-600 truncate max-w-[150px]">{owner?.nome}</span>
               </div>
-              {!isKanban && <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase border-2 ${t.status === TaskStatus.COMPLETED ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>{t.status}</span>}
+              <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase border-2 ${t.status === TaskStatus.COMPLETED ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>{t.status}</span>
            </div>
         </div>
       </div>
@@ -2328,11 +2448,33 @@ const TasksPage = () => {
             </button>
           </div>
         </div>
-        {canInclude && (
-          <button onClick={() => openTaskModal(null)} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
-            <Icon name="plus" /> Adicionar Atividade
-          </button>
-        )}
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input 
+              type="text" 
+              placeholder="Buscar tarefas..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-11 pr-4 py-3 rounded-2xl border border-slate-200 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm w-64"
+            />
+          </div>
+          <select
+            value={filterPriority}
+            onChange={(e) => setFilterPriority(e.target.value as TaskPriority | 'all')}
+            className="px-4 py-3 rounded-2xl border border-slate-200 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm font-medium text-slate-600 appearance-none cursor-pointer"
+          >
+            <option value="all">Todas as Prioridades</option>
+            {Object.values(TaskPriority).map(p => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
+          {canInclude && (
+            <button onClick={() => openTaskModal(null)} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
+              <Icon name="plus" /> Adicionar Atividade
+            </button>
+          )}
+        </div>
       </div>
 
       {viewMode === 'list' ? (
@@ -2341,21 +2483,30 @@ const TasksPage = () => {
           {filteredTasks.length === 0 && <div className="col-span-2 py-20 text-center text-slate-400 font-medium">Nenhuma tarefa encontrada no seu escopo.</div>}
         </div>
       ) : (
-        <div className="flex gap-6 overflow-x-auto pb-4 flex-1 items-start min-h-[600px]">
+        <div className="flex gap-6 overflow-x-auto pb-4 flex-1 items-start min-h-[600px] snap-x">
           {Object.values(TaskStatus).map(status => {
             const statusTasks = filteredTasks.filter(t => t.status === status);
+            const colorClass = getStatusColor(status);
+            const iconName = getStatusIcon(status);
+            const isDraggedOver = draggedOverStatus === status;
             return (
               <div 
                 key={status} 
-                className="flex-shrink-0 w-80 bg-slate-100/50 rounded-[3rem] p-4 border border-slate-200 flex flex-col h-full"
-                onDragOver={handleDragOver}
+                className={`flex-shrink-0 w-80 rounded-[2.5rem] p-4 border flex flex-col h-full snap-center transition-all duration-300 ${isDraggedOver ? 'bg-slate-200 border-primary shadow-inner scale-[1.02]' : 'bg-slate-100/50 border-slate-200'}`}
+                onDragOver={(e) => handleDragOver(e, status)}
+                onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, status)}
               >
-                <div className="flex justify-between items-center mb-4 px-4 pt-2">
-                  <h3 className="font-black text-slate-700 uppercase tracking-widest text-xs">{status}</h3>
-                  <span className="bg-white text-slate-500 text-[10px] font-bold px-2 py-1 rounded-lg shadow-sm border border-slate-100">{statusTasks.length}</span>
+                <div className="flex justify-between items-center mb-4 px-2 pt-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-1.5 rounded-xl border ${colorClass}`}>
+                      <Icon name={iconName} className="w-4 h-4" />
+                    </div>
+                    <h3 className="font-black text-slate-700 uppercase tracking-widest text-xs">{status}</h3>
+                  </div>
+                  <span className="bg-white text-slate-500 text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm border border-slate-100">{statusTasks.length}</span>
                 </div>
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto space-y-4 pr-1 custom-scrollbar">
                   {statusTasks.map(t => renderTaskCard(t, true))}
                   {statusTasks.length === 0 && (
                     <div className="border-2 border-dashed border-slate-200 rounded-[2rem] h-24 flex items-center justify-center text-slate-400 text-xs font-medium">
