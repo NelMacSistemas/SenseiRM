@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo, createContext, useContext, useRef, useCallback } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { User, Client, ContactPerson, AuditEntry, MailHistory, UserRole, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory, Attachment, Notification } from './types';
@@ -3979,20 +3981,37 @@ const MailListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [filterRating, setFilterRating] = useState<number | 'all'>('all');
+  
+  const [message, setMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  
+  // WhatsApp Queue State
+  const [whatsappQueue, setWhatsappQueue] = useState<string[]>([]);
+  const [whatsappIndex, setWhatsappIndex] = useState(0);
+  const [whatsappMessage, setWhatsappMessage] = useState('');
 
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
   const perms = currentUser?.permissoes.malaDireta;
   const canSend = isAdmin || perms?.incluir;
 
+  // Reset selection when changing type
+  useEffect(() => {
+    setSelectedClients([]);
+  }, [type]);
+
   const filteredClients = useMemo(() => {
     return clients.filter(c => {
+      // Validation: Must have the required contact info
+      if (type === 'email' && !c.emailPrincipal) return false;
+      if (type === 'whatsapp' && !c.telefoneSecundario && !c.telefonePrincipal) return false;
+
       const matchesSearch = c.nomeRazaoSocial.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
                             (c.emailPrincipal?.toLowerCase() || '').includes(debouncedSearchTerm.toLowerCase()) ||
                             (c.telefoneSecundario || '').includes(debouncedSearchTerm);
       const matchesRating = filterRating === 'all' || c.avaliacaoInterna === filterRating;
       return matchesSearch && matchesRating;
     });
-  }, [clients, debouncedSearchTerm, filterRating]);
+  }, [clients, debouncedSearchTerm, filterRating, type]);
 
   const selectAll = () => {
     const ids = filteredClients.map(c => c.id);
@@ -4004,13 +4023,14 @@ const MailListPage = () => {
     setSelectedClients(prev => prev.filter(id => !ids.includes(id)));
   };
 
-  const handleSend = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!canSend) return error('Restrição de acesso.');
     if (selectedClients.length === 0) return warning('Selecione destinos.');
+    if (!message.trim() || message === '<p><br></p>') return warning('A mensagem não pode estar vazia.');
+    
     const formData = new FormData(e.currentTarget);
-    const assunto = formData.get('assunto') as string;
-    const mensagem = formData.get('mensagem') as string;
+    const assunto = (formData.get('assunto') as string) || '';
 
     const entry: MailHistory = { 
       id: crypto.randomUUID(), 
@@ -4018,56 +4038,189 @@ const MailListPage = () => {
       tipo: type, 
       destinatarios: selectedClients, 
       assunto, 
-      mensagem 
+      mensagem: message 
     };
-    addMailHistory(entry);
 
-    // Functional part: Trigger sending
     if (type === 'whatsapp') {
-      // For WhatsApp, we can't easily broadcast to many at once from browser, 
-      // but we can open the first one and provide links for others.
-      const firstClientId = selectedClients[0];
-      const firstClient = clients.find(c => c.id === firstClientId);
-      if (firstClient?.telefoneSecundario) {
-        const phone = firstClient.telefoneSecundario.replace(/\D/g, '');
-        const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensagem)}`;
-        window.open(url, '_blank');
-      }
-      success(`Disparo registrado no histórico. O primeiro WhatsApp foi aberto. Se houver mais destinatários, use os botões individuais na lista.`);
+      addMailHistory(entry);
+      setWhatsappQueue(selectedClients);
+      setWhatsappIndex(0);
+      setWhatsappMessage(message);
+      setSelectedClients([]);
     } else {
-      // For Email, we can use mailto with BCC for multiple recipients
-      const emails = selectedClients
-        .map(id => clients.find(c => c.id === id)?.emailPrincipal)
-        .filter(Boolean);
-      
-      if (emails.length > 0) {
-        const mailto = `mailto:${emails[0]}?bcc=${emails.slice(1).join(',')}&subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(mensagem)}`;
-        window.location.href = mailto;
+      setIsSending(true);
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/mail/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            subject: assunto,
+            message: message,
+            recipients: selectedClients
+          })
+        });
+        
+        const data = await res.json();
+        if (res.ok) {
+          addMailHistory(entry);
+          success(`E-mails enviados com sucesso para ${data.sentCount} destinatários!`);
+          setSelectedClients([]);
+          setMessage('');
+          (e.target as HTMLFormElement).reset();
+        } else {
+          error(data.error || 'Erro ao enviar e-mails.');
+        }
+      } catch (err) {
+        error('Erro de conexão ao enviar e-mails.');
+      } finally {
+        setIsSending(false);
       }
-      success('Disparo registrado no histórico. Seu cliente de e-mail padrão foi aberto.');
     }
+  };
 
-    setSelectedClients([]);
+  const processNextWhatsApp = () => {
+    if (whatsappIndex >= whatsappQueue.length) {
+      setWhatsappQueue([]);
+      return;
+    }
+    
+    const clientId = whatsappQueue[whatsappIndex];
+    const client = clients.find(c => c.id === clientId);
+    if (client) {
+      const phoneRaw = client.telefoneSecundario || client.telefonePrincipal || '';
+      const phone = phoneRaw.replace(/\D/g, '');
+      
+      const firstName = client.nomeRazaoSocial.split(' ')[0];
+      let personalizedMessage = whatsappMessage
+        .replace(/{nome}/g, firstName)
+        .replace(/{empresa}/g, client.nomeRazaoSocial)
+        .replace(/{email}/g, client.emailPrincipal || '')
+        .replace(/{telefone}/g, client.telefonePrincipal || '');
+
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(personalizedMessage)}`;
+      window.open(url, '_blank');
+    }
+    setWhatsappIndex(prev => prev + 1);
+  };
+
+  const skipWhatsApp = () => {
+    setWhatsappIndex(prev => prev + 1);
+  };
+
+  const cancelWhatsAppQueue = () => {
+    setWhatsappQueue([]);
   };
 
   return (
-    <div className="p-8 flex gap-8 animate-in fade-in duration-500 h-[calc(100vh-100px)]">
-      <div className="flex-1 bg-white p-12 rounded-[3.5rem] shadow-sm border border-slate-200 flex flex-col space-y-10 overflow-hidden">
+    <div className="p-8 flex gap-8 animate-in fade-in duration-500 h-[calc(100vh-100px)] relative">
+      {/* WhatsApp Queue Overlay */}
+      {whatsappQueue.length > 0 && (
+        <div className="absolute inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center rounded-[3.5rem]">
+          <div className="bg-white p-10 rounded-[3rem] shadow-2xl max-w-md w-full text-center space-y-8 animate-in zoom-in-95">
+            <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+              <Icon name="phone" className="text-4xl" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-black text-slate-800 tracking-tight">Fila de Envio WhatsApp</h3>
+              <p className="text-sm text-slate-500 font-medium mt-2">
+                Enviando {whatsappIndex + 1} de {whatsappQueue.length}
+              </p>
+            </div>
+            
+            {whatsappIndex < whatsappQueue.length ? (
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-left">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Próximo Destinatário:</p>
+                <p className="font-bold text-slate-700">{clients.find(c => c.id === whatsappQueue[whatsappIndex])?.nomeRazaoSocial}</p>
+                <p className="text-xs text-slate-500">{clients.find(c => c.id === whatsappQueue[whatsappIndex])?.telefoneSecundario || clients.find(c => c.id === whatsappQueue[whatsappIndex])?.telefonePrincipal}</p>
+              </div>
+            ) : (
+              <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
+                <p className="font-bold text-emerald-700">Todos os envios foram processados!</p>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-3">
+              {whatsappIndex < whatsappQueue.length ? (
+                <>
+                  <button onClick={processNextWhatsApp} className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black shadow-lg hover:bg-emerald-600 transition-all">
+                    Abrir WhatsApp Web
+                  </button>
+                  <div className="flex gap-3">
+                    <button onClick={skipWhatsApp} className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all">Pular</button>
+                    <button onClick={cancelWhatsAppQueue} className="flex-1 py-3 bg-red-50 text-red-600 rounded-2xl font-bold hover:bg-red-100 transition-all">Cancelar Fila</button>
+                  </div>
+                </>
+              ) : (
+                <button onClick={cancelWhatsAppQueue} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black shadow-lg hover:bg-slate-900 transition-all">
+                  Concluir
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 bg-white p-12 rounded-[3.5rem] shadow-sm border border-slate-200 flex flex-col space-y-8 overflow-hidden">
          <div className="flex bg-slate-50 p-2 rounded-3xl border border-slate-100 shadow-inner shrink-0">
-            <button onClick={() => setType('email')} className={`flex-1 py-5 rounded-2xl font-black tracking-widest text-sm transition-all ${type === 'email' ? 'bg-white text-primary shadow-xl' : 'text-slate-400'}`}>MAIL SERVICE</button>
-            <button onClick={() => setType('whatsapp')} className={`flex-1 py-5 rounded-2xl font-black tracking-widest text-sm transition-all ${type === 'whatsapp' ? 'bg-white text-primary shadow-xl' : 'text-slate-400'}`}>WHATSAPP API</button>
+            <button type="button" onClick={() => setType('email')} className={`flex-1 py-5 rounded-2xl font-black tracking-widest text-sm transition-all ${type === 'email' ? 'bg-white text-primary shadow-xl' : 'text-slate-400'}`}>MAIL SERVICE</button>
+            <button type="button" onClick={() => setType('whatsapp')} className={`flex-1 py-5 rounded-2xl font-black tracking-widest text-sm transition-all ${type === 'whatsapp' ? 'bg-white text-primary shadow-xl' : 'text-slate-400'}`}>WHATSAPP API</button>
          </div>
-         <form onSubmit={handleSend} className="flex-1 flex flex-col space-y-8 overflow-hidden">
-            <input name="assunto" required className="w-full px-7 py-5 rounded-3xl border border-slate-200 outline-none font-bold focus:border-primary shadow-inner shrink-0" placeholder="Assunto da Comunicação" />
-            <textarea name="mensagem" required className="flex-1 w-full px-7 py-6 rounded-[2.5rem] border border-slate-200 outline-none resize-none font-medium focus:border-primary shadow-inner" placeholder="Mensagem estruturada..." />
-            <button type="submit" disabled={!canSend} className={`w-full py-6 rounded-3xl font-black text-xl shadow-2xl transition-all shrink-0 ${canSend ? 'bg-primary text-white hover:brightness-110' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>
-               Broadcast ({selectedClients.length})
+         
+         <div className="flex gap-2 shrink-0 flex-wrap">
+           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center mr-2">Variáveis Dinâmicas:</span>
+           {['{nome}', '{empresa}', '{email}', '{telefone}'].map(tag => (
+             <button type="button" key={tag} onClick={() => setMessage(prev => prev + tag)} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-mono font-bold transition-colors">
+               {tag}
+             </button>
+           ))}
+         </div>
+
+         <form onSubmit={handleSend} className="flex-1 flex flex-col space-y-6 overflow-hidden">
+            {type === 'email' && (
+              <input name="assunto" required className="w-full px-7 py-5 rounded-3xl border border-slate-200 outline-none font-bold focus:border-primary shadow-inner shrink-0" placeholder="Assunto da Comunicação" />
+            )}
+            
+            <div className="flex-1 flex flex-col min-h-0 relative">
+              {type === 'email' ? (
+                <div className="flex-1 overflow-hidden flex flex-col rounded-3xl border border-slate-200 focus-within:border-primary transition-colors">
+                  <ReactQuill 
+                    theme="snow" 
+                    value={message} 
+                    onChange={setMessage} 
+                    className="flex-1 flex flex-col h-full"
+                    placeholder="Escreva sua mensagem rica aqui..."
+                  />
+                </div>
+              ) : (
+                <textarea 
+                  name="mensagem" 
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  required 
+                  className="flex-1 w-full px-7 py-6 rounded-[2.5rem] border border-slate-200 outline-none resize-none font-medium focus:border-primary shadow-inner" 
+                  placeholder="Mensagem estruturada para WhatsApp..." 
+                />
+              )}
+            </div>
+
+            <button type="submit" disabled={!canSend || isSending} className={`w-full py-6 rounded-3xl font-black text-xl shadow-2xl transition-all shrink-0 flex items-center justify-center gap-3 ${canSend && !isSending ? 'bg-primary text-white hover:brightness-110' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>
+               {isSending ? (
+                 <>Enviando... <Icon name="loader" className="animate-spin" /></>
+               ) : (
+                 <>Broadcast ({selectedClients.length})</>
+               )}
             </button>
          </form>
       </div>
       
       <div className="w-96 bg-white p-8 rounded-[3.5rem] border border-slate-200 flex flex-col shadow-sm overflow-hidden">
-        <h4 className="font-black text-slate-800 mb-6 uppercase tracking-widest text-xs border-b border-slate-50 pb-4 shrink-0">Destinos</h4>
+        <h4 className="font-black text-slate-800 mb-6 uppercase tracking-widest text-xs border-b border-slate-50 pb-4 shrink-0">
+          Destinos Válidos <span className="text-slate-400 font-medium ml-1">({filteredClients.length})</span>
+        </h4>
         
         {/* Search and Filters */}
         <div className="space-y-4 mb-6 shrink-0">
@@ -4119,13 +4272,13 @@ const MailListPage = () => {
           {filteredClients.length === 0 ? (
             <div className="text-center py-10 opacity-30">
               <Icon name="search" className="text-3xl mb-2 mx-auto" />
-              <p className="text-[10px] font-black uppercase tracking-widest">Nenhum cliente encontrado</p>
+              <p className="text-[10px] font-black uppercase tracking-widest">Nenhum cliente válido encontrado</p>
             </div>
           ) : (
             filteredClients.map(c => (
               <label 
                 key={c.id} 
-                title={type === 'email' ? `E-mail: ${c.emailPrincipal || 'Não informado'}` : `WhatsApp: ${c.telefoneSecundario || 'Não informado'}`}
+                title={type === 'email' ? `E-mail: ${c.emailPrincipal}` : `WhatsApp: ${c.telefoneSecundario || c.telefonePrincipal}`}
                 className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${selectedClients.includes(c.id) ? 'bg-primary/5 border-primary/20 shadow-sm' : 'border-slate-50 hover:bg-slate-50'}`}
               >
                 <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${selectedClients.includes(c.id) ? 'bg-primary border-primary' : 'border-slate-300'}`}>
@@ -4135,31 +4288,9 @@ const MailListPage = () => {
                 <div className="overflow-hidden flex-1">
                   <span className="text-xs font-extrabold text-slate-700 block truncate">{c.nomeRazaoSocial}</span>
                   <span className="text-[9px] text-slate-400 font-bold block truncate">
-                    {type === 'email' ? (c.emailPrincipal || 'Sem e-mail') : (c.telefoneSecundario || 'Sem WhatsApp')}
+                    {type === 'email' ? c.emailPrincipal : (c.telefoneSecundario || c.telefonePrincipal)}
                   </span>
                 </div>
-                {selectedClients.includes(c.id) && (
-                  <button 
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      const form = document.querySelector('form') as HTMLFormElement;
-                      const msg = (form.querySelector('textarea[name="mensagem"]') as HTMLTextAreaElement)?.value || '';
-                      if (type === 'whatsapp' && c.telefoneSecundario) {
-                        const phone = c.telefoneSecundario.replace(/\D/g, '');
-                        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-                      } else if (type === 'email' && c.emailPrincipal) {
-                        const subj = (form.querySelector('input[name="assunto"]') as HTMLInputElement)?.value || '';
-                        window.location.href = `mailto:${c.emailPrincipal}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(msg)}`;
-                      }
-                    }}
-                    className="p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-white transition-all"
-                    title="Enviar individualmente"
-                  >
-                    <Icon name={type === 'email' ? 'email' : 'message-square'} className="w-3 h-3" />
-                  </button>
-                )}
                 {c.avaliacaoInterna > 0 && (
                   <div className="bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full text-[8px] font-black">
                     {c.avaliacaoInterna}★

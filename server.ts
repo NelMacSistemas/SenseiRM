@@ -1,4 +1,5 @@
 import express from 'express';
+import nodemailer from 'nodemailer';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
@@ -262,6 +263,61 @@ app.post('/api/sync', authenticateToken, (req: any, res: any) => {
   io.emit('data_updated', { type, action });
   
   res.json({ success: true });
+});
+
+app.post('/api/mail/send', authenticateToken, async (req: any, res: any) => {
+  const { subject, message, recipients } = req.body;
+  const settings = db.emailSettings;
+
+  if (!settings || !settings.host) {
+    return res.status(400).json({ error: 'Configurações de e-mail não definidas.' });
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: settings.host,
+      port: settings.port,
+      secure: settings.secure,
+      auth: {
+        user: settings.user,
+        pass: settings.pass,
+      },
+    });
+
+    let sentCount = 0;
+
+    for (const clientId of recipients) {
+      const client = db.clients.find((c: any) => c.id === clientId);
+      if (!client || !client.emailPrincipal) continue;
+
+      const firstName = client.nomeRazaoSocial.split(' ')[0];
+      
+      let personalizedSubject = subject
+        .replace(/{nome}/g, firstName)
+        .replace(/{empresa}/g, client.nomeRazaoSocial)
+        .replace(/{email}/g, client.emailPrincipal)
+        .replace(/{telefone}/g, client.telefonePrincipal || '');
+
+      let personalizedMessage = message
+        .replace(/{nome}/g, firstName)
+        .replace(/{empresa}/g, client.nomeRazaoSocial)
+        .replace(/{email}/g, client.emailPrincipal)
+        .replace(/{telefone}/g, client.telefonePrincipal || '');
+
+      await transporter.sendMail({
+        from: `"${req.user.nome || 'Sistema'}" <${settings.user}>`,
+        to: client.emailPrincipal,
+        subject: personalizedSubject,
+        html: personalizedMessage,
+      });
+      sentCount++;
+    }
+
+    res.json({ success: true, sentCount });
+  } catch (error: any) {
+    console.error('Mail error:', error);
+    res.status(500).json({ error: error.message || 'Erro ao enviar e-mails' });
+  }
 });
 
 app.post('/api/audit', authenticateToken, (req: any, res: any) => {
