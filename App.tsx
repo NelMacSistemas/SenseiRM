@@ -437,6 +437,15 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
   );
 };
 
+export interface EmailSettings {
+  provider: string;
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+  secure: boolean;
+}
+
 // --- Context ---
 interface AppState {
   currentUser: User | null;
@@ -1413,7 +1422,7 @@ const ClientsPage = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [activeTab, setActiveTab] = useState<'id' | 'end' | 'cont' | 'fin' | 'crm'>('id');
+  const [activeTab, setActiveTab] = useState<'id' | 'end' | 'cont' | 'fin' | 'crm' | 'anexos'>('id');
   const [contactPeople, setContactPeople] = useState<ContactPerson[]>([]);
   const [tipoPessoa, setTipoPessoa] = useState<'Física' | 'Jurídica'>('Jurídica');
 
@@ -1651,7 +1660,8 @@ const ClientsPage = () => {
     { id: 'end', label: 'Endereço', icon: 'map-marker-alt' },
     { id: 'cont', label: 'Contatos', icon: 'phone' },
     { id: 'fin', label: 'Financeiro', icon: 'wallet' },
-    { id: 'crm', label: 'CRM & Gov', icon: 'shield-alt' }
+    { id: 'crm', label: 'CRM & Gov', icon: 'shield-alt' },
+    { id: 'anexos', label: 'Anexos', icon: 'paperclip' }
   ] as const;
 
   const currentTabIndex = clientTabs.findIndex(t => t.id === activeTab);
@@ -1681,7 +1691,7 @@ const ClientsPage = () => {
     }
   };
 
-  const TabButton = ({ id, label, icon, index }: { id: any, label: string, icon: string, index: number }) => (
+  const TabButton = ({ id, label, icon, index }: { key?: string, id: any, label: string, icon: string, index: number }) => (
     <button
       type="button"
       onClick={() => setActiveTab(id)}
@@ -2140,7 +2150,11 @@ const ClientsPage = () => {
                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Observações Gerais</label>
                        <textarea name="observacoes" rows={4} defaultValue={editingClient?.observacoes} placeholder="Notas internas sobre o relacionamento, histórico e peculiaridades..." className="w-full px-7 py-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 outline-none resize-none font-medium focus:border-primary shadow-inner" />
                     </section>
+                 </div>
+               </div>
 
+               <div data-tab-id="anexos" className={activeTab === 'anexos' ? 'block' : 'hidden'}>
+                 <div className="space-y-10 animate-in slide-in-from-left-4 duration-300">
                     <section className="space-y-6">
                       <AttachmentsManager 
                         attachments={attachments} 
