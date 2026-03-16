@@ -959,7 +959,7 @@ const AttachmentsManager = ({ attachments = [], onUpdate, canEdit }: { attachmen
             <div key={att.id} className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex items-center justify-between group hover:shadow-md transition-all">
               <div className="flex items-center gap-3 overflow-hidden">
                 <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
-                  <Icon name={att.type.includes('image') ? 'image' : att.type.includes('pdf') ? 'file-pdf' : 'file-alt'} className="text-xl" />
+                  <Icon name={(att.type || '').includes('image') ? 'image' : (att.type || '').includes('pdf') ? 'file-pdf' : 'file-alt'} className="text-xl" />
                 </div>
                 <div className="min-w-0">
                   <a href={att.url} target="_blank" rel="noreferrer" className="text-sm font-bold text-slate-700 hover:text-primary truncate block" title={att.name}>
@@ -1666,7 +1666,8 @@ const ClientsPage = () => {
 
   const currentTabIndex = clientTabs.findIndex(t => t.id === activeTab);
 
-  const handleNextTab = () => {
+  const handleNextTab = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
     const form = document.getElementById('clientForm') as HTMLFormElement;
     if (form) {
       const currentTabContainer = form.querySelector(`[data-tab-id="${activeTab}"]`);
@@ -1685,7 +1686,8 @@ const ClientsPage = () => {
     }
   };
 
-  const handlePrevTab = () => {
+  const handlePrevTab = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
     if (currentTabIndex > 0) {
       setActiveTab(clientTabs[currentTabIndex - 1].id);
     }
@@ -1780,6 +1782,11 @@ const ClientsPage = () => {
               id="clientForm" 
               key={editingClient?.id || 'new'} 
               onSubmit={handleSubmit} 
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
+                  e.preventDefault();
+                }
+              }}
               noValidate
               className="flex-1 overflow-y-auto p-10 bg-white"
             >
@@ -2175,11 +2182,11 @@ const ClientsPage = () => {
                     </button>
                   )}
                   {currentTabIndex < clientTabs.length - 1 ? (
-                    <button type="button" onClick={handleNextTab} className="px-14 py-4 rounded-2xl bg-primary text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center gap-2">
+                    <button key="next" type="button" onClick={handleNextTab} className="px-14 py-4 rounded-2xl bg-primary text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center gap-2">
                       Próximo <Icon name="arrow-right" />
                     </button>
                   ) : (
-                    <button type="submit" form="clientForm" className="px-14 py-4 rounded-2xl bg-emerald-500 text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center gap-2">
+                    <button key="submit" type="submit" form="clientForm" className="px-14 py-4 rounded-2xl bg-emerald-500 text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center gap-2">
                       <Icon name="check" /> Confirmar
                     </button>
                   )}
