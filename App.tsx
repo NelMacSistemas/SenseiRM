@@ -2271,6 +2271,10 @@ const TasksPage = () => {
   const [conclusaoReal, setConclusaoReal] = useState<string>('');
   const [tempoGasto, setTempoGasto] = useState<string>('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [subtasks, setSubtasks] = useState<Subtask[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
+  const [newCommentText, setNewCommentText] = useState('');
   
   const actionRef = useRef<HTMLTextAreaElement>(null);
 
@@ -2317,6 +2321,12 @@ const TasksPage = () => {
   const calculateProgress = (t: Task) => {
     if (t.status === TaskStatus.COMPLETED) return 100;
     if (t.status === TaskStatus.CANCELED) return 0;
+    
+    if (t.subtasks && t.subtasks.length > 0) {
+      const completed = t.subtasks.filter(s => s.completed).length;
+      return Math.round((completed / t.subtasks.length) * 100);
+    }
+
     if (!t.dataInicio) return 0;
 
     const start = new Date(t.dataInicio).getTime();
@@ -2447,7 +2457,9 @@ const TasksPage = () => {
       taskNumber: editingTask?.taskNumber || `TSK-${String(tasks.length + 1).padStart(3, '0')}`,
       dataCriacao: editingTask?.dataCriacao || new Date().toISOString(),
       dataVencimento: calculatedDeadline,
-      logs: logs
+      logs: logs,
+      subtasks: subtasks,
+      comments: comments
     } as Task;
 
     if (editingTask) updateTask(task); else addTask(task);
@@ -2463,6 +2475,10 @@ const TasksPage = () => {
     setConclusaoReal(t?.dataConclusaoReal || '');
     setTempoGasto(t?.tempoGasto || '');
     setAttachments(t?.attachments || []);
+    setSubtasks(t?.subtasks || []);
+    setComments(t?.comments || []);
+    setNewSubtaskTitle('');
+    setNewCommentText('');
     setIsModalOpen(true);
   };
 
@@ -2554,9 +2570,10 @@ const TasksPage = () => {
                       {new Date(t.dataVencimento).toLocaleDateString()}
                     </div>
                   )}
-                  <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
-                    <Icon name="paperclip" className="w-3 h-3" />
-                    {t.attachments?.length || 0}
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
+                    <span className="flex items-center gap-1"><Icon name="paperclip" className="w-3 h-3" />{t.attachments?.length || 0}</span>
+                    <span className="flex items-center gap-1"><Icon name="check-square" className="w-3 h-3" />{t.subtasks?.filter(s => s.completed).length || 0}/{t.subtasks?.length || 0}</span>
+                    <span className="flex items-center gap-1"><Icon name="message-square" className="w-3 h-3" />{t.comments?.length || 0}</span>
                   </div>
                 </div>
                 <img src={owner?.foto || 'https://picsum.photos/seed/default/40'} className="w-7 h-7 rounded-full border-2 border-white shadow-sm" title={owner?.nome} />
@@ -2589,6 +2606,11 @@ const TasksPage = () => {
               <div className="flex items-center gap-2">
                  <img src={owner?.foto || 'https://picsum.photos/seed/default/40'} className="w-6 h-6 rounded-full border border-slate-100 shadow-sm" />
                  <span className="text-xs font-bold text-slate-600 truncate max-w-[150px]">{owner?.nome}</span>
+              </div>
+              <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
+                <span className="flex items-center gap-1"><Icon name="paperclip" className="w-3 h-3" />{t.attachments?.length || 0}</span>
+                <span className="flex items-center gap-1"><Icon name="check-square" className="w-3 h-3" />{t.subtasks?.filter(s => s.completed).length || 0}/{t.subtasks?.length || 0}</span>
+                <span className="flex items-center gap-1"><Icon name="message-square" className="w-3 h-3" />{t.comments?.length || 0}</span>
               </div>
               <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase border-2 ${t.status === TaskStatus.COMPLETED ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'}`}>{t.status}</span>
            </div>
@@ -2873,6 +2895,115 @@ const TasksPage = () => {
               </section>
 
               <section className="space-y-6">
+                <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">5. Subtarefas (Checklist)</h4>
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      value={newSubtaskTitle} 
+                      onChange={(e) => setNewSubtaskTitle(e.target.value)} 
+                      placeholder="Adicionar nova subtarefa..." 
+                      className="flex-1 px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold shadow-inner"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (newSubtaskTitle.trim()) {
+                            setSubtasks([...subtasks, { id: crypto.randomUUID(), title: newSubtaskTitle.trim(), completed: false }]);
+                            setNewSubtaskTitle('');
+                          }
+                        }
+                      }}
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        if (newSubtaskTitle.trim()) {
+                          setSubtasks([...subtasks, { id: crypto.randomUUID(), title: newSubtaskTitle.trim(), completed: false }]);
+                          setNewSubtaskTitle('');
+                        }
+                      }}
+                      className="px-6 py-4 bg-primary text-white rounded-2xl font-black shadow-md hover:brightness-110 transition-all"
+                    >
+                      <Icon name="plus" />
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {subtasks.map(st => (
+                      <div key={st.id} className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <label className="flex items-center gap-3 cursor-pointer flex-1">
+                          <input 
+                            type="checkbox" 
+                            checked={st.completed} 
+                            onChange={() => {
+                              setSubtasks(subtasks.map(s => s.id === st.id ? { ...s, completed: !s.completed } : s));
+                            }}
+                            className="w-5 h-5 rounded text-primary focus:ring-primary border-slate-300"
+                          />
+                          <span className={`font-medium ${st.completed ? 'line-through text-slate-400' : 'text-slate-700'}`}>{st.title}</span>
+                        </label>
+                        <button type="button" onClick={() => setSubtasks(subtasks.filter(s => s.id !== st.id))} className="text-slate-400 hover:text-red-500 p-2">
+                          <Icon name="trash" />
+                        </button>
+                      </div>
+                    ))}
+                    {subtasks.length === 0 && <p className="text-xs text-slate-400 italic">Nenhuma subtarefa adicionada.</p>}
+                  </div>
+                </div>
+              </section>
+
+              <section className="space-y-6">
+                <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">6. Comentários</h4>
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      value={newCommentText} 
+                      onChange={(e) => setNewCommentText(e.target.value)} 
+                      placeholder="Escreva um comentário..." 
+                      className="flex-1 px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold shadow-inner"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (newCommentText.trim()) {
+                            setComments([...comments, { id: crypto.randomUUID(), userId: currentUser?.id || 'sys', text: newCommentText.trim(), createdAt: new Date().toISOString() }]);
+                            setNewCommentText('');
+                          }
+                        }
+                      }}
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        if (newCommentText.trim()) {
+                          setComments([...comments, { id: crypto.randomUUID(), userId: currentUser?.id || 'sys', text: newCommentText.trim(), createdAt: new Date().toISOString() }]);
+                          setNewCommentText('');
+                        }
+                      }}
+                      className="px-6 py-4 bg-primary text-white rounded-2xl font-black shadow-md hover:brightness-110 transition-all"
+                    >
+                      <Icon name="message-square" />
+                    </button>
+                  </div>
+                  <div className="space-y-4 max-h-60 overflow-y-auto custom-scrollbar pr-2">
+                    {comments.map(c => {
+                      const commentUser = users.find(u => u.id === c.userId);
+                      return (
+                        <div key={c.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-black text-slate-700">{commentUser?.nome || 'Usuário Desconhecido'}</span>
+                            <span className="text-[10px] text-slate-400 font-bold">{new Date(c.createdAt).toLocaleString('pt-BR')}</span>
+                          </div>
+                          <p className="text-sm text-slate-600 font-medium">{c.text}</p>
+                        </div>
+                      );
+                    })}
+                    {comments.length === 0 && <p className="text-xs text-slate-400 italic">Nenhum comentário ainda.</p>}
+                  </div>
+                </div>
+              </section>
+
+              <section className="space-y-6">
+                <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">7. Anexos</h4>
                 <AttachmentsManager 
                   attachments={attachments} 
                   onUpdate={setAttachments} 

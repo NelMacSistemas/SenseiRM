@@ -175,6 +175,19 @@ export interface Client {
   attachments?: Attachment[];
 }
 
+export interface Subtask {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
+export interface Comment {
+  id: string;
+  userId: string;
+  text: string;
+  createdAt: string;
+}
+
 export interface Task {
   id: string;
   taskNumber: string; 
@@ -194,6 +207,8 @@ export interface Task {
   tempoGasto: string; 
   logs: TaskLog[];
   attachments?: Attachment[];
+  subtasks?: Subtask[];
+  comments?: Comment[];
 }
 
 export interface AuditEntry {
