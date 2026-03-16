@@ -478,6 +478,10 @@ interface AppState {
   updateClientCategory: (category: ClientCategory) => void;
   deleteClientCategory: (id: string) => void;
   addMailHistory: (entry: MailHistory) => void;
+  templates: MailTemplate[];
+  addTemplate: (template: MailTemplate) => void;
+  updateTemplate: (template: MailTemplate) => void;
+  deleteTemplate: (id: string) => void;
   updateSLASettings: (settings: SLASettings) => void;
   emailSettings: EmailSettings;
   updateEmailSettings: (settings: EmailSettings) => void;
@@ -504,6 +508,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [clientCategories, setClientCategories] = useState<ClientCategory[]>([]);
   const [history, setHistory] = useState<MailHistory[]>([]);
+  const [templates, setTemplates] = useState<MailTemplate[]>([]);
   const [slaSettings, setSlaSettings] = useState<SLASettings>({ Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
   const [emailSettings, setEmailSettings] = useState<EmailSettings>({ provider: 'SMTP', host: '', port: 587, user: '', pass: '', secure: false });
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([]);
@@ -581,6 +586,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         setSectors(data.sectors || []);
         setClientCategories(data.clientCategories || []);
         setHistory(data.history || []);
+        setTemplates(data.templates || []);
         setSlaSettings(data.slaSettings || { Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
         setEmailSettings(data.emailSettings || { provider: 'SMTP', host: '', port: 587, user: '', pass: '', secure: false });
         setAuditLogs(data.auditLogs || []);
@@ -812,6 +818,31 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     refreshAudit();
   };
 
+  const addTemplate = (t: MailTemplate) => {
+    setTemplates(prev => [...prev, t]);
+    apiSync('templates', 'ADD', t);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'TEMPLATE', `Template "${t.name}" criado.`);
+    refreshAudit();
+  };
+
+  const updateTemplate = (t: MailTemplate) => {
+    const old = templates.find(x => x.id === t.id);
+    const diff = old ? getDetailedDiff(old, t, { name: 'Nome', subject: 'Assunto', content: 'Conteúdo' }) : '';
+    setTemplates(prev => prev.map(x => x.id === t.id ? t : x));
+    apiSync('templates', 'UPDATE', t);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'TEMPLATE', `Template "${t.name}" atualizado. ${diff}`);
+    refreshAudit();
+  };
+
+  const deleteTemplate = (id: string) => {
+    const target = templates.find(t => t.id === id);
+    if (!target) return;
+    setTemplates(prev => prev.filter(t => t.id !== id));
+    apiSync('templates', 'DELETE', { id });
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'TEMPLATE', `Template "${target.name}" removido.`);
+    refreshAudit();
+  };
+
   const updateSLASettings = (settings: SLASettings) => {
     const diff = getDetailedDiff(slaSettings, settings, { Baixa: 'SLA Baixa', Média: 'SLA Média', Alta: 'SLA Alta', Crítica: 'SLA Crítica' });
     setSlaSettings(settings);
@@ -828,16 +859,16 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const contextValue = useMemo(() => ({
-    currentUser, users, clients, tasks, sectors, auditLogs, history, slaSettings, emailSettings, clientCategories, notifications,
+    currentUser, users, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, clientCategories, notifications,
     markNotificationAsRead, clearNotifications,
     login, logout, updateUser, addUser, deleteUser,
     addClient, updateClient, deleteClient,
     addTask, updateTask, deleteTask, 
     addSector, updateSector, deleteSector,
     addClientCategory, updateClientCategory, deleteClientCategory,
-    addMailHistory, updateSLASettings, updateEmailSettings
+    addMailHistory, addTemplate, updateTemplate, deleteTemplate, updateSLASettings, updateEmailSettings
   }), [
-    currentUser, users, clients, tasks, sectors, auditLogs, history, slaSettings, emailSettings, clientCategories, notifications
+    currentUser, users, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, clientCategories, notifications
   ]);
 
   return (
@@ -1005,6 +1036,7 @@ const Sidebar = () => {
     { path: '/dashboard', label: 'Dashboard', icon: 'chart-line', perm: 'dashboard' },
     { path: '/clientes', label: 'Clientes', icon: 'address-book', perm: 'clientes' },
     { path: '/mala-direta', label: 'Mala Direta', icon: 'paper-plane', perm: 'malaDireta' },
+    { path: '/templates', label: 'Templates', icon: 'file-alt', perm: 'malaDireta' },
     { path: '/tarefas', label: 'Tarefas', icon: 'tasks', perm: 'tarefas' },
     { path: '/usuarios', label: 'Usuários', icon: 'users', perm: 'usuarios' },
     { path: '/configuracoes', label: 'Configurações', icon: 'cog', perm: 'configuracoes' },
@@ -1455,6 +1487,9 @@ const ClientsPage = () => {
   const [loadingCep, setLoadingCep] = useState(false);
   const [loadingCnpj, setLoadingCnpj] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [interactions, setInteractions] = useState<ClientInteraction[]>([]);
+  const [newInteractionType, setNewInteractionType] = useState<'EMAIL' | 'CALL' | 'MEETING' | 'NOTE' | 'WHATSAPP'>('NOTE');
+  const [newInteractionDesc, setNewInteractionDesc] = useState('');
 
   // Today for date validations
   const today = new Date().toISOString().split('T')[0];
@@ -1484,6 +1519,7 @@ const ClientsPage = () => {
       setCidade(editingClient.cidade || '');
       setUf(editingClient.uf || '');
       setAttachments(editingClient.attachments || []);
+      setInteractions(editingClient.interactions || []);
     } else {
       setContactPeople([]);
       setTipoPessoa('Jurídica');
@@ -1499,6 +1535,7 @@ const ClientsPage = () => {
       setCidade('');
       setUf('');
       setAttachments([]);
+      setInteractions([]);
     }
   }, [editingClient, isModalOpen]);
 
@@ -1627,7 +1664,8 @@ const ClientsPage = () => {
       motivoBloqueio: data.motivoBloqueio,
       dataUltimaVenda: data.dataUltimaVenda,
       avaliacaoInterna: Number(data.avaliacaoInterna) || 0,
-      attachments: attachments
+      attachments: attachments,
+      interactions: interactions
     } as Client;
 
     if (editingClient) updateClient(client); else addClient(client);
@@ -1655,13 +1693,31 @@ const ClientsPage = () => {
     setContactPeople(contactPeople.filter(p => p.id !== id));
   };
 
+  const addInteraction = () => {
+    if (!newInteractionDesc.trim()) return;
+    const newInteraction: ClientInteraction = {
+      id: crypto.randomUUID(),
+      date: new Date().toISOString(),
+      type: newInteractionType,
+      description: newInteractionDesc,
+      userId: currentUser?.id || ''
+    };
+    setInteractions([newInteraction, ...interactions]);
+    setNewInteractionDesc('');
+  };
+
+  const removeInteraction = (id: string) => {
+    setInteractions(interactions.filter(i => i.id !== id));
+  };
+
   const clientTabs = [
     { id: 'id', label: 'Identificação', icon: 'id-card' },
     { id: 'end', label: 'Endereço', icon: 'map-marker-alt' },
     { id: 'cont', label: 'Contatos', icon: 'phone' },
     { id: 'fin', label: 'Financeiro', icon: 'wallet' },
     { id: 'crm', label: 'CRM & Gov', icon: 'shield-alt' },
-    { id: 'anexos', label: 'Anexos', icon: 'paperclip' }
+    { id: 'anexos', label: 'Anexos', icon: 'paperclip' },
+    { id: 'interacoes', label: 'Interações', icon: 'history' }
   ] as const;
 
   const currentTabIndex = clientTabs.findIndex(t => t.id === activeTab);
@@ -2166,6 +2222,111 @@ const ClientsPage = () => {
                         onUpdate={setAttachments} 
                         canEdit={canEdit} 
                       />
+                    </section>
+                 </div>
+               </div>
+
+               <div data-tab-id="interacoes" className={activeTab === 'interacoes' ? 'block' : 'hidden'}>
+                 <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
+                    <section className="space-y-6">
+                       <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Registrar Interação</h4>
+                       <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
+                          <div className="flex gap-4">
+                             <div className="w-1/3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo de Interação</label>
+                                <select 
+                                  value={newInteractionType} 
+                                  onChange={(e) => setNewInteractionType(e.target.value as any)} 
+                                  className="w-full mt-1 px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold outline-none focus:border-primary"
+                                >
+                                   <option value="NOTE">Anotação Interna</option>
+                                   <option value="CALL">Ligação Telefônica</option>
+                                   <option value="WHATSAPP">WhatsApp</option>
+                                   <option value="EMAIL">E-mail</option>
+                                   <option value="MEETING">Reunião</option>
+                                </select>
+                             </div>
+                             <div className="w-2/3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
+                                <div className="flex gap-2 mt-1">
+                                   <input 
+                                     value={newInteractionDesc} 
+                                     onChange={(e) => setNewInteractionDesc(e.target.value)}
+                                     onKeyDown={(e) => {
+                                       if (e.key === 'Enter') {
+                                         e.preventDefault();
+                                         addInteraction();
+                                       }
+                                     }}
+                                     placeholder="Detalhes da interação..." 
+                                     className="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-white font-medium outline-none focus:border-primary" 
+                                   />
+                                   <button 
+                                     type="button" 
+                                     onClick={addInteraction} 
+                                     disabled={!newInteractionDesc.trim()}
+                                     className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                   >
+                                     Registrar
+                                   </button>
+                                </div>
+                             </div>
+                          </div>
+                       </div>
+                    </section>
+
+                    <section className="space-y-6">
+                       <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Timeline de Interações</h4>
+                       <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
+                          {interactions.length === 0 ? (
+                            <div className="text-center py-10 text-slate-400 font-medium italic">Nenhuma interação registrada.</div>
+                          ) : (
+                            interactions.map((interaction, idx) => {
+                              const user = users.find(u => u.id === interaction.userId);
+                              const getInteractionIcon = (type: string) => {
+                                switch(type) {
+                                  case 'EMAIL': return 'envelope';
+                                  case 'CALL': return 'phone';
+                                  case 'WHATSAPP': return 'comment-dots';
+                                  case 'MEETING': return 'users';
+                                  default: return 'sticky-note';
+                                }
+                              };
+                              const getInteractionColor = (type: string) => {
+                                switch(type) {
+                                  case 'EMAIL': return 'bg-blue-500';
+                                  case 'CALL': return 'bg-emerald-500';
+                                  case 'WHATSAPP': return 'bg-green-500';
+                                  case 'MEETING': return 'bg-purple-500';
+                                  default: return 'bg-amber-500';
+                                }
+                              };
+                              
+                              return (
+                                <div key={interaction.id} className={`relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active`}>
+                                   <div className={`flex items-center justify-center w-10 h-10 rounded-full border-4 border-white ${getInteractionColor(interaction.type)} text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2`}>
+                                      <Icon name={getInteractionIcon(interaction.type)} className="text-sm" />
+                                   </div>
+                                   <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition-all">
+                                      <div className="flex justify-between items-start mb-1">
+                                         <div className="flex items-center gap-2">
+                                            <img src={user?.foto || 'https://picsum.photos/seed/default/40'} className="w-5 h-5 rounded-full" />
+                                            <span className="text-xs font-bold text-slate-700">{user?.nome || 'Usuário'}</span>
+                                         </div>
+                                         <span className="text-[10px] font-bold text-slate-400">{new Date(interaction.date).toLocaleString('pt-BR')}</span>
+                                      </div>
+                                      <p className="text-sm text-slate-600 mt-2">{interaction.description}</p>
+                                      {canEdit && (
+                                        <button type="button" onClick={() => removeInteraction(interaction.id)} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity p-1">
+                                          <Icon name="trash" className="text-xs" />
+                                        </button>
+                                      )}
+                                   </div>
+                                </div>
+                              );
+                            })
+                          )}
+                       </div>
                     </section>
                  </div>
                </div>
@@ -4123,8 +4284,126 @@ const LoginPage = () => {
   );
 };
 
+const TemplatesPage = () => {
+  const { templates, addTemplate, updateTemplate, deleteTemplate, currentUser } = useApp();
+  const { confirm } = useConfirm();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<MailTemplate | null>(null);
+
+  const isAdmin = currentUser?.perfil === UserRole.ADMIN;
+  const perms = currentUser?.permissoes.malaDireta;
+  const canEdit = isAdmin || perms?.editar;
+  const canDelete = isAdmin || perms?.excluir;
+  const canInclude = isAdmin || perms?.incluir;
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+    
+    const template: MailTemplate = {
+      id: editingTemplate?.id || crypto.randomUUID(),
+      name: data.name as string,
+      subject: data.subject as string,
+      content: data.content as string
+    };
+
+    if (editingTemplate) updateTemplate(template);
+    else addTemplate(template);
+    
+    setIsModalOpen(false);
+    setEditingTemplate(null);
+  };
+
+  return (
+    <div className="h-full flex flex-col space-y-8 animate-in fade-in duration-500">
+      <div className="flex justify-between items-center">
+        <div>
+           <h2 className="text-4xl font-black text-slate-800 tracking-tight">Templates de Mensagem</h2>
+           <p className="text-slate-500 font-medium mt-2">Gerencie os modelos de e-mail e WhatsApp para mala direta.</p>
+        </div>
+        {canInclude && (
+          <button onClick={() => { setEditingTemplate(null); setIsModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
+            <Icon name="plus" /> Novo Template
+          </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {templates.map(t => (
+          <div key={t.id} className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-md transition-all group relative">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="font-black text-slate-800 text-lg">{t.name}</h3>
+              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                {canEdit && (
+                  <button onClick={() => { setEditingTemplate(t); setIsModalOpen(true); }} className="text-blue-500 hover:bg-blue-50 p-2 rounded-xl transition-colors">
+                    <Icon name="edit" />
+                  </button>
+                )}
+                {canDelete && (
+                  <button onClick={() => confirm({ title: 'Excluir Template', message: 'Deseja excluir este template?', onConfirm: () => deleteTemplate(t.id) })} className="text-red-500 hover:bg-red-50 p-2 rounded-xl transition-colors">
+                    <Icon name="trash" />
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Assunto (E-mail)</p>
+              <p className="text-sm font-medium text-slate-700 truncate">{t.subject || '-'}</p>
+            </div>
+            <div className="mt-4 space-y-2">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Conteúdo</p>
+              <p className="text-sm text-slate-600 line-clamp-3 whitespace-pre-wrap">{t.content.replace(/<[^>]*>?/gm, '')}</p>
+            </div>
+          </div>
+        ))}
+        {templates.length === 0 && (
+          <div className="col-span-full p-20 text-center text-slate-400 font-bold italic bg-white rounded-[3rem] border border-slate-200 border-dashed">
+            Nenhum template cadastrado.
+          </div>
+        )}
+      </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in duration-300">
+            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
+               <div>
+                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingTemplate ? 'Edição' : 'Novo Cadastro'}</span>
+                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Template de Mensagem</h3>
+               </div>
+               <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-8 space-y-6">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Template</label>
+                <input name="name" required defaultValue={editingTemplate?.name} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" placeholder="Ex: Boas-vindas" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assunto (Para E-mails)</label>
+                <input name="subject" defaultValue={editingTemplate?.subject} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" placeholder="Assunto do e-mail" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Conteúdo</label>
+                <textarea name="content" required rows={8} defaultValue={editingTemplate?.content} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-medium outline-none focus:border-primary resize-none" placeholder="Conteúdo da mensagem. Use {nome} para o nome do cliente." />
+                <p className="text-xs text-slate-400 mt-2 ml-1">Variáveis disponíveis: <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{nome}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{empresa}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{email}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{telefone}'}</code></p>
+              </div>
+
+              <div className="pt-6 flex justify-end gap-4">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all uppercase text-[10px] tracking-widest">Cancelar</button>
+                <button type="submit" className="px-8 py-4 rounded-2xl bg-primary text-white font-bold hover:brightness-110 transition-all uppercase text-[10px] tracking-widest shadow-lg shadow-primary/30">Salvar Template</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const MailListPage = () => {
-  const { clients, addMailHistory, currentUser } = useApp();
+  const { clients, addMailHistory, currentUser, templates } = useApp();
   const { error, success, warning } = useToast();
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
   const [type, setType] = useState<'email' | 'whatsapp'>('email');
@@ -4133,12 +4412,23 @@ const MailListPage = () => {
   const [filterRating, setFilterRating] = useState<number | 'all'>('all');
   
   const [message, setMessage] = useState('');
+  const [subject, setSubject] = useState('');
   const [isSending, setIsSending] = useState(false);
   
   // WhatsApp Queue State
   const [whatsappQueue, setWhatsappQueue] = useState<string[]>([]);
   const [whatsappIndex, setWhatsappIndex] = useState(0);
   const [whatsappMessage, setWhatsappMessage] = useState('');
+
+  const applyTemplate = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId);
+    if (template) {
+      setMessage(template.content);
+      if (type === 'email') {
+        setSubject(template.subject);
+      }
+    }
+  };
 
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
   const perms = currentUser?.permissoes.malaDireta;
@@ -4330,8 +4620,26 @@ const MailListPage = () => {
          </div>
 
          <form onSubmit={handleSend} className="flex-1 flex flex-col space-y-6 overflow-hidden">
+            <div className="flex gap-4 shrink-0">
+               <select 
+                 onChange={(e) => applyTemplate(e.target.value)} 
+                 className="flex-1 px-7 py-5 rounded-3xl border border-slate-200 outline-none font-bold focus:border-primary shadow-inner bg-white text-slate-600"
+               >
+                 <option value="">Carregar Template Rápido...</option>
+                 {templates.map(t => (
+                   <option key={t.id} value={t.id}>{t.name}</option>
+                 ))}
+               </select>
+            </div>
             {type === 'email' && (
-              <input name="assunto" required className="w-full px-7 py-5 rounded-3xl border border-slate-200 outline-none font-bold focus:border-primary shadow-inner shrink-0" placeholder="Assunto da Comunicação" />
+              <input 
+                name="assunto" 
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                required 
+                className="w-full px-7 py-5 rounded-3xl border border-slate-200 outline-none font-bold focus:border-primary shadow-inner shrink-0" 
+                placeholder="Assunto da Comunicação" 
+              />
             )}
             
             <div className="flex-1 flex flex-col min-h-0 relative">
@@ -4467,6 +4775,7 @@ const MainLayout = () => {
     '/dashboard': 'Indicadores de Performance',
     '/clientes': 'Gerenciamento de Clientes',
     '/mala-direta': 'Comunicação Estratégica',
+    '/templates': 'Templates de Mensagem',
     '/tarefas': 'Gerenciamento Operacional',
     '/usuarios': 'Usuários do Sistema',
     '/configuracoes': 'Definições do Sistema',
@@ -4484,6 +4793,7 @@ const MainLayout = () => {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/clientes" element={<ClientsPage />} />
             <Route path="/mala-direta" element={<MailListPage />} />
+            <Route path="/templates" element={<TemplatesPage />} />
             <Route path="/tarefas" element={<TasksPage />} />
             <Route path="/usuarios" element={<UsersPage />} />
             <Route path="/configuracoes" element={<ConfiguracoesPage />} />

@@ -71,6 +71,12 @@ let db = {
   clientCategories: [],
   auditLogs: [],
   history: [],
+  templates: [
+    { id: 't1', name: 'Boas-vindas', subject: 'Bem-vindo(a) à nossa plataforma!', content: 'Olá {nome},\n\nSeja muito bem-vindo(a) à nossa plataforma! É um prazer ter você conosco.\n\nQualquer dúvida, estamos à disposição.\n\nAbraços,\nEquipe' },
+    { id: 't2', name: 'Aviso de Vencimento', subject: 'Lembrete de Vencimento', content: 'Prezado(a) {nome},\n\nLembramos que sua fatura vence nos próximos dias. Por favor, desconsidere se já houver efetuado o pagamento.\n\nAtenciosamente,\nFinanceiro' },
+    { id: 't3', name: 'Promoção Especial', subject: 'Oferta Exclusiva para Você', content: 'Olá {nome}!\n\nTemos uma oferta exclusiva para você este mês. Aproveite nossos descontos especiais para clientes VIP.\n\nConfira em nosso site!' },
+    { id: 't4', name: 'Pesquisa de Satisfação', subject: 'Sua opinião é importante', content: 'Oi {nome},\n\nSua opinião é muito importante para nós! Poderia responder a uma rápida pesquisa sobre nosso atendimento?\n\nObrigado!' }
+  ],
   slaSettings: {
     'Baixa': 72,
     'Média': 48,
@@ -200,6 +206,7 @@ app.get('/api/data', authenticateToken, (req: any, res: any) => {
     clientCategories: db.clientCategories,
     auditLogs: db.auditLogs,
     history: db.history,
+    templates: db.templates,
     slaSettings: db.slaSettings,
     emailSettings: db.emailSettings
   });

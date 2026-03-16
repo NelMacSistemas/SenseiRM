@@ -122,6 +122,14 @@ export interface Attachment {
   uploadedBy: string;
 }
 
+export interface ClientInteraction {
+  id: string;
+  date: string;
+  type: 'EMAIL' | 'CALL' | 'MEETING' | 'NOTE' | 'WHATSAPP';
+  description: string;
+  userId: string;
+}
+
 export interface Client {
   id: string;
   clientCode: string; // Automático (CLI-001)
@@ -173,6 +181,7 @@ export interface Client {
   dataUltimaVenda?: string;
   avaliacaoInterna?: number;
   attachments?: Attachment[];
+  interactions?: ClientInteraction[];
 }
 
 export interface Subtask {
@@ -228,6 +237,13 @@ export interface MailHistory {
   destinatarios: string[];
   assunto: string;
   mensagem: string;
+}
+
+export interface MailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  content: string;
 }
 
 export interface Notification {
