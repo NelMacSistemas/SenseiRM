@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, createContext, useContext, useRef, useCallback } from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { User, Client, ContactPerson, AuditEntry, MailHistory, UserRole, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory, Attachment, Notification } from './types';
@@ -2108,20 +2108,18 @@ const ClientsPage = () => {
                        </div>
                        <div className="space-y-1">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Avaliação Interna (Rating)</label>
-                          <input 
+                          <select 
                             name="avaliacaoInterna" 
-                            type="number" 
-                            min="0" 
-                            max="5" 
-                            defaultValue={editingClient?.avaliacaoInterna} 
-                            title="Legenda de Rating: 
-1 - Baixo Potencial / Risco Alto
-2 - Potencial Médio / Regular
-3 - Bom Cliente / Estável
-4 - Cliente Prioritário / Potencial Alto
-5 - Cliente VIP / Master"
-                            className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" 
-                          />
+                            defaultValue={editingClient?.avaliacaoInterna || 0} 
+                            className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary"
+                          >
+                             <option value="0">0 - Não Avaliado</option>
+                             <option value="1">1 - Baixo Potencial / Risco Alto</option>
+                             <option value="2">2 - Potencial Médio / Regular</option>
+                             <option value="3">3 - Bom Cliente / Estável</option>
+                             <option value="4">4 - Cliente Prioritário / Potencial Alto</option>
+                             <option value="5">5 - Cliente VIP / Master</option>
+                          </select>
                        </div>
                     </section>
 
