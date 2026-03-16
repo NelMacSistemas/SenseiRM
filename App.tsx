@@ -3694,21 +3694,35 @@ const ConfiguracoesPage = () => {
         {activeTab === 'setores' && isAdmin && (
           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
             <div className="flex justify-between items-center">
-               <h3 className="text-2xl font-black text-slate-800 tracking-tight">Setores da Organização</h3>
-               <button onClick={() => { setEditingSector(null); setIsSectorModalOpen(true); }} className="bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase shadow-md hover:brightness-110">Cadastrar Novo</button>
+               <div className="flex items-center gap-4">
+                 <div className="w-16 h-16 rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-2xl shadow-inner">
+                   <Icon name="building" />
+                 </div>
+                 <div>
+                   <h3 className="text-2xl font-black text-slate-800 tracking-tight">Setores da Organização</h3>
+                   <p className="text-sm text-slate-400 font-medium mt-1">Gerencie os departamentos e suas respectivas lideranças.</p>
+                 </div>
+               </div>
+               <button onClick={() => { setEditingSector(null); setIsSectorModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
+                 <Icon name="plus" /> Novo Setor
+               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {sectors.map(s => {
                 const manager = users.find(u => u.id === s.responsavelId);
                 return (
-                  <div key={s.id} className="p-6 rounded-[2.5rem] border border-slate-100 bg-slate-50/50 flex justify-between items-start group hover:bg-white hover:border-primary/30 transition-all shadow-sm">
+                  <div key={s.id} className="p-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 flex justify-between items-start group hover:bg-white hover:shadow-md transition-all shadow-sm">
                     <div className="flex-1 overflow-hidden pr-4">
                       <h4 className="font-extrabold text-slate-800 uppercase tracking-tighter text-lg truncate">{s.nome}</h4>
-                      <p className="text-[10px] font-black text-primary uppercase tracking-widest mt-1">Responsável: {manager?.nome || 'Não definido'}</p>
-                      <p className="text-sm text-slate-400 mt-2 font-medium italic line-clamp-2">{s.descricao || 'Sem descrição definida.'}</p>
-                      <p className="text-[9px] text-slate-300 mt-4 font-black uppercase tracking-widest">Desde {new Date(s.dataCriacao).toLocaleDateString()}</p>
+                      <p className="text-[10px] font-black text-primary uppercase tracking-widest mt-1 flex items-center gap-1">
+                        <Icon name="user" className="text-[10px]" /> {manager?.nome || 'Não definido'}
+                      </p>
+                      <p className="text-sm text-slate-500 mt-3 font-medium line-clamp-2">{s.descricao || 'Sem descrição definida.'}</p>
+                      <p className="text-[9px] text-slate-400 mt-4 font-black uppercase tracking-widest flex items-center gap-1">
+                        <Icon name="calendar-alt" className="text-[10px]" /> Desde {new Date(s.dataCriacao).toLocaleDateString()}
+                      </p>
                     </div>
-                    <div className="flex gap-2 relative z-50">
+                    <div className="flex gap-2 relative z-50 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
                         type="button" 
                         onClick={(e) => { 
@@ -3720,7 +3734,7 @@ const ConfiguracoesPage = () => {
                         className="p-3 text-blue-600 hover:bg-blue-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-blue-50" 
                         title="Editar"
                       >
-                        <Edit size={20} className="pointer-events-none" />
+                        <Edit size={18} className="pointer-events-none" />
                       </button>
                       <button 
                         type="button" 
@@ -3732,13 +3746,17 @@ const ConfiguracoesPage = () => {
                         className="p-3 text-red-600 hover:bg-red-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-red-50" 
                         title="Excluir"
                       >
-                        <Trash2 size={20} className="pointer-events-none" />
+                        <Trash2 size={18} className="pointer-events-none" />
                       </button>
                     </div>
                   </div>
                 );
               })}
-              {sectors.length === 0 && <div className="col-span-2 text-center py-10 text-slate-400 font-medium italic">Nenhum setor registrado no sistema.</div>}
+              {sectors.length === 0 && (
+                <div className="col-span-2 p-20 text-center text-slate-400 font-bold italic bg-slate-50 rounded-[3rem] border border-slate-200 border-dashed">
+                  Nenhum setor registrado no sistema.
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -3746,18 +3764,23 @@ const ConfiguracoesPage = () => {
         {activeTab === 'categorias' && isAdmin && (
           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
             <div className="flex justify-between items-center">
-               <div>
-                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Categorias de Clientes</h3>
-                 <p className="text-sm text-slate-400 font-medium">Gerencie as segmentações para organizar sua base de clientes.</p>
+               <div className="flex items-center gap-4">
+                 <div className="w-16 h-16 rounded-[2rem] bg-emerald-50 text-emerald-500 flex items-center justify-center text-2xl shadow-inner">
+                   <Icon name="tag" />
+                 </div>
+                 <div>
+                   <h3 className="text-2xl font-black text-slate-800 tracking-tight">Categorias de Clientes</h3>
+                   <p className="text-sm text-slate-400 font-medium mt-1">Gerencie as segmentações para organizar sua base de clientes.</p>
+                 </div>
                </div>
-               <button onClick={() => { setEditingCategory(null); setIsCategoryModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-lg hover:brightness-110 transition-all flex items-center gap-2">
-                 <Icon name="plus" /> Cadastrar Nova
+               <button onClick={() => { setEditingCategory(null); setIsCategoryModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center gap-2">
+                 <Icon name="plus" /> Nova Categoria
                </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {clientCategories.map(cat => (
-                <div key={cat.id} className="p-6 rounded-[2.5rem] border border-slate-100 bg-slate-50/50 flex justify-between items-start group hover:bg-white hover:border-primary/30 transition-all shadow-sm">
+                <div key={cat.id} className="p-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 flex justify-between items-start group hover:bg-white hover:shadow-md transition-all shadow-sm">
                   <div className="flex-1 overflow-hidden pr-4">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: cat.cor || 'var(--primary-color)' }}>
@@ -3767,7 +3790,7 @@ const ConfiguracoesPage = () => {
                     </div>
                     <p className="text-sm text-slate-400 mt-2 font-medium italic line-clamp-2">{cat.descricao || 'Sem descrição definida.'}</p>
                   </div>
-                  <div className="flex gap-2 relative z-50">
+                  <div className="flex gap-2 relative z-50 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
                       type="button"
                       onClick={(e) => { 
@@ -3779,7 +3802,7 @@ const ConfiguracoesPage = () => {
                       className="p-3 text-blue-600 hover:bg-blue-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-blue-50" 
                       title="Editar"
                     >
-                      <Edit size={20} className="pointer-events-none" />
+                      <Edit size={18} className="pointer-events-none" />
                     </button>
                     <button 
                       type="button"
@@ -3791,13 +3814,13 @@ const ConfiguracoesPage = () => {
                       className="p-3 text-red-600 hover:bg-red-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-red-50" 
                       title="Excluir"
                     >
-                      <Trash2 size={20} className="pointer-events-none" />
+                      <Trash2 size={18} className="pointer-events-none" />
                     </button>
                   </div>
                 </div>
               ))}
               {clientCategories.length === 0 && (
-                <div className="col-span-full py-12 text-center text-slate-400 italic font-medium">
+                <div className="col-span-full p-20 text-center text-slate-400 font-bold italic bg-slate-50 rounded-[3rem] border border-slate-200 border-dashed">
                   Nenhuma categoria cadastrada.
                 </div>
               )}
@@ -3807,38 +3830,68 @@ const ConfiguracoesPage = () => {
 
         {activeTab === 'sla' && isAdmin && (
            <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-10 animate-in slide-in-from-bottom-2">
-              <div>
-                <h3 className="text-2xl font-black text-slate-800 tracking-tight">Parametrização de SLA</h3>
-                <p className="text-sm text-slate-400 font-medium">Defina o prazo de entrega (em dias) para cada nível de criticidade.</p>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-[2rem] bg-blue-50 text-blue-500 flex items-center justify-center text-2xl shadow-inner">
+                  <Icon name="clock" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">Parametrização de SLA</h3>
+                  <p className="text-sm text-slate-400 font-medium mt-1">Defina o prazo de entrega (em dias) para cada nível de criticidade.</p>
+                </div>
               </div>
               <form onSubmit={handleSaveSLA} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 {Object.keys(slaSettings).map(p => (
-                   <div key={p} className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">{p} Prioridade</label>
-                      <div className="relative">
-                        <input name={p} type="number" min="0" defaultValue={slaSettings[p as keyof SLASettings]} className="w-full px-6 py-5 rounded-3xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-black text-2xl text-slate-800 focus:border-primary transition-all shadow-inner" />
-                        <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-black text-xs uppercase">Dias</span>
-                      </div>
-                   </div>
-                 ))}
-                 <button type="submit" className="md:col-span-2 py-5 bg-primary text-white rounded-[2rem] font-black text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1">Efetivar Configurações de SLA</button>
+                 {Object.keys(slaSettings).map(p => {
+                   const colors: Record<string, string> = {
+                     'Baixa': 'text-emerald-500 bg-emerald-50',
+                     'Média': 'text-amber-500 bg-amber-50',
+                     'Alta': 'text-orange-500 bg-orange-50',
+                     'Crítica': 'text-red-500 bg-red-50'
+                   };
+                   const colorClass = colors[p] || 'text-slate-500 bg-slate-50';
+                   const bgClass = colorClass.split(' ')[1];
+                   const textClass = colorClass.split(' ')[0];
+                   
+                   return (
+                     <div key={p} className="bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
+                        <div className={`absolute top-0 left-0 w-2 h-full ${bgClass.replace('50', '500')}`} />
+                        <div className="flex items-center justify-between mb-4 pl-4">
+                          <label className={`text-xs font-black uppercase tracking-widest flex items-center gap-2 ${textClass}`}>
+                            <div className={`w-2 h-2 rounded-full ${bgClass.replace('50', '500')}`} />
+                            Prioridade {p}
+                          </label>
+                        </div>
+                        <div className="relative pl-4">
+                          <input name={p} type="number" min="0" defaultValue={slaSettings[p as keyof SLASettings]} className="w-full px-6 py-5 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-black text-3xl text-slate-800 focus:border-primary transition-all shadow-sm" />
+                          <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-black text-xs uppercase">Dias</span>
+                        </div>
+                     </div>
+                   );
+                 })}
+                 <button type="submit" className="md:col-span-2 py-5 bg-primary text-white rounded-[2rem] font-black text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1 flex items-center justify-center gap-3">
+                   <Icon name="save" /> Efetivar Configurações de SLA
+                 </button>
               </form>
            </div>
         )}
 
         {activeTab === 'email' && isAdmin && (
            <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-10 animate-in slide-in-from-bottom-2">
-              <div>
-                <h3 className="text-2xl font-black text-slate-800 tracking-tight">Configurações de E-mail</h3>
-                <p className="text-sm text-slate-400 font-medium">Defina as credenciais do servidor SMTP para envio de mala direta.</p>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-2xl shadow-inner">
+                  <Icon name="envelope" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">Configurações de E-mail</h3>
+                  <p className="text-sm text-slate-400 font-medium mt-1">Defina as credenciais do servidor SMTP para envio de mala direta.</p>
+                </div>
               </div>
               <form onSubmit={handleSaveEmail} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <div className="space-y-1 md:col-span-2">
+                 <div className="space-y-1 md:col-span-2 bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Provedor</label>
                     <select 
                       name="provider" 
                       defaultValue={emailSettings.provider} 
-                      className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner"
+                      className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm mt-2"
                       onChange={(e) => {
                         const provider = e.target.value;
                         setSelectedProvider(provider);
@@ -3883,40 +3936,42 @@ const ConfiguracoesPage = () => {
                       <option value="Mailgun">Mailgun</option>
                     </select>
                  </div>
-                 <div className="space-y-1">
+                  <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Host SMTP</label>
-                    <input name="host" required defaultValue={emailSettings.host} placeholder="smtp.exemplo.com" className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner" />
+                    <input name="host" required defaultValue={emailSettings.host} placeholder="smtp.exemplo.com" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm" />
                  </div>
                  <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Porta</label>
-                    <input name="port" type="number" required defaultValue={emailSettings.port} placeholder="587" className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner" />
+                    <input name="port" type="number" required defaultValue={emailSettings.port} placeholder="587" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm" />
                  </div>
                  <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Usuário</label>
-                    <input name="user" required defaultValue={emailSettings.user} placeholder="seu-email@exemplo.com" className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner" />
+                    <input name="user" required defaultValue={emailSettings.user} placeholder="seu-email@exemplo.com" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm" />
                  </div>
                  <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Senha</label>
-                    <input name="pass" type="password" required defaultValue={emailSettings.pass} placeholder="••••••••" className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner" />
+                    <input name="pass" type="password" required defaultValue={emailSettings.pass} placeholder="••••••••" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm" />
                  </div>
-                 <div className="space-y-1 md:col-span-2 flex items-center gap-3">
+                 <div className="space-y-1 md:col-span-2 flex items-center gap-3 bg-slate-50 p-6 rounded-2xl border border-slate-100">
                     <input name="secure" type="checkbox" id="secure" defaultChecked={emailSettings.secure} className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary" />
                     <label htmlFor="secure" className="text-sm font-bold text-slate-700">Usar conexão segura (SSL/TLS)</label>
                  </div>
                  {(selectedProvider === 'GMail' || selectedProvider === 'Office365') && (
-                   <div className="md:col-span-2 bg-amber-50 border border-amber-200 p-6 rounded-2xl flex gap-4 items-start">
-                     <div className="text-amber-500 shrink-0 mt-1">
-                       <AlertTriangle size={24} />
+                   <div className="md:col-span-2 bg-amber-50 border border-amber-200 p-6 rounded-[2rem] flex gap-4 items-start shadow-sm">
+                     <div className="text-amber-500 shrink-0 mt-1 bg-white p-2 rounded-xl shadow-sm">
+                       <Icon name="exclamation-triangle" />
                      </div>
                      <div>
-                       <h4 className="font-bold text-amber-800 text-sm mb-1">Atenção: Senha de Aplicativo Necessária</h4>
+                       <h4 className="font-black text-amber-800 text-sm mb-1">Atenção: Senha de Aplicativo Necessária</h4>
                        <p className="text-xs text-amber-700 font-medium leading-relaxed">
                          Para provedores como {selectedProvider}, você não pode usar a senha normal da sua conta se a Autenticação em Duas Etapas (2FA) estiver ativada. Você precisará gerar uma <strong>Senha de Aplicativo</strong> nas configurações de segurança da sua conta e inseri-la no campo "Senha" acima.
                        </p>
                      </div>
                    </div>
                  )}
-                 <button type="submit" className="md:col-span-2 py-5 bg-primary text-white rounded-[2rem] font-black text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1">Salvar Configurações</button>
+                 <button type="submit" className="md:col-span-2 py-5 bg-primary text-white rounded-[2rem] font-black text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1 flex items-center justify-center gap-3">
+                   <Icon name="save" /> Salvar Configurações de E-mail
+                 </button>
               </form>
            </div>
         )}
@@ -3926,17 +3981,24 @@ const ConfiguracoesPage = () => {
         )}
 
         {activeTab === 'aparencia' && (
-           <div className="bg-slate-900 p-12 rounded-[3.5rem] shadow-2xl space-y-10 animate-in slide-in-from-bottom-2">
-              <div>
-                <h3 className="text-2xl font-black text-white tracking-tight">Ecossistema Visual</h3>
-                <p className="text-sm text-slate-400 font-medium">Personalize a identidade do framework para seu perfil.</p>
+           <div className="bg-slate-900 p-12 rounded-[3.5rem] shadow-2xl space-y-10 animate-in slide-in-from-bottom-2 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+              <div className="relative z-10 flex items-center gap-4">
+                <div className="w-16 h-16 rounded-[2rem] bg-white/10 text-white flex items-center justify-center text-2xl backdrop-blur-md border border-white/10">
+                  <Icon name="palette" />
+                </div>
+                <div>
+                  <h3 className="text-3xl font-black text-white tracking-tight">Ecossistema Visual</h3>
+                  <p className="text-sm text-slate-400 font-medium mt-1">Personalize a identidade do framework para seu perfil.</p>
+                </div>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 relative z-10">
                  {THEMES.map(t => (
-                   <button key={t.id} onClick={() => updateUser({ ...currentUser!, tema: t.id })} className={`p-6 rounded-[2.5rem] border-2 transition-all flex flex-col items-center gap-3 relative group ${currentUser?.tema === t.id ? 'border-primary bg-white/5' : 'border-white/5 hover:border-white/20'}`}>
-                     <div className="w-14 h-14 rounded-full shadow-2xl transition-transform group-hover:scale-110" style={{ backgroundColor: t.color, boxShadow: `0 0 20px ${t.color}44` }} />
-                     <span className="text-[10px] font-black uppercase text-white tracking-widest mt-2">{t.name}</span>
-                     {currentUser?.tema === t.id && <div className="absolute top-3 right-3 text-primary"><Icon name="check-circle" className="text-lg" /></div>}
+                   <button key={t.id} onClick={() => updateUser({ ...currentUser!, tema: t.id })} className={`p-6 rounded-[2.5rem] border-2 transition-all flex flex-col items-center gap-4 relative group ${currentUser?.tema === t.id ? 'border-primary bg-white/10 shadow-lg shadow-primary/20' : 'border-white/5 bg-white/5 hover:border-white/20 hover:bg-white/10'}`}>
+                     <div className="w-16 h-16 rounded-full shadow-2xl transition-transform group-hover:scale-110 flex items-center justify-center" style={{ backgroundColor: t.color, boxShadow: `0 0 30px ${t.color}66` }}>
+                       {currentUser?.tema === t.id && <Icon name="check" className="text-white text-xl drop-shadow-md" />}
+                     </div>
+                     <span className="text-[10px] font-black uppercase text-white tracking-widest">{t.name}</span>
                    </button>
                  ))}
               </div>
