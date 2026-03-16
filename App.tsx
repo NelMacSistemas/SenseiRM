@@ -3,7 +3,7 @@ import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
-import { User, Client, ContactPerson, AuditEntry, MailHistory, UserRole, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory, Attachment, Notification } from './types';
+import { User, Client, ContactPerson, AuditEntry, MailHistory, UserRole, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory, Attachment, Notification, MailTemplate, ClientInteraction, Subtask, Comment } from './types';
 import { INITIAL_USER, THEMES } from './constants';
 import { auditService } from './services/auditService';
 
@@ -80,17 +80,22 @@ const Icon: React.FC<{ name: string; className?: string; title?: string }> = ({ 
 };
 
 // --- Helpers for Detailed Audit ---
-const getDetailedDiff = (oldObj: any, newObj: any, labels: Record<string, string>): string => {
+const getDetailedDiff = (oldObj: any, newObj: any, labels: Record<string, string>): { text: string, diff: { field: string, oldValue: any, newValue: any }[] } => {
   const changes: string[] = [];
+  const diff: { field: string, oldValue: any, newValue: any }[] = [];
   Object.keys(labels).forEach(key => {
     const oldVal = oldObj[key] === undefined || oldObj[key] === null || oldObj[key] === '' ? 'Vazio' : String(oldObj[key]);
     const newVal = newObj[key] === undefined || newObj[key] === null || newObj[key] === '' ? 'Vazio' : String(newObj[key]);
     
     if (oldVal !== newVal) {
       changes.push(`${labels[key]}: "${oldVal}" → "${newVal}"`);
+      diff.push({ field: labels[key], oldValue: oldVal, newValue: newVal });
     }
   });
-  return changes.length > 0 ? `Alterações: [${changes.join(' | ')}]` : 'Nenhuma alteração nos campos principais.';
+  return {
+    text: changes.length > 0 ? `Alterações: [${changes.join(' | ')}]` : 'Nenhuma alteração nos campos principais.',
+    diff
+  };
 };
 
 const CLIENT_LABELS = {
@@ -664,20 +669,20 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const addUser = (u: User) => {
     setUsers(prev => [...prev, u]);
     apiSync('users', 'ADD', u);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'USUARIOS', `Usuário ${u.nome} criado.`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'USUARIOS', `Usuário ${u.nome} criado.`, u.id);
     refreshAudit();
   };
 
   const updateUser = (u: User) => {
     const oldUser = users.find(item => item.id === u.id);
-    const diff = oldUser ? getDetailedDiff(oldUser, u, USER_LABELS) : '';
+    const diffResult = oldUser ? getDetailedDiff(oldUser, u, USER_LABELS) : { text: '', diff: [] };
     setUsers(prev => prev.map(item => item.id === u.id ? u : item));
     apiSync('users', 'UPDATE', u);
     if (currentUser?.id === u.id) {
       setCurrentUser(u);
       localStorage.setItem('senseirm_current_user', JSON.stringify(u));
     }
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'USUARIOS', `Usuário ${u.nome} alterado. ${diff}`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'USUARIOS', `Usuário ${u.nome} alterado. ${diffResult.text}`, u.id, diffResult.diff);
     refreshAudit();
   };
 
@@ -685,23 +690,23 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const target = users.find(u => u.id === id);
     setUsers(prev => prev.filter(u => u.id !== id));
     apiSync('users', 'DELETE', { id });
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'USUARIOS', `Usuário removido: ${target?.nome} (${target?.email})`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'USUARIOS', `Usuário removido: ${target?.nome} (${target?.email})`, id);
     refreshAudit();
   };
 
   const addClient = (c: Client) => {
     setClients(prev => [...prev, c]);
     apiSync('clients', 'ADD', c);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'CLIENTES', `Cliente ${c.nomeRazaoSocial} (${c.clientCode}) criado.`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'CLIENTES', `Cliente ${c.nomeRazaoSocial} (${c.clientCode}) criado.`, c.id);
     refreshAudit();
   };
 
   const updateClient = (c: Client) => {
     const oldClient = clients.find(item => item.id === c.id);
-    const diff = oldClient ? getDetailedDiff(oldClient, c, CLIENT_LABELS) : '';
+    const diffResult = oldClient ? getDetailedDiff(oldClient, c, CLIENT_LABELS) : { text: '', diff: [] };
     setClients(prev => prev.map(item => item.id === c.id ? c : item));
     apiSync('clients', 'UPDATE', c);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CLIENTES', `Cliente ${c.nomeRazaoSocial} atualizado. ${diff}`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CLIENTES', `Cliente ${c.nomeRazaoSocial} atualizado. ${diffResult.text}`, c.id, diffResult.diff);
     refreshAudit();
   };
 
@@ -709,23 +714,23 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const target = clients.find(c => c.id === id);
     setClients(prev => prev.filter(c => c.id !== id));
     apiSync('clients', 'DELETE', { id });
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'CLIENTES', `Cliente removido: ${target?.nomeRazaoSocial} (${target?.clientCode})`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'CLIENTES', `Cliente removido: ${target?.nomeRazaoSocial} (${target?.clientCode})`, id);
     refreshAudit();
   };
 
   const addTask = (t: Task) => {
     setTasks(prev => [...prev, t]);
     apiSync('tasks', 'ADD', t);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'TAREFAS', `Tarefa ${t.taskNumber}: "${t.titulo}" criada.`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'TAREFAS', `Tarefa ${t.taskNumber}: "${t.titulo}" criada.`, t.id);
     refreshAudit();
   };
 
   const updateTask = (t: Task) => {
     const oldTask = tasks.find(item => item.id === t.id);
-    const diff = oldTask ? getDetailedDiff(oldTask, t, TASK_LABELS) : '';
+    const diffResult = oldTask ? getDetailedDiff(oldTask, t, TASK_LABELS) : { text: '', diff: [] };
     setTasks(prev => prev.map(item => item.id === t.id ? t : item));
     apiSync('tasks', 'UPDATE', t);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'TAREFAS', `Tarefa ${t.taskNumber} alterada. ${diff}`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'TAREFAS', `Tarefa ${t.taskNumber} alterada. ${diffResult.text}`, t.id, diffResult.diff);
     refreshAudit();
   };
 
@@ -733,23 +738,23 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const target = tasks.find(t => t.id === id);
     setTasks(prev => prev.filter(t => t.id !== id));
     apiSync('tasks', 'DELETE', { id });
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'TAREFAS', `Tarefa excluída: ${target?.taskNumber} - ${target?.titulo}`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'TAREFAS', `Tarefa excluída: ${target?.taskNumber} - ${target?.titulo}`, id);
     refreshAudit();
   };
 
   const addSector = (s: Sector) => {
     setSectors(prev => [...prev, s]);
     apiSync('sectors', 'ADD', s);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'SETORES', `Setor "${s.nome}" criado.`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'SETORES', `Setor "${s.nome}" criado.`, s.id);
     refreshAudit();
   };
 
   const updateSector = (s: Sector) => {
     const oldSec = sectors.find(item => item.id === s.id);
-    const diff = oldSec ? getDetailedDiff(oldSec, s, { nome: 'Nome', descricao: 'Descrição', responsavelId: 'Gestor' }) : '';
+    const diffResult = oldSec ? getDetailedDiff(oldSec, s, { nome: 'Nome', descricao: 'Descrição', responsavelId: 'Gestor' }) : { text: '', diff: [] };
     setSectors(prev => prev.map(item => item.id === s.id ? s : item));
     apiSync('sectors', 'UPDATE', s);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'SETORES', `Setor "${s.nome}" atualizado. ${diff}`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'SETORES', `Setor "${s.nome}" atualizado. ${diffResult.text}`, s.id, diffResult.diff);
     refreshAudit();
   };
 
@@ -762,20 +767,22 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     apiSync('sectors', 'DELETE', { id });
     setTasks(prev => prev.map(task => task.setorId === id ? { ...task, setorId: '' } : task));
     
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'SETORES', `Setor "${target.nome}" removido.`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'SETORES', `Setor "${target.nome}" removido.`, id);
     refreshAudit();
   };
 
   const addClientCategory = (c: ClientCategory) => {
     setClientCategories(prev => [...prev, c]);
     apiSync('clientCategories', 'ADD', c);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'CONFIG', `Categoria "${c.nome}" criada.`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'CONFIG', `Categoria "${c.nome}" criada.`, c.id);
     refreshAudit();
   };
 
   const updateClientCategory = (c: ClientCategory) => {
     setClientCategories(prevCategories => {
       const old = prevCategories.find(item => item.id === c.id);
+      const diffResult = old ? getDetailedDiff(old, c, { nome: 'Nome', descricao: 'Descrição', cor: 'Cor' }) : { text: '', diff: [] };
+      
       if (old && old.nome !== c.nome) {
         setClients(prevClients => {
           const newClients = prevClients.map(client => 
@@ -787,7 +794,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       }
       
       apiSync('clientCategories', 'UPDATE', c);
-      auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Categoria "${c.nome}" atualizada.`);
+      auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Categoria "${c.nome}" atualizada. ${diffResult.text}`, c.id, diffResult.diff);
       refreshAudit();
       
       return prevCategories.map(item => item.id === c.id ? c : item);
@@ -807,7 +814,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       return newClients;
     });
     
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'CONFIG', `Categoria "${target.nome}" removida.`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'CONFIG', `Categoria "${target.nome}" removida.`, id);
     refreshAudit();
   };
 
@@ -821,16 +828,16 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const addTemplate = (t: MailTemplate) => {
     setTemplates(prev => [...prev, t]);
     apiSync('templates', 'ADD', t);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'TEMPLATE', `Template "${t.name}" criado.`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'TEMPLATE', `Template "${t.name}" criado.`, t.id);
     refreshAudit();
   };
 
   const updateTemplate = (t: MailTemplate) => {
     const old = templates.find(x => x.id === t.id);
-    const diff = old ? getDetailedDiff(old, t, { name: 'Nome', subject: 'Assunto', content: 'Conteúdo' }) : '';
+    const diffResult = old ? getDetailedDiff(old, t, { name: 'Nome', subject: 'Assunto', content: 'Conteúdo' }) : { text: '', diff: [] };
     setTemplates(prev => prev.map(x => x.id === t.id ? t : x));
     apiSync('templates', 'UPDATE', t);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'TEMPLATE', `Template "${t.name}" atualizado. ${diff}`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'TEMPLATE', `Template "${t.name}" atualizado. ${diffResult.text}`, t.id, diffResult.diff);
     refreshAudit();
   };
 
@@ -839,22 +846,23 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!target) return;
     setTemplates(prev => prev.filter(t => t.id !== id));
     apiSync('templates', 'DELETE', { id });
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'TEMPLATE', `Template "${target.name}" removido.`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'TEMPLATE', `Template "${target.name}" removido.`, id);
     refreshAudit();
   };
 
   const updateSLASettings = (settings: SLASettings) => {
-    const diff = getDetailedDiff(slaSettings, settings, { Baixa: 'SLA Baixa', Média: 'SLA Média', Alta: 'SLA Alta', Crítica: 'SLA Crítica' });
+    const diffResult = getDetailedDiff(slaSettings, settings, { Baixa: 'SLA Baixa', Média: 'SLA Média', Alta: 'SLA Alta', Crítica: 'SLA Crítica' });
     setSlaSettings(settings);
     apiSync('slaSettings', 'SET', settings);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Prazos de SLA redefinidos. ${diff}`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Prazos de SLA redefinidos. ${diffResult.text}`, 'slaSettings', diffResult.diff);
     refreshAudit();
   };
 
   const updateEmailSettings = (settings: EmailSettings) => {
+    const diffResult = getDetailedDiff(emailSettings, settings, { host: 'Host', port: 'Porta', user: 'Usuário', from: 'Remetente' });
     setEmailSettings(settings);
     apiSync('emailSettings', 'SET', settings);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Configurações de E-mail atualizadas.`);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Configurações de E-mail atualizadas. ${diffResult.text}`, 'emailSettings', diffResult.diff);
     refreshAudit();
   };
 
@@ -1447,7 +1455,7 @@ const Dashboard = () => {
 };
 
 const ClientsPage = () => {
-  const { clients, addClient, updateClient, deleteClient, currentUser, clientCategories } = useApp();
+  const { clients, addClient, updateClient, deleteClient, currentUser, clientCategories, users } = useApp();
   const { confirm } = useConfirm();
   const location = useLocation();
   const navigate = useNavigate();
@@ -4106,9 +4114,21 @@ const ConfiguracoesPage = () => {
 const AuditoriaPage = () => {
   const { auditLogs, currentUser } = useApp();
   const { confirm } = useConfirm();
-  const filteredLogs = useMemo(() => 
-    currentUser?.perfil === UserRole.ADMIN ? auditLogs : auditLogs.filter(log => log.userId === currentUser?.id), 
-  [auditLogs, currentUser]);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const filteredLogs = useMemo(() => {
+    let logs = currentUser?.perfil === UserRole.ADMIN ? auditLogs : auditLogs.filter(log => log.userId === currentUser?.id);
+    if (searchTerm) {
+      const lowerTerm = searchTerm.toLowerCase();
+      logs = logs.filter(log => 
+        log.details.toLowerCase().includes(lowerTerm) || 
+        log.module.toLowerCase().includes(lowerTerm) ||
+        log.userName.toLowerCase().includes(lowerTerm) ||
+        (log.entityId && log.entityId.toLowerCase().includes(lowerTerm))
+      );
+    }
+    return logs;
+  }, [auditLogs, currentUser, searchTerm]);
   
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
 
@@ -4138,59 +4158,107 @@ const AuditoriaPage = () => {
 
   return (
     <div className="p-8 space-y-6 animate-in fade-in duration-500">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
            <p className="text-slate-500 font-medium">Log completo de segurança e rastreabilidade de dados.</p>
         </div>
-        {isAdmin && <button onClick={() => { confirm({ title: 'Limpar Histórico', message: 'Limpar logs permanentemente?', onConfirm: () => { auditService.clearLogs(); window.location.reload(); } }); }} className="text-red-600 bg-red-50 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm">Limpar Histórico</button>}
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="relative flex-1 md:w-80">
+            <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input 
+              type="text" 
+              placeholder="Buscar por entidade, usuário ou ação..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-medium text-sm text-slate-700 focus:border-primary transition-all shadow-sm"
+            />
+          </div>
+          {isAdmin && <button onClick={() => { confirm({ title: 'Limpar Histórico', message: 'Limpar logs permanentemente?', onConfirm: () => { auditService.clearLogs(); window.location.reload(); } }); }} className="text-red-600 bg-red-50 px-5 py-3 rounded-2xl text-xs font-black uppercase border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm whitespace-nowrap"><Icon name="trash" className="inline-block mr-2 -mt-1" />Limpar Histórico</button>}
+        </div>
       </div>
 
       <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Horário</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Autor</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Interface / Módulo</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Operação</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Descrição detalhada</th>
+              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-32">Horário</th>
+              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-48">Autor</th>
+              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-40">Módulo</th>
+              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-32">Operação</th>
+              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalhes & Comparação</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filteredLogs.map(log => (
               <tr key={log.id} className="hover:bg-slate-50/50 transition-colors group">
-                <td className="px-6 py-5">
+                <td className="px-6 py-5 align-top">
                    <div className="flex flex-col">
                       <span className="text-[11px] font-black text-slate-700 whitespace-nowrap">{new Date(log.timestamp).toLocaleDateString()}</span>
                       <span className="text-[10px] font-bold text-slate-400 font-mono">{new Date(log.timestamp).toLocaleTimeString()}</span>
                    </div>
                 </td>
-                <td className="px-6 py-5">
-                   <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[9px] font-black text-slate-500 uppercase">
+                <td className="px-6 py-5 align-top">
+                   <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500 uppercase shadow-sm">
                          {log.userName.charAt(0)}
                       </div>
-                      <span className="text-xs font-bold text-slate-600">{log.userName}</span>
+                      <span className="text-xs font-bold text-slate-700">{log.userName}</span>
                    </div>
                 </td>
-                <td className="px-6 py-5">
-                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter group-hover:text-primary transition-colors">{getModuleLabel(log.module)}</span>
+                <td className="px-6 py-5 align-top">
+                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-lg">{getModuleLabel(log.module)}</span>
                 </td>
-                <td className="px-6 py-5 text-center">
-                   <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase border ${getActionColor(log.action)}`}>
+                <td className="px-6 py-5 text-center align-top">
+                   <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase border ${getActionColor(log.action)}`}>
                       {log.action}
                    </span>
                 </td>
-                <td className="px-6 py-5">
-                   <p className="text-xs font-medium text-slate-500 italic max-w-xl leading-relaxed whitespace-pre-wrap">{log.details}</p>
+                <td className="px-6 py-5 align-top">
+                   <div className="space-y-3">
+                     <p className="text-xs font-medium text-slate-600 leading-relaxed">
+                       {log.details.split('Alterações:')[0]}
+                     </p>
+                     
+                     {log.diff && log.diff.length > 0 && (
+                       <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden mt-2">
+                         <div className="bg-slate-100 px-4 py-2 border-b border-slate-200">
+                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                             <Icon name="file-text" className="text-slate-400" /> Comparação de Alterações
+                           </span>
+                         </div>
+                         <div className="p-4 space-y-3">
+                           {log.diff.map((d, idx) => (
+                             <div key={idx} className="text-xs font-mono grid grid-cols-[120px_1fr] gap-4 items-start">
+                               <span className="font-bold text-slate-500 text-right pt-1">{d.field}:</span>
+                               <div className="space-y-1 flex-1">
+                                 <div className="bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-100 flex items-start gap-2 break-all">
+                                   <span className="text-red-400 font-black select-none">-</span>
+                                   <span className="line-through opacity-80">{d.oldValue}</span>
+                                 </div>
+                                 <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-100 flex items-start gap-2 break-all">
+                                   <span className="text-emerald-500 font-black select-none">+</span>
+                                   <span className="font-medium">{d.newValue}</span>
+                                 </div>
+                               </div>
+                             </div>
+                           ))}
+                         </div>
+                       </div>
+                     )}
+                   </div>
                 </td>
               </tr>
             ))}
             {filteredLogs.length === 0 && (
                <tr>
-                 <td colSpan={5} className="p-20 text-center text-slate-300">
-                   <Icon name="history" className="text-4xl mb-4 opacity-20" />
-                   <p className="font-bold italic">Nenhum registro de auditoria disponível para visualização.</p>
+                 <td colSpan={5} className="p-20 text-center text-slate-400">
+                   <div className="flex flex-col items-center justify-center">
+                     <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
+                       <Icon name="search" className="text-3xl text-slate-300" />
+                     </div>
+                     <p className="font-bold text-slate-500 text-lg">Nenhum registro encontrado</p>
+                     <p className="text-sm text-slate-400 mt-1">Não há logs de auditoria que correspondam à sua busca.</p>
+                   </div>
                  </td>
                </tr>
             )}

@@ -228,6 +228,8 @@ export interface AuditEntry {
   action: string;
   module: string;
   details: string;
+  entityId?: string;
+  diff?: { field: string; oldValue: any; newValue: any }[];
 }
 
 export interface MailHistory {

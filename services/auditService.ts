@@ -23,7 +23,7 @@ export const auditService = {
     }
   },
 
-  log: async (userId: string, userName: string, action: string, module: string, details: string) => {
+  log: async (userId: string, userName: string, action: string, module: string, details: string, entityId?: string, diff?: { field: string; oldValue: any; newValue: any }[]) => {
     try {
       const token = localStorage.getItem('senseirm_token');
       const res = await fetch('/api/audit', {
@@ -32,7 +32,7 @@ export const auditService = {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ action, module, details })
+        body: JSON.stringify({ action, module, details, entityId, diff })
       });
       if (res.status === 401 || res.status === 403) {
         localStorage.removeItem('senseirm_token');

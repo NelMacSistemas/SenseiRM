@@ -328,7 +328,7 @@ app.post('/api/mail/send', authenticateToken, async (req: any, res: any) => {
 });
 
 app.post('/api/audit', authenticateToken, (req: any, res: any) => {
-  const { action, module, details } = req.body;
+  const { action, module, details, entityId, diff } = req.body;
   const user = db.users.find((u: any) => u.id === req.user.id);
   
   db.auditLogs.unshift({
@@ -338,7 +338,9 @@ app.post('/api/audit', authenticateToken, (req: any, res: any) => {
     userName: user ? (user as any).nome : 'Sistema',
     action,
     module,
-    details
+    details,
+    entityId,
+    diff
   } as never);
   
   if (db.auditLogs.length > 1000) {
