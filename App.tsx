@@ -1036,7 +1036,6 @@ const Sidebar = () => {
     { path: '/dashboard', label: 'Dashboard', icon: 'chart-line', perm: 'dashboard' },
     { path: '/clientes', label: 'Clientes', icon: 'address-book', perm: 'clientes' },
     { path: '/mala-direta', label: 'Mala Direta', icon: 'paper-plane', perm: 'malaDireta' },
-    { path: '/templates', label: 'Templates', icon: 'file-alt', perm: 'malaDireta' },
     { path: '/tarefas', label: 'Tarefas', icon: 'tasks', perm: 'tarefas' },
     { path: '/usuarios', label: 'Usuários', icon: 'users', perm: 'usuarios' },
     { path: '/configuracoes', label: 'Configurações', icon: 'cog', perm: 'configuracoes' },
@@ -3481,6 +3480,124 @@ const UsersPage = () => {
   );
 };
 
+const TemplatesTab = () => {
+  const { templates, addTemplate, updateTemplate, deleteTemplate, currentUser } = useApp();
+  const { confirm } = useConfirm();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<MailTemplate | null>(null);
+
+  const isAdmin = currentUser?.perfil === UserRole.ADMIN;
+  const perms = currentUser?.permissoes.malaDireta;
+  const canEdit = isAdmin || perms?.editar;
+  const canDelete = isAdmin || perms?.excluir;
+  const canInclude = isAdmin || perms?.incluir;
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+    
+    const template: MailTemplate = {
+      id: editingTemplate?.id || crypto.randomUUID(),
+      name: data.name as string,
+      subject: data.subject as string,
+      content: data.content as string
+    };
+
+    if (editingTemplate) updateTemplate(template);
+    else addTemplate(template);
+    
+    setIsModalOpen(false);
+    setEditingTemplate(null);
+  };
+
+  return (
+    <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-10 animate-in slide-in-from-bottom-2">
+      <div className="flex justify-between items-center">
+        <div>
+           <h3 className="text-2xl font-black text-slate-800 tracking-tight">Templates de Mensagem</h3>
+           <p className="text-sm text-slate-400 font-medium mt-1">Gerencie os modelos de e-mail e WhatsApp para mala direta.</p>
+        </div>
+        {canInclude && (
+          <button onClick={() => { setEditingTemplate(null); setIsModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
+            <Icon name="plus" /> Novo Template
+          </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {templates.map(t => (
+          <div key={t.id} className="bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group relative">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="font-black text-slate-800 text-lg">{t.name}</h3>
+              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                {canEdit && (
+                  <button onClick={() => { setEditingTemplate(t); setIsModalOpen(true); }} className="text-blue-500 hover:bg-blue-50 p-2 rounded-xl transition-colors">
+                    <Icon name="edit" />
+                  </button>
+                )}
+                {canDelete && (
+                  <button onClick={() => confirm({ title: 'Excluir Template', message: 'Deseja excluir este template?', onConfirm: () => deleteTemplate(t.id) })} className="text-red-500 hover:bg-red-50 p-2 rounded-xl transition-colors">
+                    <Icon name="trash" />
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Assunto (E-mail)</p>
+              <p className="text-sm font-medium text-slate-700 truncate">{t.subject || '-'}</p>
+            </div>
+            <div className="mt-4 space-y-2">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Conteúdo</p>
+              <p className="text-sm text-slate-600 line-clamp-3 whitespace-pre-wrap">{t.content.replace(/<[^>]*>?/gm, '')}</p>
+            </div>
+          </div>
+        ))}
+        {templates.length === 0 && (
+          <div className="col-span-full p-20 text-center text-slate-400 font-bold italic bg-slate-50 rounded-[3rem] border border-slate-200 border-dashed">
+            Nenhum template cadastrado.
+          </div>
+        )}
+      </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in duration-300">
+            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
+               <div>
+                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingTemplate ? 'Edição' : 'Novo Cadastro'}</span>
+                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Template de Mensagem</h3>
+               </div>
+               <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-8 space-y-6">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Template</label>
+                <input name="name" required defaultValue={editingTemplate?.name} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" placeholder="Ex: Boas-vindas" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assunto (Para E-mails)</label>
+                <input name="subject" defaultValue={editingTemplate?.subject} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" placeholder="Assunto do e-mail" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Conteúdo</label>
+                <textarea name="content" required rows={8} defaultValue={editingTemplate?.content} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-medium outline-none focus:border-primary resize-none" placeholder="Conteúdo da mensagem. Use {nome} para o nome do cliente." />
+                <p className="text-xs text-slate-400 mt-2 ml-1">Variáveis disponíveis: <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{nome}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{empresa}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{email}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{telefone}'}</code></p>
+              </div>
+
+              <div className="pt-6 flex justify-end gap-4">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all uppercase text-[10px] tracking-widest">Cancelar</button>
+                <button type="submit" className="px-8 py-4 rounded-2xl bg-primary text-white font-bold hover:brightness-110 transition-all uppercase text-[10px] tracking-widest shadow-lg shadow-primary/30">Salvar Template</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ConfiguracoesPage = () => {
   const { currentUser, updateUser, slaSettings, updateSLASettings, sectors, addSector, updateSector, deleteSector, users, clientCategories, addClientCategory, updateClientCategory, deleteClientCategory } = useApp();
   const { success } = useToast();
@@ -3498,6 +3615,7 @@ const ConfiguracoesPage = () => {
     ...(isAdmin ? [{ id: 'categorias', label: 'Categorias', icon: 'tag' }] : []),
     ...(isAdmin ? [{ id: 'sla', label: 'Regras de SLA', icon: 'clock' }] : []),
     ...(isAdmin ? [{ id: 'email', label: 'E-mail', icon: 'email' }] : []),
+    ...(isAdmin || currentUser?.permissoes.malaDireta ? [{ id: 'templates', label: 'Templates', icon: 'file-alt' }] : []),
     { id: 'aparencia', label: 'Aparência', icon: 'palette' }
   ];
 
@@ -3801,6 +3919,10 @@ const ConfiguracoesPage = () => {
                  <button type="submit" className="md:col-span-2 py-5 bg-primary text-white rounded-[2rem] font-black text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1">Salvar Configurações</button>
               </form>
            </div>
+        )}
+
+        {activeTab === 'templates' && (isAdmin || currentUser?.permissoes.malaDireta) && (
+           <TemplatesTab />
         )}
 
         {activeTab === 'aparencia' && (
@@ -4284,124 +4406,6 @@ const LoginPage = () => {
   );
 };
 
-const TemplatesPage = () => {
-  const { templates, addTemplate, updateTemplate, deleteTemplate, currentUser } = useApp();
-  const { confirm } = useConfirm();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<MailTemplate | null>(null);
-
-  const isAdmin = currentUser?.perfil === UserRole.ADMIN;
-  const perms = currentUser?.permissoes.malaDireta;
-  const canEdit = isAdmin || perms?.editar;
-  const canDelete = isAdmin || perms?.excluir;
-  const canInclude = isAdmin || perms?.incluir;
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-    
-    const template: MailTemplate = {
-      id: editingTemplate?.id || crypto.randomUUID(),
-      name: data.name as string,
-      subject: data.subject as string,
-      content: data.content as string
-    };
-
-    if (editingTemplate) updateTemplate(template);
-    else addTemplate(template);
-    
-    setIsModalOpen(false);
-    setEditingTemplate(null);
-  };
-
-  return (
-    <div className="h-full flex flex-col space-y-8 animate-in fade-in duration-500">
-      <div className="flex justify-between items-center">
-        <div>
-           <h2 className="text-4xl font-black text-slate-800 tracking-tight">Templates de Mensagem</h2>
-           <p className="text-slate-500 font-medium mt-2">Gerencie os modelos de e-mail e WhatsApp para mala direta.</p>
-        </div>
-        {canInclude && (
-          <button onClick={() => { setEditingTemplate(null); setIsModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
-            <Icon name="plus" /> Novo Template
-          </button>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {templates.map(t => (
-          <div key={t.id} className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-md transition-all group relative">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="font-black text-slate-800 text-lg">{t.name}</h3>
-              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                {canEdit && (
-                  <button onClick={() => { setEditingTemplate(t); setIsModalOpen(true); }} className="text-blue-500 hover:bg-blue-50 p-2 rounded-xl transition-colors">
-                    <Icon name="edit" />
-                  </button>
-                )}
-                {canDelete && (
-                  <button onClick={() => confirm({ title: 'Excluir Template', message: 'Deseja excluir este template?', onConfirm: () => deleteTemplate(t.id) })} className="text-red-500 hover:bg-red-50 p-2 rounded-xl transition-colors">
-                    <Icon name="trash" />
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Assunto (E-mail)</p>
-              <p className="text-sm font-medium text-slate-700 truncate">{t.subject || '-'}</p>
-            </div>
-            <div className="mt-4 space-y-2">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Conteúdo</p>
-              <p className="text-sm text-slate-600 line-clamp-3 whitespace-pre-wrap">{t.content.replace(/<[^>]*>?/gm, '')}</p>
-            </div>
-          </div>
-        ))}
-        {templates.length === 0 && (
-          <div className="col-span-full p-20 text-center text-slate-400 font-bold italic bg-white rounded-[3rem] border border-slate-200 border-dashed">
-            Nenhum template cadastrado.
-          </div>
-        )}
-      </div>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in duration-300">
-            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
-               <div>
-                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingTemplate ? 'Edição' : 'Novo Cadastro'}</span>
-                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Template de Mensagem</h3>
-               </div>
-               <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Template</label>
-                <input name="name" required defaultValue={editingTemplate?.name} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" placeholder="Ex: Boas-vindas" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assunto (Para E-mails)</label>
-                <input name="subject" defaultValue={editingTemplate?.subject} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" placeholder="Assunto do e-mail" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Conteúdo</label>
-                <textarea name="content" required rows={8} defaultValue={editingTemplate?.content} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-medium outline-none focus:border-primary resize-none" placeholder="Conteúdo da mensagem. Use {nome} para o nome do cliente." />
-                <p className="text-xs text-slate-400 mt-2 ml-1">Variáveis disponíveis: <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{nome}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{empresa}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{email}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{telefone}'}</code></p>
-              </div>
-
-              <div className="pt-6 flex justify-end gap-4">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all uppercase text-[10px] tracking-widest">Cancelar</button>
-                <button type="submit" className="px-8 py-4 rounded-2xl bg-primary text-white font-bold hover:brightness-110 transition-all uppercase text-[10px] tracking-widest shadow-lg shadow-primary/30">Salvar Template</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 const MailListPage = () => {
   const { clients, addMailHistory, currentUser, templates } = useApp();
   const { error, success, warning } = useToast();
@@ -4775,7 +4779,6 @@ const MainLayout = () => {
     '/dashboard': 'Indicadores de Performance',
     '/clientes': 'Gerenciamento de Clientes',
     '/mala-direta': 'Comunicação Estratégica',
-    '/templates': 'Templates de Mensagem',
     '/tarefas': 'Gerenciamento Operacional',
     '/usuarios': 'Usuários do Sistema',
     '/configuracoes': 'Definições do Sistema',
@@ -4793,7 +4796,6 @@ const MainLayout = () => {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/clientes" element={<ClientsPage />} />
             <Route path="/mala-direta" element={<MailListPage />} />
-            <Route path="/templates" element={<TemplatesPage />} />
             <Route path="/tarefas" element={<TasksPage />} />
             <Route path="/usuarios" element={<UsersPage />} />
             <Route path="/configuracoes" element={<ConfiguracoesPage />} />
