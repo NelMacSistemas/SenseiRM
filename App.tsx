@@ -3,7 +3,7 @@ import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { HashRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
-import { User, Client, ContactPerson, AuditEntry, MailHistory, UserRole, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory, Attachment, Notification, MailTemplate, ClientInteraction, Subtask, Comment } from './types';
+import { User, Client, ContactPerson, AuditEntry, MailHistory, UserRole, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory, Attachment, Notification, MailTemplate, ClientInteraction, Subtask, Comment, CustomField } from './types';
 import { INITIAL_USER, THEMES } from './constants';
 import { auditService } from './services/auditService';
 
@@ -459,6 +459,7 @@ interface AppState {
   tasks: Task[];
   sectors: Sector[];
   clientCategories: ClientCategory[];
+  customFields: CustomField[];
   auditLogs: AuditEntry[];
   history: MailHistory[];
   slaSettings: SLASettings;
@@ -473,6 +474,9 @@ interface AppState {
   addClient: (client: Client) => void;
   updateClient: (client: Client) => void;
   deleteClient: (id: string) => void;
+  addCustomField: (field: CustomField) => void;
+  updateCustomField: (field: CustomField) => void;
+  deleteCustomField: (id: string) => void;
   addTask: (task: Task) => void;
   updateTask: (task: Task) => void;
   deleteTask: (id: string) => void;
@@ -512,6 +516,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [clientCategories, setClientCategories] = useState<ClientCategory[]>([]);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [history, setHistory] = useState<MailHistory[]>([]);
   const [templates, setTemplates] = useState<MailTemplate[]>([]);
   const [slaSettings, setSlaSettings] = useState<SLASettings>({ Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
@@ -590,6 +595,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         setTasks(data.tasks || []);
         setSectors(data.sectors || []);
         setClientCategories(data.clientCategories || []);
+        setCustomFields(data.customFields || []);
         setHistory(data.history || []);
         setTemplates(data.templates || []);
         setSlaSettings(data.slaSettings || { Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
@@ -818,6 +824,31 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     refreshAudit();
   };
 
+  const addCustomField = (f: CustomField) => {
+    setCustomFields(prev => [...prev, f]);
+    apiSync('customFields', 'ADD', f);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'CONFIG', `Campo personalizado "${f.name}" criado.`, f.id);
+    refreshAudit();
+  };
+
+  const updateCustomField = (f: CustomField) => {
+    const old = customFields.find(item => item.id === f.id);
+    const diffResult = old ? getDetailedDiff(old, f, { name: 'Nome', type: 'Tipo', required: 'Obrigatório' }) : { text: '', diff: [] };
+    setCustomFields(prev => prev.map(item => item.id === f.id ? f : item));
+    apiSync('customFields', 'UPDATE', f);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Campo personalizado "${f.name}" atualizado. ${diffResult.text}`, f.id, diffResult.diff);
+    refreshAudit();
+  };
+
+  const deleteCustomField = (id: string) => {
+    const target = customFields.find(f => f.id === id);
+    if (!target) return;
+    setCustomFields(prev => prev.filter(f => f.id !== id));
+    apiSync('customFields', 'DELETE', { id });
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'CONFIG', `Campo personalizado "${target.name}" removido.`, id);
+    refreshAudit();
+  };
+
   const addMailHistory = (h: MailHistory) => {
     setHistory(prev => [h, ...prev]);
     apiSync('history', 'ADD', h);
@@ -867,16 +898,17 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const contextValue = useMemo(() => ({
-    currentUser, users, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, clientCategories, notifications,
+    currentUser, users, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, clientCategories, customFields, notifications,
     markNotificationAsRead, clearNotifications,
     login, logout, updateUser, addUser, deleteUser,
     addClient, updateClient, deleteClient,
+    addCustomField, updateCustomField, deleteCustomField,
     addTask, updateTask, deleteTask, 
     addSector, updateSector, deleteSector,
     addClientCategory, updateClientCategory, deleteClientCategory,
     addMailHistory, addTemplate, updateTemplate, deleteTemplate, updateSLASettings, updateEmailSettings
   }), [
-    currentUser, users, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, clientCategories, notifications
+    currentUser, users, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, clientCategories, customFields, notifications
   ]);
 
   return (
@@ -1455,7 +1487,7 @@ const Dashboard = () => {
 };
 
 const ClientsPage = () => {
-  const { clients, addClient, updateClient, deleteClient, currentUser, clientCategories, users } = useApp();
+  const { clients, addClient, updateClient, deleteClient, currentUser, clientCategories, users, customFields } = useApp();
   const { confirm } = useConfirm();
   const location = useLocation();
   const navigate = useNavigate();
@@ -1464,6 +1496,8 @@ const ClientsPage = () => {
   const [activeTab, setActiveTab] = useState<'id' | 'end' | 'cont' | 'fin' | 'crm' | 'anexos'>('id');
   const [contactPeople, setContactPeople] = useState<ContactPerson[]>([]);
   const [tipoPessoa, setTipoPessoa] = useState<'Física' | 'Jurídica'>('Jurídica');
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   useEffect(() => {
     if (location.state?.openModal) {
@@ -1672,7 +1706,17 @@ const ClientsPage = () => {
       dataUltimaVenda: data.dataUltimaVenda,
       avaliacaoInterna: Number(data.avaliacaoInterna) || 0,
       attachments: attachments,
-      interactions: interactions
+      interactions: interactions,
+      
+      customData: customFields.reduce((acc, field) => {
+        const key = `custom_${field.id}`;
+        if (field.type === 'boolean') {
+          acc[field.id] = data[key] === 'on';
+        } else {
+          acc[field.id] = data[key];
+        }
+        return acc;
+      }, {} as Record<string, any>)
     } as Client;
 
     if (editingClient) updateClient(client); else addClient(client);
@@ -1756,6 +1800,28 @@ const ClientsPage = () => {
     }
   };
 
+  const exportToCSV = () => {
+    const headers = ['Código', 'Nome/Razão Social', 'Documento', 'Cidade', 'UF', 'Status', 'Categoria'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredClients.map(c => [
+        c.clientCode,
+        `"${c.nomeRazaoSocial}"`,
+        c.documento,
+        `"${c.cidade || ''}"`,
+        c.uf || '',
+        c.status,
+        `"${c.categoria || ''}"`
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `clientes_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
   const TabButton = ({ id, label, icon, index }: { key?: string, id: any, label: string, icon: string, index: number }) => (
     <button
       type="button"
@@ -1769,17 +1835,42 @@ const ClientsPage = () => {
     </button>
   );
 
+  const filteredClients = useMemo(() => {
+    const lowerSearch = debouncedSearchTerm.toLowerCase();
+    return clients.filter(c => 
+      c.nomeRazaoSocial.toLowerCase().includes(lowerSearch) ||
+      c.clientCode.toLowerCase().includes(lowerSearch) ||
+      c.documento.includes(debouncedSearchTerm) ||
+      (c.cidade && c.cidade.toLowerCase().includes(lowerSearch))
+    );
+  }, [clients, debouncedSearchTerm]);
+
   return (
     <div className="p-8 space-y-6 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
         <div>
            <p className="text-slate-500 font-medium">Gestão avançada da carteira de clientes e parceiros.</p>
         </div>
-        {canInclude && (
-          <button onClick={() => { setEditingClient(null); setActiveTab('id'); setIsModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
-            <Icon name="plus" /> Novo Registro
+        <div className="flex gap-4 items-center">
+          <div className="relative">
+            <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input 
+              type="text" 
+              placeholder="Buscar clientes..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-12 pr-6 py-3 rounded-2xl border border-slate-200 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-medium w-64"
+            />
+          </div>
+          <button onClick={exportToCSV} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-200 flex items-center gap-2 transition-all">
+            <Icon name="download" /> Exportar
           </button>
-        )}
+          {canInclude && (
+            <button onClick={() => { setEditingClient(null); setActiveTab('id'); setIsModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
+              <Icon name="plus" /> Novo Registro
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
@@ -1795,7 +1886,7 @@ const ClientsPage = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {clients.map(c => (
+            {filteredClients.map(c => (
               <tr key={c.id} className="hover:bg-slate-50 transition-colors group">
                 <td className="px-6 py-5 font-mono text-[11px] font-bold text-slate-400">{c.clientCode}</td>
                 <td className="px-6 py-5">
@@ -1819,7 +1910,7 @@ const ClientsPage = () => {
                 </td>
               </tr>
             ))}
-            {clients.length === 0 && <tr><td colSpan={6} className="p-20 text-center text-slate-300 italic font-bold">Nenhum cliente cadastrado na base.</td></tr>}
+            {filteredClients.length === 0 && <tr><td colSpan={6} className="p-20 text-center text-slate-300 italic font-bold">Nenhum cliente encontrado.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -2218,6 +2309,52 @@ const ClientsPage = () => {
                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Observações Gerais</label>
                        <textarea name="observacoes" rows={4} defaultValue={editingClient?.observacoes} placeholder="Notas internas sobre o relacionamento, histórico e peculiaridades..." className="w-full px-7 py-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 outline-none resize-none font-medium focus:border-primary shadow-inner" />
                     </section>
+
+                    {customFields.length > 0 && (
+                      <section className="space-y-6">
+                         <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Campos Personalizados</h4>
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {customFields.map(field => (
+                               <div key={field.id} className="space-y-1">
+                                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{field.name}</label>
+                                  {field.type === 'select' ? (
+                                     <select 
+                                       name={`custom_${field.id}`} 
+                                       required={field.required}
+                                       defaultValue={editingClient?.customData?.[field.id] || ''} 
+                                       className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary"
+                                     >
+                                        <option value="">Selecione...</option>
+                                        {field.options?.map(opt => (
+                                           <option key={opt} value={opt}>{opt}</option>
+                                        ))}
+                                     </select>
+                                  ) : field.type === 'boolean' ? (
+                                     <div className="flex items-center h-14 px-6 rounded-2xl border border-slate-100 bg-slate-50">
+                                        <label className="flex items-center gap-3 cursor-pointer w-full">
+                                           <input 
+                                             type="checkbox" 
+                                             name={`custom_${field.id}`} 
+                                             defaultChecked={editingClient?.customData?.[field.id] === 'on' || editingClient?.customData?.[field.id] === true}
+                                             className="w-5 h-5 rounded text-primary focus:ring-primary" 
+                                           />
+                                           <span className="font-bold text-slate-700">Sim</span>
+                                        </label>
+                                     </div>
+                                  ) : (
+                                     <input 
+                                       type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
+                                       name={`custom_${field.id}`} 
+                                       required={field.required}
+                                       defaultValue={editingClient?.customData?.[field.id] || ''} 
+                                       className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" 
+                                     />
+                                  )}
+                               </div>
+                            ))}
+                         </div>
+                      </section>
+                    )}
                  </div>
                </div>
 
@@ -2449,6 +2586,7 @@ const TasksPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [filterPriority, setFilterPriority] = useState<TaskPriority | 'all'>('all');
+  const [filterMyTasks, setFilterMyTasks] = useState(false);
 
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
   const perms = currentUser?.permissoes.tarefas;
@@ -2460,7 +2598,7 @@ const TasksPage = () => {
   const activeUsers = useMemo(() => users.filter(u => u.status === EntityStatus.ACTIVE), [users]);
 
   const filteredTasks = useMemo(() => {
-    let baseTasks = isAdmin ? tasks : tasks.filter(t => t.responsavelId === currentUser?.id);
+    let baseTasks = isAdmin && !filterMyTasks ? tasks : tasks.filter(t => t.responsavelId === currentUser?.id);
     
     if (debouncedSearchTerm) {
       const lowerSearch = debouncedSearchTerm.toLowerCase();
@@ -2710,38 +2848,42 @@ const TasksPage = () => {
           key={t.id} 
           draggable={canEdit}
           onDragStart={(e) => handleDragStart(e, t.id)}
-          className="bg-white p-4 rounded-3xl border border-slate-200 hover:shadow-lg transition-all relative group cursor-grab active:cursor-grabbing mb-3"
+          className="bg-white p-4 rounded-3xl border border-slate-200 hover:shadow-lg hover:border-slate-300 transition-all relative group cursor-grab active:cursor-grabbing mb-3 overflow-hidden"
         >
-          <div className="flex justify-between items-start mb-3">
-            <div className="flex gap-2 items-center">
+          <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${t.prioridade === TaskPriority.CRITICAL ? 'bg-red-600' : t.prioridade === TaskPriority.HIGH ? 'bg-orange-500' : 'bg-blue-400'}`} />
+          <div className="flex justify-between items-start mb-3 pl-2">
+            <div className="flex gap-2 items-center flex-wrap">
               <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase border flex items-center gap-1 ${getPriorityColor(t.prioridade)}`}>
                 <Icon name={getPriorityIcon(t.prioridade)} className="w-3 h-3" />
                 {t.prioridade}
               </span>
+              <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase border bg-slate-50 text-slate-500 border-slate-200">
+                {t.tipo}
+              </span>
               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t.taskNumber}</span>
             </div>
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                {canEdit && <button onClick={() => openTaskModal(t)} className="p-1 text-slate-400 hover:text-blue-500 transition-colors" title="Editar"><Icon name="edit" className="w-4 h-4" /></button>}
             </div>
           </div>
           
-          <h4 className="text-sm font-extrabold text-slate-800 leading-tight mb-3 line-clamp-2">{t.titulo}</h4>
+          <h4 className="text-sm font-extrabold text-slate-800 leading-tight mb-3 line-clamp-2 pl-2">{t.titulo}</h4>
           
-          <div className="space-y-3">
+          <div className="space-y-3 pl-2">
              <ProgressBar progress={progress} />
              
              <div className="flex justify-between items-end pt-1">
                 <div className="flex flex-col gap-1.5">
                   {t.dataVencimento && (
-                    <div className={`flex items-center gap-1 text-[10px] font-bold ${isOverdue ? 'text-red-500' : 'text-slate-500'}`}>
-                      <Icon name="calendar" className="w-3 h-3" />
+                    <div className={`flex items-center gap-1 text-[10px] font-bold ${isOverdue ? 'text-red-600 bg-red-50 px-1.5 py-0.5 rounded-md border border-red-100' : 'text-slate-500'}`}>
+                      <Icon name={isOverdue ? 'alert-circle' : 'calendar'} className="w-3 h-3" />
                       {new Date(t.dataVencimento).toLocaleDateString()}
                     </div>
                   )}
                   <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
-                    <span className="flex items-center gap-1"><Icon name="paperclip" className="w-3 h-3" />{t.attachments?.length || 0}</span>
-                    <span className="flex items-center gap-1"><Icon name="check-square" className="w-3 h-3" />{t.subtasks?.filter(s => s.completed).length || 0}/{t.subtasks?.length || 0}</span>
-                    <span className="flex items-center gap-1"><Icon name="message-square" className="w-3 h-3" />{t.comments?.length || 0}</span>
+                    {t.attachments && t.attachments.length > 0 && <span className="flex items-center gap-1"><Icon name="paperclip" className="w-3 h-3" />{t.attachments.length}</span>}
+                    {t.subtasks && t.subtasks.length > 0 && <span className="flex items-center gap-1"><Icon name="check-square" className="w-3 h-3" />{t.subtasks.filter(s => s.completed).length}/{t.subtasks.length}</span>}
+                    {t.comments && t.comments.length > 0 && <span className="flex items-center gap-1"><Icon name="message-square" className="w-3 h-3" />{t.comments.length}</span>}
                   </div>
                 </div>
                 <img src={owner?.foto || 'https://picsum.photos/seed/default/40'} className="w-7 h-7 rounded-full border-2 border-white shadow-sm" title={owner?.nome} />
@@ -2787,6 +2929,29 @@ const TasksPage = () => {
     );
   };
 
+  const exportToCSV = () => {
+    const headers = ['Número', 'Título', 'Tipo', 'Status', 'Prioridade', 'Data Início', 'Data Vencimento', 'Responsável'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredTasks.map(t => [
+        t.taskNumber,
+        `"${t.titulo}"`,
+        t.tipo,
+        t.status,
+        t.prioridade,
+        t.dataInicio ? new Date(t.dataInicio).toLocaleDateString() : '',
+        t.dataVencimento ? new Date(t.dataVencimento).toLocaleDateString() : '',
+        `"${users.find(u => u.id === t.responsavelId)?.nome || ''}"`
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `tarefas_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
   return (
     <div className="p-8 space-y-6 flex flex-col h-full">
       <div className="flex justify-between items-center">
@@ -2828,6 +2993,17 @@ const TasksPage = () => {
               <option key={p} value={p}>{p}</option>
             ))}
           </select>
+          {isAdmin && (
+            <button 
+              onClick={() => setFilterMyTasks(!filterMyTasks)} 
+              className={`px-4 py-3 rounded-2xl font-black text-xs uppercase shadow-sm flex items-center gap-2 transition-all border ${filterMyTasks ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+            >
+              <Icon name="user" className="w-4 h-4" /> Minhas Tarefas
+            </button>
+          )}
+          <button onClick={exportToCSV} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-200 flex items-center gap-2 transition-all">
+            <Icon name="download" /> Exportar
+          </button>
           {canInclude && (
             <button onClick={() => openTaskModal(null)} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
               <Icon name="plus" /> Adicionar Atividade
@@ -2842,7 +3018,7 @@ const TasksPage = () => {
           {filteredTasks.length === 0 && <div className="col-span-2 py-20 text-center text-slate-400 font-medium">Nenhuma tarefa encontrada no seu escopo.</div>}
         </div>
       ) : (
-        <div className="flex gap-6 overflow-x-auto pb-4 flex-1 items-start min-h-[600px] snap-x">
+        <div className="flex gap-6 overflow-x-auto pb-4 flex-1 items-start min-h-[600px] snap-x custom-scrollbar">
           {Object.values(TaskStatus).map(status => {
             const statusTasks = filteredTasks.filter(t => t.status === status);
             const colorClass = getStatusColor(status);
@@ -2851,26 +3027,34 @@ const TasksPage = () => {
             return (
               <div 
                 key={status} 
-                className={`flex-shrink-0 w-80 rounded-[2.5rem] p-4 border flex flex-col h-full snap-center transition-all duration-300 ${isDraggedOver ? 'bg-slate-200 border-primary shadow-inner scale-[1.02]' : 'bg-slate-100/50 border-slate-200'}`}
+                className={`flex-shrink-0 w-80 rounded-[2.5rem] p-4 border flex flex-col h-[calc(100vh-200px)] min-h-[500px] snap-center transition-all duration-300 ${isDraggedOver ? 'bg-slate-200/80 border-primary shadow-inner scale-[1.02]' : 'bg-slate-50/80 border-slate-200'}`}
                 onDragOver={(e) => handleDragOver(e, status)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, status)}
               >
-                <div className="flex justify-between items-center mb-4 px-2 pt-2">
+                <div className="flex justify-between items-center mb-4 px-2 pt-2 shrink-0">
                   <div className="flex items-center gap-2">
-                    <div className={`p-1.5 rounded-xl border ${colorClass}`}>
+                    <div className={`p-2 rounded-xl border shadow-sm ${colorClass}`}>
                       <Icon name={iconName} className="w-4 h-4" />
                     </div>
                     <h3 className="font-black text-slate-700 uppercase tracking-widest text-xs">{status}</h3>
                   </div>
-                  <span className="bg-white text-slate-500 text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm border border-slate-100">{statusTasks.length}</span>
+                  <span className="bg-white text-slate-600 text-[10px] font-black px-3 py-1.5 rounded-xl shadow-sm border border-slate-200">{statusTasks.length}</span>
                 </div>
-                <div className="flex-1 overflow-y-auto space-y-4 pr-1 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto space-y-4 pr-1 custom-scrollbar pb-4">
                   {statusTasks.map(t => renderTaskCard(t, true))}
                   {statusTasks.length === 0 && (
-                    <div className="border-2 border-dashed border-slate-200 rounded-[2rem] h-24 flex items-center justify-center text-slate-400 text-xs font-medium">
+                    <div className={`border-2 border-dashed rounded-[2rem] h-24 flex items-center justify-center text-xs font-medium transition-colors ${isDraggedOver ? 'border-primary text-primary bg-primary/5' : 'border-slate-200 text-slate-400'}`}>
                       Arraste tarefas para cá
                     </div>
+                  )}
+                  {status === TaskStatus.OPEN && canInclude && (
+                    <button 
+                      onClick={() => openTaskModal(null)}
+                      className="w-full py-3 mt-2 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 font-bold text-xs hover:border-primary hover:text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Icon name="plus" className="w-4 h-4" /> Nova Tarefa
+                    </button>
                   )}
                 </div>
               </div>
@@ -3309,6 +3493,8 @@ const UsersPage = () => {
   const [modalPerms, setModalPerms] = useState<UserPermissions>(INITIAL_USER.permissoes);
   const [modalProfile, setModalProfile] = useState<UserRole>(UserRole.USER);
   const [hasWhatsapp, setHasWhatsapp] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
 
@@ -3324,7 +3510,18 @@ const UsersPage = () => {
     }
   }, [location.state, navigate, location.pathname, isAdmin]);
 
-  const filteredUsers = useMemo(() => isAdmin ? users : users.filter(u => u.id === currentUser?.id), [users, currentUser, isAdmin]);
+  const filteredUsers = useMemo(() => {
+    let result = isAdmin ? users : users.filter(u => u.id === currentUser?.id);
+    if (debouncedSearchTerm) {
+      const lowerSearch = debouncedSearchTerm.toLowerCase();
+      result = result.filter(u => 
+        u.nome.toLowerCase().includes(lowerSearch) ||
+        u.email.toLowerCase().includes(lowerSearch) ||
+        u.perfil.toLowerCase().includes(lowerSearch)
+      );
+    }
+    return result;
+  }, [users, currentUser, isAdmin, debouncedSearchTerm]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -3386,11 +3583,52 @@ const UsersPage = () => {
     }
   };
 
+  const exportToCSV = () => {
+    const headers = ['Nome', 'E-mail', 'Perfil', 'Status', 'Telefone', 'Celular', 'WhatsApp'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredUsers.map(u => [
+        `"${u.nome}"`,
+        `"${u.email}"`,
+        u.perfil,
+        u.status,
+        `"${u.telefone || ''}"`,
+        `"${u.celular || ''}"`,
+        u.possuiWhatsapp ? 'Sim' : 'Não'
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `usuarios_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
   return (
     <div className="p-8 space-y-6 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
         <p className="text-slate-500 font-medium">Gestão de Usuários e Acessos ao Sistema.</p>
-        {isAdmin && <button onClick={() => openModal(null)} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95">Novo Usuário</button>}
+        <div className="flex gap-4 items-center">
+          {isAdmin && (
+            <div className="relative">
+              <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="Buscar usuários..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-12 pr-6 py-3 rounded-2xl border border-slate-200 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-medium w-64"
+              />
+            </div>
+          )}
+          {isAdmin && (
+            <button onClick={exportToCSV} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-200 flex items-center gap-2 transition-all">
+              <Icon name="download" /> Exportar
+            </button>
+          )}
+          {isAdmin && <button onClick={() => openModal(null)} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center gap-2"><Icon name="plus" /> Novo Usuário</button>}
+        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredUsers.map(u => (
@@ -3607,24 +3845,28 @@ const TemplatesTab = () => {
 };
 
 const ConfiguracoesPage = () => {
-  const { currentUser, updateUser, slaSettings, updateSLASettings, sectors, addSector, updateSector, deleteSector, users, clientCategories, addClientCategory, updateClientCategory, deleteClientCategory } = useApp();
+  const { currentUser, updateUser, slaSettings, updateSLASettings, sectors, addSector, updateSector, deleteSector, users, clientCategories, addClientCategory, updateClientCategory, deleteClientCategory, customFields, addCustomField, updateCustomField, deleteCustomField } = useApp();
   const { success } = useToast();
   const [activeTab, setActiveTab] = useState('aparencia');
   const [editingSector, setEditingSector] = useState<Sector | null>(null);
   const [isSectorModalOpen, setIsSectorModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<ClientCategory | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; type: 'sector' | 'category'; name: string } | null>(null);
+  const [editingCustomField, setEditingCustomField] = useState<CustomField | null>(null);
+  const [isCustomFieldModalOpen, setIsCustomFieldModalOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; type: 'sector' | 'category' | 'customField'; name: string } | null>(null);
   
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
 
   const tabs = [
     ...(isAdmin ? [{ id: 'setores', label: 'Setores', icon: 'building' }] : []),
     ...(isAdmin ? [{ id: 'categorias', label: 'Categorias', icon: 'tag' }] : []),
+    ...(isAdmin ? [{ id: 'customFields', label: 'Campos Personalizados', icon: 'list-alt' }] : []),
     ...(isAdmin ? [{ id: 'sla', label: 'Regras de SLA', icon: 'clock' }] : []),
     ...(isAdmin ? [{ id: 'email', label: 'E-mail', icon: 'email' }] : []),
     ...(isAdmin || currentUser?.permissoes.malaDireta ? [{ id: 'templates', label: 'Templates', icon: 'file-alt' }] : []),
-    { id: 'aparencia', label: 'Aparência', icon: 'palette' }
+    { id: 'aparencia', label: 'Aparência', icon: 'palette' },
+    { id: 'notificacoes', label: 'Notificações', icon: 'bell' }
   ];
 
   const handleSaveSector = (e: React.FormEvent<HTMLFormElement>) => {
@@ -3669,6 +3911,39 @@ const ConfiguracoesPage = () => {
     }
     setIsCategoryModalOpen(false);
     setEditingCategory(null);
+  };
+
+  const handleSaveCustomField = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    const name = data.get('name') as string;
+    const type = data.get('type') as 'text' | 'number' | 'date' | 'boolean' | 'select';
+    const required = data.get('required') === 'on';
+    const optionsStr = data.get('options') as string;
+    const options = type === 'select' && optionsStr ? optionsStr.split(',').map(s => s.trim()).filter(Boolean) : undefined;
+
+    const newId = Math.random().toString(36).substring(2, 11);
+    if (editingCustomField) {
+      updateCustomField({ ...editingCustomField, name, type, required, options });
+    } else {
+      addCustomField({ id: newId, name, type, required, options, entity: 'client' });
+    }
+    setIsCustomFieldModalOpen(false);
+    setEditingCustomField(null);
+  };
+
+  const handleSaveNotificationPrefs = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    const data = new FormData(e.currentTarget);
+    const email = data.get('email') === 'on';
+    const system = data.get('system') === 'on';
+    
+    updateUser({
+      ...currentUser,
+      notificationPreferences: { email, system }
+    });
+    success('Preferências de notificação atualizadas com sucesso!');
   };
 
   const { emailSettings, updateEmailSettings } = useApp();
@@ -3830,6 +4105,60 @@ const ConfiguracoesPage = () => {
               {clientCategories.length === 0 && (
                 <div className="col-span-full p-20 text-center text-slate-400 font-bold italic bg-slate-50 rounded-[3rem] border border-slate-200 border-dashed">
                   Nenhuma categoria cadastrada.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'customFields' && isAdmin && (
+          <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
+            <div className="flex justify-between items-center">
+               <div className="flex items-center gap-4">
+                 <div className="w-16 h-16 rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-2xl shadow-inner">
+                   <Icon name="list-alt" />
+                 </div>
+                 <div>
+                   <h3 className="text-2xl font-black text-slate-800 tracking-tight">Campos Personalizados</h3>
+                   <p className="text-sm text-slate-400 font-medium mt-1">Crie campos dinâmicos para o cadastro de clientes.</p>
+                 </div>
+               </div>
+               <button onClick={() => { setEditingCustomField(null); setIsCustomFieldModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center gap-2">
+                 <Icon name="plus" /> Novo Campo
+               </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {customFields.map(field => (
+                <div key={field.id} className="p-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 flex justify-between items-start group hover:bg-white hover:shadow-md transition-all shadow-sm">
+                  <div className="flex-1 overflow-hidden pr-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-indigo-100 text-indigo-600 shadow-sm">
+                        <Icon name={field.type === 'text' ? 'font' : field.type === 'number' ? 'hashtag' : field.type === 'date' ? 'calendar' : field.type === 'boolean' ? 'check-square' : 'list'} className="text-sm" />
+                      </div>
+                      <h4 className="font-black text-slate-800 truncate">{field.name}</h4>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-slate-200 text-slate-600 rounded-lg">
+                        {field.type === 'text' ? 'Texto' : field.type === 'number' ? 'Número' : field.type === 'date' ? 'Data' : field.type === 'boolean' ? 'Sim/Não' : 'Seleção'}
+                      </span>
+                      {field.required && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-red-100 text-red-600 rounded-lg">
+                          Obrigatório
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => { setEditingCustomField(field); setIsCustomFieldModalOpen(true); }} className="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary flex items-center justify-center transition-colors shadow-sm"><Icon name="edit" /></button>
+                    <button onClick={() => setDeleteConfirm({ id: field.id, type: 'customField', name: field.name })} className="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-500 flex items-center justify-center transition-colors shadow-sm"><Icon name="trash" /></button>
+                  </div>
+                </div>
+              ))}
+              {customFields.length === 0 && (
+                <div className="col-span-full text-center py-12 bg-slate-50 rounded-[3rem] border border-slate-100 border-dashed">
+                  <Icon name="list-alt" className="text-4xl text-slate-300 mb-4" />
+                  <p className="text-slate-500 font-medium">Nenhum campo personalizado cadastrado.</p>
                 </div>
               )}
             </div>
@@ -4012,6 +4341,54 @@ const ConfiguracoesPage = () => {
               </div>
            </div>
         )}
+
+        {activeTab === 'notificacoes' && (
+          <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-10 animate-in slide-in-from-bottom-2">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-[2rem] bg-purple-50 text-purple-500 flex items-center justify-center text-2xl shadow-inner">
+                <Icon name="bell" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-slate-800 tracking-tight">Preferências de Notificação</h3>
+                <p className="text-sm text-slate-400 font-medium mt-1">Escolha como deseja ser notificado sobre novas tarefas e atualizações.</p>
+              </div>
+            </div>
+            
+            <form onSubmit={handleSaveNotificationPrefs} className="max-w-2xl space-y-8">
+              <div className="space-y-4">
+                <label className="flex items-center gap-4 p-6 rounded-2xl border border-slate-100 bg-slate-50 cursor-pointer hover:bg-white hover:shadow-md transition-all">
+                  <input 
+                    type="checkbox" 
+                    name="system" 
+                    defaultChecked={currentUser?.notificationPreferences?.system ?? true}
+                    className="w-6 h-6 rounded text-primary focus:ring-primary" 
+                  />
+                  <div>
+                    <div className="font-bold text-slate-800">Notificações no Sistema</div>
+                    <div className="text-sm text-slate-500 font-medium">Receber alertas dentro da plataforma (ícone de sino).</div>
+                  </div>
+                </label>
+                
+                <label className="flex items-center gap-4 p-6 rounded-2xl border border-slate-100 bg-slate-50 cursor-pointer hover:bg-white hover:shadow-md transition-all">
+                  <input 
+                    type="checkbox" 
+                    name="email" 
+                    defaultChecked={currentUser?.notificationPreferences?.email ?? true}
+                    className="w-6 h-6 rounded text-primary focus:ring-primary" 
+                  />
+                  <div>
+                    <div className="font-bold text-slate-800">Notificações por E-mail</div>
+                    <div className="text-sm text-slate-500 font-medium">Receber um e-mail quando uma tarefa for atribuída a você.</div>
+                  </div>
+                </label>
+              </div>
+              
+              <button type="submit" className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-sm uppercase shadow-xl hover:brightness-110 transition-all flex items-center gap-2">
+                <Icon name="save" /> Salvar Preferências
+              </button>
+            </form>
+          </div>
+        )}
       </div>
 
       {isSectorModalOpen && (
@@ -4076,6 +4453,53 @@ const ConfiguracoesPage = () => {
           </div>
         </div>
       )}
+      {isCustomFieldModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl p-10 animate-in zoom-in duration-300">
+            <div className="flex justify-between items-center mb-8">
+               <h3 className="text-2xl font-black text-slate-800">{editingCustomField ? 'Editar Campo' : 'Novo Campo Personalizado'}</h3>
+               <button onClick={() => setIsCustomFieldModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
+            </div>
+            <form onSubmit={handleSaveCustomField} className="space-y-6">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Campo</label>
+                <input name="name" required defaultValue={editingCustomField?.name} placeholder="Ex: Data de Aniversário" className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner" />
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo</label>
+                  <select name="type" required defaultValue={editingCustomField?.type || 'text'} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner">
+                    <option value="text">Texto Curto</option>
+                    <option value="number">Número</option>
+                    <option value="date">Data</option>
+                    <option value="boolean">Sim/Não (Checkbox)</option>
+                    <option value="select">Lista de Seleção</option>
+                  </select>
+                </div>
+                <div className="space-y-1 flex flex-col justify-center">
+                  <label className="flex items-center gap-3 mt-6 cursor-pointer">
+                    <input type="checkbox" name="required" defaultChecked={editingCustomField?.required} className="w-5 h-5 rounded text-primary focus:ring-primary" />
+                    <span className="font-bold text-slate-700">Campo Obrigatório</span>
+                  </label>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Opções (Apenas para Lista de Seleção)</label>
+                <input name="options" defaultValue={editingCustomField?.options?.join(', ')} placeholder="Opção 1, Opção 2, Opção 3..." className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium focus:border-primary shadow-inner" />
+                <p className="text-xs text-slate-400 ml-2 mt-1">Separe as opções por vírgula.</p>
+              </div>
+              
+              <div className="pt-4 flex justify-end gap-3">
+                <button type="button" onClick={() => setIsCustomFieldModalOpen(false)} className="px-6 py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-colors">Cancelar</button>
+                <button type="submit" className="bg-primary text-white px-8 py-4 rounded-2xl font-black uppercase shadow-xl hover:brightness-110 transition-all flex items-center gap-2">
+                  <Icon name="save" /> Salvar Campo
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {deleteConfirm && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
           <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl space-y-8 animate-in zoom-in duration-200">
@@ -4115,11 +4539,12 @@ const AuditoriaPage = () => {
   const { auditLogs, currentUser } = useApp();
   const { confirm } = useConfirm();
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   
   const filteredLogs = useMemo(() => {
     let logs = currentUser?.perfil === UserRole.ADMIN ? auditLogs : auditLogs.filter(log => log.userId === currentUser?.id);
-    if (searchTerm) {
-      const lowerTerm = searchTerm.toLowerCase();
+    if (debouncedSearchTerm) {
+      const lowerTerm = debouncedSearchTerm.toLowerCase();
       logs = logs.filter(log => 
         log.details.toLowerCase().includes(lowerTerm) || 
         log.module.toLowerCase().includes(lowerTerm) ||
@@ -4128,7 +4553,7 @@ const AuditoriaPage = () => {
       );
     }
     return logs;
-  }, [auditLogs, currentUser, searchTerm]);
+  }, [auditLogs, currentUser, debouncedSearchTerm]);
   
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
 
@@ -4156,6 +4581,27 @@ const AuditoriaPage = () => {
     return map[module] || module;
   };
 
+  const exportToCSV = () => {
+    const headers = ['Horário', 'Autor', 'Módulo', 'Operação', 'Detalhes', 'Entidade ID'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredLogs.map(log => [
+        `"${new Date(log.timestamp).toLocaleString()}"`,
+        `"${log.userName}"`,
+        `"${getModuleLabel(log.module)}"`,
+        `"${log.action}"`,
+        `"${log.details.replace(/"/g, '""')}"`,
+        `"${log.entityId || ''}"`
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `auditoria_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
   return (
     <div className="p-8 space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -4173,6 +4619,11 @@ const AuditoriaPage = () => {
               className="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-medium text-sm text-slate-700 focus:border-primary transition-all shadow-sm"
             />
           </div>
+          {isAdmin && (
+            <button onClick={exportToCSV} className="bg-slate-100 text-slate-600 px-5 py-3 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-200 flex items-center gap-2 transition-all whitespace-nowrap">
+              <Icon name="download" /> Exportar
+            </button>
+          )}
           {isAdmin && <button onClick={() => { confirm({ title: 'Limpar Histórico', message: 'Limpar logs permanentemente?', onConfirm: () => { auditService.clearLogs(); window.location.reload(); } }); }} className="text-red-600 bg-red-50 px-5 py-3 rounded-2xl text-xs font-black uppercase border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm whitespace-nowrap"><Icon name="trash" className="inline-block mr-2 -mt-1" />Limpar Histórico</button>}
         </div>
       </div>

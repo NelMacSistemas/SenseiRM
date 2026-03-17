@@ -88,6 +88,20 @@ export interface SLASettings {
   Crítica: number;
 }
 
+export interface CustomField {
+  id: string;
+  name: string;
+  type: 'text' | 'number' | 'date' | 'boolean' | 'select';
+  options?: string[]; // For select type
+  required: boolean;
+  entity: 'client'; // Currently only for clients
+}
+
+export interface NotificationPreferences {
+  email: boolean;
+  system: boolean;
+}
+
 export interface User {
   id: string;
   nome: string;
@@ -102,6 +116,7 @@ export interface User {
   telefone?: string;
   celular?: string;
   possuiWhatsapp: boolean;
+  notificationPreferences?: NotificationPreferences;
 }
 
 export interface ContactPerson {
@@ -151,6 +166,9 @@ export interface Client {
   cidade?: string;
   uf?: string;
   pais: string;
+  
+  // Custom Fields
+  customData?: Record<string, any>;
 
   // Contatos
   telefonePrincipal: string;
