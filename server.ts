@@ -10,6 +10,7 @@ import jwt from 'jsonwebtoken';
 import multer from 'multer';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
+import rateLimit from 'express-rate-limit';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,6 +27,19 @@ const io = new SocketIOServer(server, {
 const PORT = 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-senseirm';
 const DATA_FILE = path.join(__dirname, 'data.json');
+
+// --- Security Middlewares ---
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 login requests per windowMs
+  message: { error: 'Muitas tentativas de login. Tente novamente em 15 minutos.' }
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 100, // Limit each IP to 100 requests per minute
+  message: { error: 'Muitas requisições. Tente novamente em breve.' }
+});
 
 // Handle Socket.IO connections
 io.on('connection', (socket) => {
@@ -53,10 +67,23 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    cb(null, uniqueSuffix + '-' + file.originalname)
+    cb(null, uniqueSuffix + '-' + file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_'))
   }
 });
-const upload = multer({ storage: storage });
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|pdf|doc|docx|xls|xlsx|csv|txt|zip|rar/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (extname && mimetype) {
+      return cb(null, true);
+    }
+    cb(new Error('Tipo de arquivo não permitido.'));
+  }
+});
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); // For base64 images
@@ -105,7 +132,7 @@ if (fs.existsSync(DATA_FILE)) {
   // Initialize with default admin
   const salt = bcrypt.genSaltSync(10);
   const hash = bcrypt.hashSync('admin123', salt);
-  const fullPermission = { acesso: true, leitura: false, incluir: true, editar: true, excluir: true };
+  const fullPermission = { acesso: true, leitura: true, incluir: true, editar: true, excluir: true };
   db.users.push({
     id: '1',
     nome: 'Administrador',
@@ -149,10 +176,26 @@ const authenticateToken = (req: any, res: any, next: any) => {
   });
 };
 
+const checkPermission = (module: string, action: 'acesso' | 'leitura' | 'incluir' | 'editar' | 'excluir') => {
+  return (req: any, res: any, next: any) => {
+    const user = db.users.find((u: any) => u.id === req.user.id);
+    if (!user) return res.sendStatus(404);
+    
+    if (user.perfil === 'admin') return next();
+    
+    const permissions = user.permissoes?.[module];
+    if (permissions && permissions[action]) {
+      return next();
+    }
+    
+    res.status(403).json({ error: `Permissão insuficiente para ${action} no módulo ${module}` });
+  };
+};
+
 // --- API Routes ---
 
 // Auth
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', loginLimiter, (req, res) => {
   const { email, pass } = req.body;
   const user = db.users.find((u: any) => u.email === email && u.status === 'ativo');
   
@@ -186,35 +229,77 @@ app.get('/api/auth/me', authenticateToken, (req: any, res: any) => {
   res.json(userWithoutPass);
 });
 
-app.post('/api/upload', authenticateToken, upload.single('file'), (req: any, res: any) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-  const fileUrl = `/uploads/${req.file.filename}`;
-  res.json({ url: fileUrl, name: req.file.originalname, size: req.file.size, type: req.file.mimetype });
-});
-
-// Data Sync (Get all data for the SPA)
-app.get('/api/data', authenticateToken, (req: any, res: any) => {
-  // Return everything except passwords
-  const safeUsers = db.users.map(({ senha, ...u }: any) => u);
-  res.json({
-    users: safeUsers,
-    clients: db.clients,
-    tasks: db.tasks,
-    sectors: db.sectors,
-    clientCategories: db.clientCategories,
-    auditLogs: db.auditLogs,
-    history: db.history,
-    templates: db.templates,
-    slaSettings: db.slaSettings,
-    emailSettings: db.emailSettings
+app.post('/api/upload', authenticateToken, (req: any, res: any) => {
+  upload.single('file')(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ error: `Erro no upload: ${err.message}` });
+    } else if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+    }
+    
+    const fileUrl = `/uploads/${req.file.filename}`;
+    res.json({ url: fileUrl, name: req.file.originalname, size: req.file.size, type: req.file.mimetype });
   });
 });
 
-// Generic CRUD endpoints
-app.post('/api/sync', authenticateToken, (req: any, res: any) => {
+// Data Sync (Get all data for the SPA)
+app.get('/api/data', authenticateToken, apiLimiter, (req: any, res: any) => {
+  const user = db.users.find((u: any) => u.id === req.user.id);
+  if (!user) return res.sendStatus(404);
+
+  const isAdmin = user.perfil === 'admin';
+  const perms = user.permissoes || {};
+
+  // Filter data based on permissions
+  const safeUsers = db.users
+    .filter(() => isAdmin || perms.usuarios?.acesso)
+    .map(({ senha, ...u }: any) => u);
+
+  res.json({
+    users: safeUsers,
+    clients: (isAdmin || perms.clientes?.acesso) ? db.clients : [],
+    tasks: (isAdmin || perms.tarefas?.acesso) ? db.tasks : [],
+    sectors: (isAdmin || perms.configuracoes?.acesso) ? db.sectors : [],
+    clientCategories: (isAdmin || perms.configuracoes?.acesso) ? db.clientCategories : [],
+    auditLogs: (isAdmin || perms.auditoria?.acesso) ? db.auditLogs : [],
+    history: (isAdmin || perms.clientes?.acesso) ? db.history : [],
+    templates: (isAdmin || perms.configuracoes?.acesso) ? db.templates : [],
+    slaSettings: (isAdmin || perms.configuracoes?.acesso) ? db.slaSettings : {},
+    emailSettings: isAdmin ? db.emailSettings : {} // Only admin sees email settings
+  });
+});
+
+// Generic CRUD endpoints with permission checks
+app.post('/api/sync', authenticateToken, apiLimiter, (req: any, res: any) => {
   const { type, action, payload } = req.body;
+  const user = db.users.find((u: any) => u.id === req.user.id);
+  if (!user) return res.sendStatus(404);
+
+  const isAdmin = user.perfil === 'admin';
+  const perms = user.permissoes || {};
+
+  // Map collection types to permission modules
+  const typeToModule: Record<string, string> = {
+    'users': 'usuarios',
+    'clients': 'clientes',
+    'tasks': 'tarefas',
+    'sectors': 'configuracoes',
+    'clientCategories': 'configuracoes',
+    'templates': 'configuracoes',
+    'slaSettings': 'configuracoes',
+    'emailSettings': 'configuracoes'
+  };
+
+  const module = typeToModule[type];
+  const permissionAction = action === 'ADD' ? 'incluir' : (action === 'UPDATE' ? 'editar' : (action === 'DELETE' ? 'excluir' : 'acesso'));
+
+  if (!isAdmin && (!module || !perms[module] || !perms[module][permissionAction])) {
+    return res.status(403).json({ error: `Permissão insuficiente para ${action} em ${type}` });
+  }
   
   if (action === 'ADD') {
     if (type === 'users' && payload.senha) {
@@ -272,7 +357,7 @@ app.post('/api/sync', authenticateToken, (req: any, res: any) => {
   res.json({ success: true });
 });
 
-app.post('/api/mail/send', authenticateToken, async (req: any, res: any) => {
+app.post('/api/mail/send', authenticateToken, checkPermission('malaDireta', 'incluir'), async (req: any, res: any) => {
   const { subject, message, recipients } = req.body;
   const settings = db.emailSettings;
 

@@ -11,7 +11,7 @@ import {
   Edit, Trash2, Plus, Tag, Building2, Clock, Palette, Shield, Check, 
   Users, LayoutDashboard, Mail, FileText, Settings, ShieldAlert, Info,
   Search, Filter, Download, Upload, LogOut, User as UserIcon, Phone, Mail as MailIcon,
-  Globe, MapPin, CreditCard, PieChart, Activity, AlertTriangle, ChevronRight,
+  Globe, MapPin, CreditCard, PieChart as PieChartIcon, Activity, AlertTriangle, ChevronRight,
   ChevronLeft, MoreVertical, X, Calendar, MessageSquare, ExternalLink, HelpCircle,
   Bell, BellOff, Zap, TrendingUp, Target, Briefcase, Star, Award, CheckCircle,
   AlertCircle, PlayCircle, CheckSquare, ListTodo, UserPlus, FilePlus, Building
@@ -46,7 +46,7 @@ const iconMap: Record<string, any> = {
   'globe': Globe,
   'map-pin': MapPin,
   'credit-card': CreditCard,
-  'pie-chart': PieChart,
+  'pie-chart': PieChartIcon,
   'activity': Activity,
   'alert-triangle': AlertTriangle,
   'chevron-right': ChevronRight,
@@ -259,6 +259,18 @@ const formatDocumento = (doc: string) => {
   const v = doc.replace(/\D/g, "");
   if (v.length === 11) return maskCPF(v);
   if (v.length === 14) return maskCNPJ(v);
+  return doc;
+};
+
+const maskDocumentoPrivacy = (doc: string) => {
+  if (!doc) return "";
+  const v = doc.replace(/\D/g, "");
+  if (v.length === 11) {
+    return `${v.substring(0, 3)}.***.***-${v.substring(9)}`;
+  }
+  if (v.length === 14) {
+    return `${v.substring(0, 2)}.***.***/****-${v.substring(12)}`;
+  }
   return doc;
 };
 
@@ -494,6 +506,7 @@ interface AppState {
   updateSLASettings: (settings: SLASettings) => void;
   emailSettings: EmailSettings;
   updateEmailSettings: (settings: EmailSettings) => void;
+  updateSync: (type: string, action: 'ADD' | 'UPDATE' | 'DELETE' | 'SET', payload: any) => Promise<void>;
 }
 
 const AppContext = createContext<AppState | undefined>(undefined);
@@ -550,6 +563,38 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     return () => {
       socket.disconnect();
+    };
+  }, [currentUser]);
+
+  // --- Session Timeout (Security Improvement) ---
+  useEffect(() => {
+    if (!currentUser) return;
+
+    let timeout: NodeJS.Timeout;
+    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutes
+
+    const resetTimer = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        logout();
+        // We can't use toast here easily because it's outside the provider's consumer, 
+        // but the logout will trigger a redirect to login.
+      }, INACTIVITY_LIMIT);
+    };
+
+    window.addEventListener('mousemove', resetTimer);
+    window.addEventListener('keydown', resetTimer);
+    window.addEventListener('click', resetTimer);
+    window.addEventListener('scroll', resetTimer);
+
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener('mousemove', resetTimer);
+      window.removeEventListener('keydown', resetTimer);
+      window.removeEventListener('click', resetTimer);
+      window.removeEventListener('scroll', resetTimer);
     };
   }, [currentUser]);
 
@@ -734,6 +779,25 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const updateTask = (t: Task) => {
     const oldTask = tasks.find(item => item.id === t.id);
     const diffResult = oldTask ? getDetailedDiff(oldTask, t, TASK_LABELS) : { text: '', diff: [] };
+    
+    // Notification for task assignment (Functional Improvement)
+    if (oldTask && t.responsavelId !== oldTask.responsavelId && t.responsavelId) {
+      const newNotification: Notification = {
+        id: crypto.randomUUID(),
+        title: 'Nova Tarefa Atribuída',
+        message: `Você foi definido como responsável pela tarefa: ${t.titulo}`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        link: '/tarefas'
+      };
+      
+      // In a real app, this would be sent via socket to the target user.
+      // Here we simulate it locally if the current user is the target.
+      if (t.responsavelId === currentUser?.id) {
+        setNotifications(prev => [newNotification, ...prev]);
+      }
+    }
+
     setTasks(prev => prev.map(item => item.id === t.id ? t : item));
     apiSync('tasks', 'UPDATE', t);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'TAREFAS', `Tarefa ${t.taskNumber} alterada. ${diffResult.text}`, t.id, diffResult.diff);
@@ -906,9 +970,10 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     addTask, updateTask, deleteTask, 
     addSector, updateSector, deleteSector,
     addClientCategory, updateClientCategory, deleteClientCategory,
-    addMailHistory, addTemplate, updateTemplate, deleteTemplate, updateSLASettings, updateEmailSettings
+    addMailHistory, addTemplate, updateTemplate, deleteTemplate, updateSLASettings, updateEmailSettings,
+    updateSync: apiSync
   }), [
-    currentUser, users, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, clientCategories, customFields, notifications
+    currentUser, users, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, clientCategories, customFields, notifications, apiSync
   ]);
 
   return (
@@ -1277,9 +1342,17 @@ const StatCard = ({ label, value, icon, color, subText }: any) => (
 
 // --- Pages ---
 
+import { 
+  PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid
+} from 'recharts';
+
 const Dashboard = () => {
-  const { clients, tasks, users, currentUser } = useApp();
+  const { clients, tasks, users, currentUser, updateSync } = useApp();
+  const { toast } = useToast();
+  const { confirm } = useConfirm();
   const navigate = useNavigate();
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
   const perms = currentUser?.permissoes;
@@ -1309,6 +1382,19 @@ const Dashboard = () => {
       return new Date(t.dataVencimento) < now;
     }).length;
 
+    // Dados para Gráficos
+    const taskStatusData = [
+      { name: 'Concluídas', value: tasksCompleted, color: '#10b981' },
+      { name: 'Em Andamento', value: tasksInProgress - tasksOverdue, color: '#3b82f6' },
+      { name: 'Atrasadas', value: tasksOverdue, color: '#ef4444' }
+    ].filter(d => d.value > 0);
+
+    const clientStatusData = [
+      { name: 'Ativos', value: clientsActive, color: '#10b981' },
+      { name: 'Inativos', value: clientsInactive, color: '#94a3b8' },
+      { name: 'Bloqueados', value: clientsBlocked, color: '#f43f5e' }
+    ].filter(d => d.value > 0);
+
     // Outros
     const totalClients = clients.length;
     const adimplenceRate = totalClients > 0 ? Math.round((clients.filter(c => c.situacao === 'Ativo').length / totalClients) * 100) : 100;
@@ -1324,9 +1410,46 @@ const Dashboard = () => {
       usersActive, usersInactive, usersAdmin, usersStandard,
       tasksCompleted, tasksInProgress, tasksOverdue,
       totalClients, adimplenceRate, avgRating,
-      rankedClients
+      rankedClients, taskStatusData, clientStatusData
     };
   }, [clients, tasks, users, currentUser, isAdmin]);
+
+  const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const currentPass = formData.get('currentPass') as string;
+    const newPass = formData.get('newPass') as string;
+    const confirmPass = formData.get('confirmPass') as string;
+
+    if (newPass !== confirmPass) {
+      return toast({ title: 'Erro', message: 'As senhas não coincidem.', type: 'error' });
+    }
+
+    if (currentPass !== currentUser?.senha) {
+      return toast({ title: 'Erro', message: 'Senha atual incorreta.', type: 'error' });
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(newPass)) {
+      return toast({ 
+        title: 'Senha Fraca', 
+        message: 'A nova senha deve ter pelo menos 8 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial.', 
+        type: 'warning' 
+      });
+    }
+
+    try {
+      const updatedUser = { ...currentUser, senha: newPass };
+      await updateSync('users', 'UPDATE', updatedUser);
+      
+      auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'AUTH', 'Senha alterada pelo usuário.', currentUser?.id);
+      
+      toast({ title: 'Sucesso', message: 'Senha alterada com sucesso!', type: 'success' });
+      setIsPasswordModalOpen(false);
+    } catch (err) {
+      toast({ title: 'Erro', message: 'Falha ao alterar senha.', type: 'error' });
+    }
+  };
 
   return (
     <div className="p-8 space-y-8 animate-in fade-in duration-700 max-w-7xl mx-auto">
@@ -1339,6 +1462,13 @@ const Dashboard = () => {
         </div>
         
         <div className="flex flex-wrap gap-3 w-full lg:w-auto">
+          <button 
+            onClick={() => setIsPasswordModalOpen(true)}
+            className="flex-1 lg:flex-none justify-center items-center gap-2 bg-slate-100 text-slate-600 hover:bg-slate-200 px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex"
+          >
+            <Icon name="key" className="w-4 h-4" />
+            Alterar Senha
+          </button>
           {(isAdmin || perms?.clientes?.incluir) && (
             <button 
               onClick={() => navigate('/clientes', { state: { openModal: true } })}
@@ -1355,24 +1485,6 @@ const Dashboard = () => {
             >
               <Icon name="file-plus" className="w-4 h-4" />
               Nova Tarefa
-            </button>
-          )}
-          {(isAdmin || perms?.malaDireta?.incluir) && (
-            <button 
-              onClick={() => navigate('/mala-direta')}
-              className="flex-1 lg:flex-none justify-center items-center gap-2 bg-amber-500/10 text-amber-600 hover:bg-amber-500 hover:text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex"
-            >
-              <Icon name="mala-direta" className="w-4 h-4" />
-              Mala Direta
-            </button>
-          )}
-          {isAdmin && (
-            <button 
-              onClick={() => navigate('/usuarios', { state: { openModal: true } })}
-              className="flex-1 lg:flex-none justify-center items-center gap-2 bg-purple-500/10 text-purple-600 hover:bg-purple-600 hover:text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex"
-            >
-              <Icon name="user-plus" className="w-4 h-4" />
-              Novo Usuário
             </button>
           )}
         </div>
@@ -1424,43 +1536,55 @@ const Dashboard = () => {
               <p className="text-[10px] text-red-400 mt-1 font-bold">Atenção urgente necessária</p>
             </div>
           </Link>
-        </div>
 
-        {/* CLIENTES OVERVIEW - Ocupa 4 colunas */}
-        <div className="md:col-span-4 bg-primary text-white p-6 rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between group">
-          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-700" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                <Icon name="briefcase" className="w-5 h-5 text-white" />
+          {/* SECURITY STATUS (New) */}
+          <div className="bg-slate-900 p-6 rounded-3xl shadow-sm relative overflow-hidden group col-span-full sm:col-span-1">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/5 rounded-full group-hover:scale-150 transition-transform duration-500 z-0" />
+            <div className="relative z-10">
+              <div className="flex justify-between items-start mb-4">
+                <div className="p-3 bg-white/10 text-emerald-400 rounded-2xl">
+                  <Icon name="shield" className="w-6 h-6" />
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Sessão Segura</span>
+                  <span className="text-[10px] font-bold text-slate-400">Expira em 30m</span>
+                </div>
               </div>
-              <h3 className="text-sm font-black uppercase tracking-widest">Base de Clientes</h3>
-            </div>
-            
-            <div className="mb-6">
-              <span className="text-5xl font-black tracking-tighter">{kpis.totalClients}</span>
-              <span className="text-primary-foreground/70 text-sm ml-2 font-medium">total</span>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-primary-foreground/80 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400" /> Ativos</span>
-                <span className="font-bold">{kpis.clientsActive}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-primary-foreground/80 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-white/40" /> Inativos</span>
-                <span className="font-bold">{kpis.clientsInactive}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-primary-foreground/80 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-400" /> Bloqueados</span>
-                <span className="font-bold">{kpis.clientsBlocked}</span>
+              <p className="text-xs font-black text-white uppercase tracking-widest">Status de Segurança</p>
+              <div className="flex items-center gap-2 mt-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <p className="text-[10px] text-slate-400 font-medium">Proteção de dados ativa</p>
               </div>
             </div>
           </div>
-          
-          <Link to="/clientes" className="relative z-10 mt-6 w-full py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl text-center text-xs font-bold uppercase tracking-widest transition-colors">
-            Ver Todos
-          </Link>
+        </div>
+
+        {/* GRÁFICO DE TAREFAS - Ocupa 4 colunas */}
+        <div className="md:col-span-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col h-[300px]">
+          <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">Distribuição de Tarefas</h3>
+          <div className="flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={kpis.taskStatusData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {kpis.taskStatusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <RechartsTooltip 
+                  contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                />
+                <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* RANKING DE CLIENTES - Ocupa 8 colunas */}
@@ -1500,44 +1624,106 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* USUÁRIOS OVERVIEW - Ocupa 4 colunas */}
-        <div className="md:col-span-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-purple-100 text-purple-600 rounded-xl">
-              <Icon name="users" className="w-5 h-5" />
+        {/* CLIENTES OVERVIEW - Ocupa 4 colunas */}
+        <div className="md:col-span-4 bg-primary text-white p-6 rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between group">
+          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-700" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                <Icon name="briefcase" className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-sm font-black uppercase tracking-widest">Base de Clientes</h3>
             </div>
-            <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Equipe</h3>
-          </div>
+            
+            <div className="mb-6">
+              <span className="text-5xl font-black tracking-tighter">{kpis.totalClients}</span>
+              <span className="text-primary-foreground/70 text-sm ml-2 font-medium">total</span>
+            </div>
 
-          <div className="flex justify-around items-center mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-            <div className="text-center">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ativos</p>
-              <p className="text-3xl font-black text-emerald-500">{kpis.usersActive}</p>
-            </div>
-            <div className="w-[1px] h-12 bg-slate-200" />
-            <div className="text-center">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Inativos</p>
-              <p className="text-3xl font-black text-slate-400">{kpis.usersInactive}</p>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex justify-between items-center p-3 bg-purple-50/50 rounded-xl border border-purple-100/50">
-              <span className="text-xs font-bold text-purple-700 flex items-center gap-2">
-                <Icon name="shield-alt" className="w-4 h-4" /> Administradores
-              </span>
-              <span className="font-black text-purple-700">{kpis.usersAdmin}</span>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
-              <span className="text-xs font-bold text-indigo-700 flex items-center gap-2">
-                <Icon name="user" className="w-4 h-4" /> Usuários Padrão
-              </span>
-              <span className="font-black text-indigo-700">{kpis.usersStandard}</span>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-primary-foreground/80 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400" /> Ativos</span>
+                <span className="font-bold">{kpis.clientsActive}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-primary-foreground/80 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-white/40" /> Inativos</span>
+                <span className="font-bold">{kpis.clientsInactive}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-primary-foreground/80 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-400" /> Bloqueados</span>
+                <span className="font-bold">{kpis.clientsBlocked}</span>
+              </div>
             </div>
           </div>
+          
+          <Link to="/clientes" className="relative z-10 mt-6 w-full py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl text-center text-xs font-bold uppercase tracking-widest transition-colors">
+            Ver Todos
+          </Link>
         </div>
 
       </div>
+
+      {/* PASSWORD MODAL */}
+      {isPasswordModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl animate-in zoom-in duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-black text-slate-800">Alterar Senha</h3>
+              <button onClick={() => setIsPasswordModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors">
+                <Icon name="times" className="text-xl" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Senha Atual</label>
+                <input 
+                  type="password" 
+                  name="currentPass" 
+                  required 
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-primary transition-all font-medium text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Nova Senha</label>
+                <input 
+                  type="password" 
+                  name="newPass" 
+                  required 
+                  minLength={6}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-primary transition-all font-medium text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Confirmar Nova Senha</label>
+                <input 
+                  type="password" 
+                  name="confirmPass" 
+                  required 
+                  minLength={6}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:bg-white outline-none focus:border-primary transition-all font-medium text-sm"
+                />
+              </div>
+              
+              <div className="pt-4 flex gap-3">
+                <button 
+                  type="button" 
+                  onClick={() => setIsPasswordModalOpen(false)}
+                  className="flex-1 py-4 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-all text-sm"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit"
+                  className="flex-1 py-4 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all text-sm"
+                >
+                  Salvar Senha
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -1965,7 +2151,7 @@ const ClientsPage = () => {
                         <span className="text-[10px] text-slate-400 uppercase font-black">{c.categoria || 'Geral'}</span>
                      </div>
                   </td>
-                  <td className="px-6 py-5 text-slate-600 font-medium">{formatDocumento(c.documento)}</td>
+                  <td className="px-6 py-5 text-slate-600 font-medium">{maskDocumentoPrivacy(c.documento)}</td>
                   <td className="px-6 py-5 text-slate-500 text-sm font-medium">{c.cidade ? `${c.cidade}/${c.uf}` : 'Não inf.'}</td>
                   <td className="px-6 py-5">
                     <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase border ${c.status === EntityStatus.ACTIVE ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
@@ -2001,7 +2187,7 @@ const ClientsPage = () => {
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="flex flex-col">
                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Documento</span>
-                    <span className="text-slate-600 font-medium">{formatDocumento(c.documento)}</span>
+                    <span className="text-slate-600 font-medium">{maskDocumentoPrivacy(c.documento)}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Cidade/UF</span>
@@ -2980,6 +3166,7 @@ const TasksPage = () => {
               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t.taskNumber}</span>
             </div>
             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+               <button onClick={() => openHistoryModal(t)} className="p-1 text-amber-400 hover:text-amber-500 transition-colors" title="Ver Histórico"><Icon name="history" className="w-4 h-4" /></button>
                {canEdit && <button onClick={() => openTaskModal(t)} className="p-1 text-slate-400 hover:text-blue-500 transition-colors" title="Editar"><Icon name="edit" className="w-4 h-4" /></button>}
             </div>
           </div>

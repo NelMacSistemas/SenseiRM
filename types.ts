@@ -272,6 +272,7 @@ export interface Notification {
   message: string;
   timestamp: string;
   read: boolean;
+  link?: string;
 }
 
 export interface EmailSettings {
