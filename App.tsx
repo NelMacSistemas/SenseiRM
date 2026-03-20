@@ -928,6 +928,39 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 // --- Helper Components ---
 
+const Pagination = ({ 
+  currentPage, 
+  totalPages, 
+  onPageChange 
+}: { 
+  currentPage: number, 
+  totalPages: number, 
+  onPageChange: (page: number) => void 
+}) => {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-between px-4 py-4 border-t border-slate-100 mt-4 shrink-0">
+      <div className="flex flex-1 justify-between sm:hidden">
+        <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="relative inline-flex items-center px-4 py-2 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-50">Anterior</button>
+        <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-50">Próxima</button>
+      </div>
+      <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm text-slate-500 font-medium">Página <span className="font-black text-slate-700">{currentPage}</span> de <span className="font-black text-slate-700">{totalPages}</span></p>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="relative inline-flex items-center px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-500 hover:bg-slate-50 disabled:opacity-50 transition-all">
+            <Icon name="chevron-left" className="h-4 w-4 mr-1" /> Anterior
+          </button>
+          <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="relative inline-flex items-center px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-500 hover:bg-slate-50 disabled:opacity-50 transition-all">
+            Próxima <Icon name="chevron-right" className="h-4 w-4 ml-1" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ProgressBar = ({ progress, color = "bg-primary" }: { progress: number, color?: string }) => (
   <div className="w-full">
     <div className="flex justify-between items-center mb-1 text-[10px] font-bold uppercase tracking-wider">
@@ -1071,6 +1104,7 @@ const StatMiniCard = ({ label, value, color }: { label: string; value: number | 
 const Sidebar = () => {
   const { currentUser, logout } = useApp();
   const location = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: 'chart-line', perm: 'dashboard' },
@@ -1090,45 +1124,67 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-64 bg-slate-900 h-screen flex flex-col fixed left-0 top-0 text-slate-300 shadow-xl z-50">
-      <div className="p-6 border-b border-slate-800 flex items-center gap-3">
-        <div className="bg-primary p-2 rounded-lg text-white">
-          <Icon name="users-cog" className="text-xl" />
-        </div>
-        <div>
-          <h1 className="text-white font-bold text-lg leading-none">SenseiRM</h1>
-          <span className="text-[10px] text-slate-500 uppercase tracking-widest">CRM Ecosystem</span>
-        </div>
-      </div>
-      <nav className="flex-1 overflow-y-auto py-4">
-        <ul className="space-y-1 px-3">
-          {menuItems.map((item) => {
-            if (!hasAccess(item.perm)) return null;
-            const isActive = location.pathname.startsWith(item.path);
-            return (
-              <li key={item.path}>
-                <Link to={item.path} className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${isActive ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-slate-800 hover:text-white'}`}>
-                  <Icon name={item.icon} className={isActive ? 'text-primary' : 'text-slate-50 group-hover:text-slate-300'} />
-                  <span>{item.label}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-      <div className="p-4 bg-slate-800/50 m-4 rounded-xl">
-        <div className="flex items-center gap-3 mb-4">
-          <img src={currentUser?.foto || 'https://picsum.photos/seed/default/40'} className="w-10 h-10 rounded-full border-2 border-primary/30 object-cover" />
-          <div className="overflow-hidden">
-            <p className="text-white text-sm font-semibold truncate">{currentUser?.nome}</p>
-            <p className="text-xs text-slate-500 uppercase tracking-tighter">{currentUser?.perfil}</p>
+    <>
+      {/* Mobile Menu Button */}
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="lg:hidden fixed bottom-6 right-6 z-[100] w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform"
+      >
+        <Icon name={isOpen ? 'times' : 'bars'} className="text-2xl" />
+      </button>
+
+      {/* Backdrop */}
+      {isOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80]"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      <div className={`w-64 bg-slate-900 h-screen flex flex-col fixed left-0 top-0 text-slate-300 shadow-xl z-[90] transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="p-6 border-b border-slate-800 flex items-center gap-3">
+          <div className="bg-primary p-2 rounded-lg text-white">
+            <Icon name="users-cog" className="text-xl" />
+          </div>
+          <div>
+            <h1 className="text-white font-bold text-lg leading-none">SenseiRM</h1>
+            <span className="text-[10px] text-slate-500 uppercase tracking-widest">CRM Ecosystem</span>
           </div>
         </div>
-        <button onClick={logout} className="w-full flex items-center justify-center gap-2 py-2 bg-slate-700 hover:bg-red-500/20 hover:text-red-400 transition-all rounded-lg text-sm font-bold">
-          <Icon name="sign-out-alt" /> Sair
-        </button>
+        <nav className="flex-1 overflow-y-auto py-4">
+          <ul className="space-y-1 px-3">
+            {menuItems.map((item) => {
+              if (!hasAccess(item.perm)) return null;
+              const isActive = location.pathname.startsWith(item.path);
+              return (
+                <li key={item.path}>
+                  <Link 
+                    to={item.path} 
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${isActive ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-slate-800 hover:text-white'}`}
+                  >
+                    <Icon name={item.icon} className={isActive ? 'text-primary' : 'text-slate-50 group-hover:text-slate-300'} />
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+        <div className="p-4 bg-slate-800/50 m-4 rounded-xl">
+          <div className="flex items-center gap-3 mb-4">
+            <img src={currentUser?.foto || 'https://picsum.photos/seed/default/40'} className="w-10 h-10 rounded-full border-2 border-primary/30 object-cover" />
+            <div className="overflow-hidden">
+              <p className="text-white text-sm font-semibold truncate">{currentUser?.nome}</p>
+              <p className="text-xs text-slate-500 uppercase tracking-tighter">{currentUser?.perfil}</p>
+            </div>
+          </div>
+          <button onClick={logout} className="w-full flex items-center justify-center gap-2 py-2 bg-slate-700 hover:bg-red-500/20 hover:text-red-400 transition-all rounded-lg text-sm font-bold">
+            <Icon name="sign-out-alt" /> Sair
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -1276,17 +1332,17 @@ const Dashboard = () => {
     <div className="p-8 space-y-8 animate-in fade-in duration-700 max-w-7xl mx-auto">
       
       {/* HEADER & QUICK ACTIONS */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
         <div>
           <h2 className="text-2xl font-black text-slate-800 tracking-tight">Olá, {currentUser?.nome.split(' ')[0]} 👋</h2>
           <p className="text-slate-500 text-sm mt-1">Aqui está o resumo das suas operações hoje.</p>
         </div>
         
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 w-full lg:w-auto">
           {(isAdmin || perms?.clientes?.incluir) && (
             <button 
               onClick={() => navigate('/clientes', { state: { openModal: true } })}
-              className="flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all"
+              className="flex-1 lg:flex-none justify-center items-center gap-2 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex"
             >
               <Icon name="building-plus" className="w-4 h-4" />
               Novo Cliente
@@ -1295,7 +1351,7 @@ const Dashboard = () => {
           {(isAdmin || perms?.tarefas?.incluir) && (
             <button 
               onClick={() => navigate('/tarefas', { state: { openModal: true } })}
-              className="flex items-center gap-2 bg-blue-500/10 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all"
+              className="flex-1 lg:flex-none justify-center items-center gap-2 bg-blue-500/10 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex"
             >
               <Icon name="file-plus" className="w-4 h-4" />
               Nova Tarefa
@@ -1304,7 +1360,7 @@ const Dashboard = () => {
           {(isAdmin || perms?.malaDireta?.incluir) && (
             <button 
               onClick={() => navigate('/mala-direta')}
-              className="flex items-center gap-2 bg-amber-500/10 text-amber-600 hover:bg-amber-500 hover:text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all"
+              className="flex-1 lg:flex-none justify-center items-center gap-2 bg-amber-500/10 text-amber-600 hover:bg-amber-500 hover:text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex"
             >
               <Icon name="mala-direta" className="w-4 h-4" />
               Mala Direta
@@ -1313,7 +1369,7 @@ const Dashboard = () => {
           {isAdmin && (
             <button 
               onClick={() => navigate('/usuarios', { state: { openModal: true } })}
-              className="flex items-center gap-2 bg-purple-500/10 text-purple-600 hover:bg-purple-600 hover:text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all"
+              className="flex-1 lg:flex-none justify-center items-center gap-2 bg-purple-500/10 text-purple-600 hover:bg-purple-600 hover:text-white px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex"
             >
               <Icon name="user-plus" className="w-4 h-4" />
               Novo Usuário
@@ -1498,6 +1554,8 @@ const ClientsPage = () => {
   const [tipoPessoa, setTipoPessoa] = useState<'Física' | 'Jurídica'>('Jurídica');
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (location.state?.openModal) {
@@ -1845,80 +1903,127 @@ const ClientsPage = () => {
     );
   }, [clients, debouncedSearchTerm]);
 
+  const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
+  const paginatedClients = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredClients.slice(start, start + itemsPerPage);
+  }, [filteredClients, currentPage]);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchTerm]);
+
   return (
-    <div className="p-8 space-y-6 animate-in fade-in duration-500">
-      <div className="flex justify-between items-center">
+    <div className="p-4 md:p-8 space-y-6 animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
            <p className="text-slate-500 font-medium">Gestão avançada da carteira de clientes e parceiros.</p>
         </div>
-        <div className="flex gap-4 items-center">
-          <div className="relative">
+        <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
+          <div className="relative flex-1 md:flex-none">
             <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
               type="text" 
               placeholder="Buscar clientes..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 pr-6 py-3 rounded-2xl border border-slate-200 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-medium w-64"
+              className="pl-12 pr-6 py-3 rounded-2xl border border-slate-200 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-medium w-full md:w-64"
             />
           </div>
-          <button onClick={exportToCSV} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-200 flex items-center gap-2 transition-all">
+          <button onClick={exportToCSV} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-200 flex items-center justify-center gap-2 transition-all flex-1 md:flex-none">
             <Icon name="download" /> Exportar
           </button>
           {canInclude && (
-            <button onClick={() => { setEditingClient(null); setActiveTab('id'); setIsModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
+            <button onClick={() => { setEditingClient(null); setActiveTab('id'); setIsModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center justify-center gap-2 transition-all flex-1 md:flex-none">
               <Icon name="plus" /> Novo Registro
             </button>
           )}
         </div>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cód.</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nome / Razão Social</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Documento</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cidade/UF</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {filteredClients.map(c => (
-              <tr key={c.id} className="hover:bg-slate-50 transition-colors group">
-                <td className="px-6 py-5 font-mono text-[11px] font-bold text-slate-400">{c.clientCode}</td>
-                <td className="px-6 py-5">
-                   <div className="flex flex-col">
-                      <span className="font-bold text-slate-800">{c.nomeRazaoSocial}</span>
-                      <span className="text-[10px] text-slate-400 uppercase font-black">{c.categoria || 'Geral'}</span>
-                   </div>
-                </td>
-                <td className="px-6 py-5 text-slate-600 font-medium">{formatDocumento(c.documento)}</td>
-                <td className="px-6 py-5 text-slate-500 text-sm font-medium">{c.cidade ? `${c.cidade}/${c.uf}` : 'Não inf.'}</td>
-                <td className="px-6 py-5">
-                  <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase border ${c.status === EntityStatus.ACTIVE ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
+      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left hidden md:table">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cód.</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nome / Razão Social</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Documento</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cidade/UF</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {paginatedClients.map(c => (
+                <tr key={c.id} className="hover:bg-slate-50 transition-colors group">
+                  <td className="px-6 py-5 font-mono text-[11px] font-bold text-slate-400">{c.clientCode}</td>
+                  <td className="px-6 py-5">
+                     <div className="flex flex-col">
+                        <span className="font-bold text-slate-800">{c.nomeRazaoSocial}</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-black">{c.categoria || 'Geral'}</span>
+                     </div>
+                  </td>
+                  <td className="px-6 py-5 text-slate-600 font-medium">{formatDocumento(c.documento)}</td>
+                  <td className="px-6 py-5 text-slate-500 text-sm font-medium">{c.cidade ? `${c.cidade}/${c.uf}` : 'Não inf.'}</td>
+                  <td className="px-6 py-5">
+                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase border ${c.status === EntityStatus.ACTIVE ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
+                      {c.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-5 text-right">
+                    <div className="flex justify-end gap-1">
+                      {canEdit && <button onClick={() => { setEditingClient(c); setActiveTab('id'); setIsModalOpen(true); }} className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-all"><Icon name="edit" /></button>}
+                      {canDelete && <button onClick={() => { confirm({ title: 'Excluir Cliente', message: 'Excluir registro definitivamente?', onConfirm: () => deleteClient(c.id) }); }} className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all"><Icon name="trash" /></button>}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {paginatedClients.length === 0 && <tr><td colSpan={6} className="p-20 text-center text-slate-300 italic font-bold">Nenhum cliente encontrado.</td></tr>}
+            </tbody>
+          </table>
+          
+          {/* Mobile View */}
+          <div className="md:hidden divide-y divide-slate-100">
+            {paginatedClients.map(c => (
+              <div key={c.id} className="p-4 space-y-3 hover:bg-slate-50 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="flex flex-col">
+                    <span className="font-mono text-[10px] font-bold text-slate-400 mb-1">{c.clientCode}</span>
+                    <span className="font-bold text-slate-800">{c.nomeRazaoSocial}</span>
+                    <span className="text-[10px] text-slate-400 uppercase font-black">{c.categoria || 'Geral'}</span>
+                  </div>
+                  <span className={`px-2 py-1 rounded-full text-[8px] font-black uppercase border shrink-0 ${c.status === EntityStatus.ACTIVE ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
                     {c.status}
                   </span>
-                </td>
-                <td className="px-6 py-5 text-right">
-                  <div className="flex justify-end gap-1">
-                    {canEdit && <button onClick={() => { setEditingClient(c); setActiveTab('id'); setIsModalOpen(true); }} className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-all"><Icon name="edit" /></button>}
-                    {canDelete && <button onClick={() => { confirm({ title: 'Excluir Cliente', message: 'Excluir registro definitivamente?', onConfirm: () => deleteClient(c.id) }); }} className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all"><Icon name="trash" /></button>}
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Documento</span>
+                    <span className="text-slate-600 font-medium">{formatDocumento(c.documento)}</span>
                   </div>
-                </td>
-              </tr>
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Cidade/UF</span>
+                    <span className="text-slate-500 font-medium">{c.cidade ? `${c.cidade}/${c.uf}` : 'Não inf.'}</span>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-50">
+                  {canEdit && <button onClick={() => { setEditingClient(c); setActiveTab('id'); setIsModalOpen(true); }} className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-all"><Icon name="edit" /></button>}
+                  {canDelete && <button onClick={() => { confirm({ title: 'Excluir Cliente', message: 'Excluir registro definitivamente?', onConfirm: () => deleteClient(c.id) }); }} className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all"><Icon name="trash" /></button>}
+                </div>
+              </div>
             ))}
-            {filteredClients.length === 0 && <tr><td colSpan={6} className="p-20 text-center text-slate-300 italic font-bold">Nenhum cliente encontrado.</td></tr>}
-          </tbody>
-        </table>
+            {paginatedClients.length === 0 && <div className="p-10 text-center text-slate-300 italic font-bold">Nenhum cliente encontrado.</div>}
+          </div>
+        </div>
+        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-[3rem] w-full max-w-6xl max-h-[90vh] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in duration-300">
-            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
+            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
                <div>
                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingClient ? editingClient.clientCode : 'Novo Cadastro Corporativo'}</span>
                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">Ficha do Cliente</h3>
@@ -1942,7 +2047,7 @@ const ClientsPage = () => {
                 }
               }}
               noValidate
-              className="flex-1 overflow-y-auto p-10 bg-white"
+              className="flex-1 overflow-y-auto p-6 md:p-10 bg-white"
             >
                <div data-tab-id="id" className={activeTab === 'id' ? 'block' : 'hidden'}>
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
@@ -2375,8 +2480,8 @@ const ClientsPage = () => {
                     <section className="space-y-6">
                        <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Registrar Interação</h4>
                        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
-                          <div className="flex gap-4">
-                             <div className="w-1/3">
+                          <div className="flex flex-col md:flex-row gap-4">
+                             <div className="w-full md:w-1/3">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo de Interação</label>
                                 <select 
                                   value={newInteractionType} 
@@ -2390,9 +2495,9 @@ const ClientsPage = () => {
                                    <option value="MEETING">Reunião</option>
                                 </select>
                              </div>
-                             <div className="w-2/3">
+                             <div className="w-full md:w-2/3">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
-                                <div className="flex gap-2 mt-1">
+                                <div className="flex flex-col sm:flex-row gap-2 mt-1">
                                    <input 
                                      value={newInteractionDesc} 
                                      onChange={(e) => setNewInteractionDesc(e.target.value)}
@@ -2409,7 +2514,7 @@ const ClientsPage = () => {
                                      type="button" 
                                      onClick={addInteraction} 
                                      disabled={!newInteractionDesc.trim()}
-                                     className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                     className="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl font-bold hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                    >
                                      Registrar
                                    </button>
@@ -2476,20 +2581,20 @@ const ClientsPage = () => {
                </div>
             </form>
 
-            <div className="p-8 border-t border-slate-100 flex justify-between items-center bg-slate-50/50">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-white transition-all uppercase text-[10px] tracking-widest">Cancelar</button>
-                <div className="flex gap-4">
+            <div className="p-6 md:p-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-white transition-all uppercase text-[10px] tracking-widest text-center">Cancelar</button>
+                <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                   {currentTabIndex > 0 && (
-                    <button type="button" onClick={handlePrevTab} className="px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-600 hover:bg-white transition-all uppercase text-[10px] tracking-widest flex items-center gap-2">
+                    <button type="button" onClick={handlePrevTab} className="w-full sm:w-auto px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-600 hover:bg-white transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
                       <Icon name="arrow-left" /> Anterior
                     </button>
                   )}
                   {currentTabIndex < clientTabs.length - 1 ? (
-                    <button key="next" type="button" onClick={handleNextTab} className="px-14 py-4 rounded-2xl bg-primary text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center gap-2">
+                    <button key="next" type="button" onClick={handleNextTab} className="w-full sm:w-auto px-14 py-4 rounded-2xl bg-primary text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
                       Próximo <Icon name="arrow-right" />
                     </button>
                   ) : (
-                    <button key="submit" type="submit" form="clientForm" className="px-14 py-4 rounded-2xl bg-emerald-500 text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center gap-2">
+                    <button key="submit" type="submit" form="clientForm" className="w-full sm:w-auto px-14 py-4 rounded-2xl bg-emerald-500 text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
                       <Icon name="check" /> Confirmar
                     </button>
                   )}
@@ -2587,6 +2692,8 @@ const TasksPage = () => {
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [filterPriority, setFilterPriority] = useState<TaskPriority | 'all'>('all');
   const [filterMyTasks, setFilterMyTasks] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
   const perms = currentUser?.permissoes.tarefas;
@@ -2614,7 +2721,17 @@ const TasksPage = () => {
     }
     
     return baseTasks;
-  }, [tasks, currentUser, isAdmin, debouncedSearchTerm, filterPriority]);
+  }, [tasks, currentUser, isAdmin, debouncedSearchTerm, filterPriority, filterMyTasks]);
+
+  const totalPages = Math.ceil(filteredTasks.length / itemsPerPage);
+  const paginatedTasks = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredTasks.slice(start, start + itemsPerPage);
+  }, [filteredTasks, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchTerm, filterPriority, filterMyTasks, viewMode]);
 
   const calculatedDeadline = useMemo(() => {
     if (!startDate) return '';
@@ -2953,40 +3070,40 @@ const TasksPage = () => {
   };
 
   return (
-    <div className="p-8 space-y-6 flex flex-col h-full">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <p className="text-slate-500 font-medium">Ciclo de vida operacional das tarefas.</p>
-          <div className="flex bg-slate-200 p-1 rounded-xl">
+    <div className="p-4 md:p-8 space-y-6 flex flex-col h-full">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
+          <p className="text-slate-500 font-medium hidden sm:block">Ciclo de vida operacional das tarefas.</p>
+          <div className="flex bg-slate-200 p-1 rounded-xl w-full sm:w-auto">
             <button 
               onClick={() => setViewMode('list')} 
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
               Lista
             </button>
             <button 
               onClick={() => setViewMode('kanban')} 
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === 'kanban' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === 'kanban' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
               Kanban
             </button>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full md:w-auto">
+          <div className="relative w-full sm:w-auto">
             <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
               type="text" 
               placeholder="Buscar tarefas..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-11 pr-4 py-3 rounded-2xl border border-slate-200 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm w-64"
+              className="pl-11 pr-4 py-3 rounded-2xl border border-slate-200 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm w-full sm:w-64"
             />
           </div>
           <select
             value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value as TaskPriority | 'all')}
-            className="px-4 py-3 rounded-2xl border border-slate-200 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm font-medium text-slate-600 appearance-none cursor-pointer"
+            className="px-4 py-3 rounded-2xl border border-slate-200 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm font-medium text-slate-600 appearance-none cursor-pointer w-full sm:w-auto"
           >
             <option value="all">Todas as Prioridades</option>
             {Object.values(TaskPriority).map(p => (
@@ -2996,16 +3113,16 @@ const TasksPage = () => {
           {isAdmin && (
             <button 
               onClick={() => setFilterMyTasks(!filterMyTasks)} 
-              className={`px-4 py-3 rounded-2xl font-black text-xs uppercase shadow-sm flex items-center gap-2 transition-all border ${filterMyTasks ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+              className={`px-4 py-3 rounded-2xl font-black text-xs uppercase shadow-sm flex items-center justify-center gap-2 transition-all border w-full sm:w-auto ${filterMyTasks ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
             >
               <Icon name="user" className="w-4 h-4" /> Minhas Tarefas
             </button>
           )}
-          <button onClick={exportToCSV} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-200 flex items-center gap-2 transition-all">
+          <button onClick={exportToCSV} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-200 flex items-center justify-center gap-2 transition-all w-full sm:w-auto">
             <Icon name="download" /> Exportar
           </button>
           {canInclude && (
-            <button onClick={() => openTaskModal(null)} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
+            <button onClick={() => openTaskModal(null)} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center justify-center gap-2 transition-all w-full sm:w-auto">
               <Icon name="plus" /> Adicionar Atividade
             </button>
           )}
@@ -3013,9 +3130,16 @@ const TasksPage = () => {
       </div>
 
       {viewMode === 'list' ? (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          {filteredTasks.map(t => renderTaskCard(t, false))}
-          {filteredTasks.length === 0 && <div className="col-span-2 py-20 text-center text-slate-400 font-medium">Nenhuma tarefa encontrada no seu escopo.</div>}
+        <div className="flex flex-col flex-1">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 flex-1 content-start">
+            {paginatedTasks.map(t => renderTaskCard(t, false))}
+            {paginatedTasks.length === 0 && <div className="col-span-1 xl:col-span-2 py-20 text-center text-slate-400 font-medium">Nenhuma tarefa encontrada no seu escopo.</div>}
+          </div>
+          {totalPages > 1 && (
+            <div className="mt-6">
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex gap-6 overflow-x-auto pb-4 flex-1 items-start min-h-[600px] snap-x custom-scrollbar">
@@ -3027,7 +3151,7 @@ const TasksPage = () => {
             return (
               <div 
                 key={status} 
-                className={`flex-shrink-0 w-80 rounded-[2.5rem] p-4 border flex flex-col h-[calc(100vh-200px)] min-h-[500px] snap-center transition-all duration-300 ${isDraggedOver ? 'bg-slate-200/80 border-primary shadow-inner scale-[1.02]' : 'bg-slate-50/80 border-slate-200'}`}
+                className={`flex-shrink-0 w-[85vw] md:w-80 rounded-[2.5rem] p-4 border flex flex-col h-[calc(100vh-200px)] min-h-[500px] snap-center transition-all duration-300 ${isDraggedOver ? 'bg-slate-200/80 border-primary shadow-inner scale-[1.02]' : 'bg-slate-50/80 border-slate-200'}`}
                 onDragOver={(e) => handleDragOver(e, status)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, status)}
@@ -3066,14 +3190,14 @@ const TasksPage = () => {
       {isHistoryModalOpen && historyTask && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[110] flex items-center justify-center p-4">
           <div className="bg-white rounded-[3rem] w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col animate-in zoom-in duration-300">
-            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
+            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
               <div>
                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">{historyTask.taskNumber}</span>
                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Timeline de Ações</h3>
               </div>
               <button onClick={() => setIsHistoryModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
-            <div className="flex-1 overflow-y-auto p-10 space-y-8">
+            <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8">
               {historyTask.logs && historyTask.logs.length > 0 ? (
                 <div className="relative border-l-2 border-slate-100 ml-4 space-y-12">
                   {historyTask.logs.map((log, idx) => (
@@ -3131,8 +3255,8 @@ const TasksPage = () => {
                 </div>
               )}
             </div>
-            <div className="p-8 border-t border-slate-100 flex justify-end bg-slate-50/30">
-               <button onClick={() => setIsHistoryModalOpen(false)} className="px-10 py-3 rounded-2xl bg-slate-900 text-white font-black text-xs uppercase shadow-lg hover:bg-slate-800 transition-all">Fechar Timeline</button>
+            <div className="p-6 md:p-8 border-t border-slate-100 flex justify-end bg-slate-50/30">
+               <button onClick={() => setIsHistoryModalOpen(false)} className="w-full sm:w-auto px-10 py-3 rounded-2xl bg-slate-900 text-white font-black text-xs uppercase shadow-lg hover:bg-slate-800 transition-all text-center">Fechar Timeline</button>
             </div>
           </div>
         </div>
@@ -3141,7 +3265,7 @@ const TasksPage = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
           <div className="bg-white rounded-[3rem] w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col animate-in zoom-in duration-300">
-            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
+            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
               <div>
                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingTask ? editingTask.taskNumber : 'Identificador Automático'}</span>
                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Gerenciamento de Atividade</h3>
@@ -3149,13 +3273,13 @@ const TasksPage = () => {
               <div className="flex items-center gap-3">
                 {editingTask && (
                   <button type="button" onClick={() => openHistoryModal(editingTask)} className="px-4 py-2 bg-amber-50 text-amber-600 rounded-xl font-black text-[10px] uppercase border border-amber-100 flex items-center gap-2 hover:bg-amber-100 transition-all">
-                    <Icon name="history" /> Ver Histórico
+                    <Icon name="history" /> <span className="hidden sm:inline">Ver Histórico</span>
                   </button>
                 )}
                 <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
               </div>
             </div>
-            <form id="taskForm" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-12 space-y-12 bg-white">
+            <form id="taskForm" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 md:p-12 space-y-12 bg-white">
               <section className="space-y-6">
                 <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">1. Identificação da Tarefa</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -3370,9 +3494,9 @@ const TasksPage = () => {
                 </div>
               )}
             </form>
-            <div className="p-10 border-t border-slate-100 flex justify-end gap-4 bg-slate-50/50">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-white transition-all">Cancelar</button>
-                <button type="submit" form="taskForm" className="px-14 py-4 rounded-2xl bg-primary text-white font-extrabold shadow-xl hover:brightness-110 transition-all">Confirmar</button>
+            <div className="p-6 md:p-10 border-t border-slate-100 flex flex-col sm:flex-row justify-end gap-4 bg-slate-50/50">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-white transition-all text-center">Cancelar</button>
+                <button type="submit" form="taskForm" className="w-full sm:w-auto px-14 py-4 rounded-2xl bg-primary text-white font-extrabold shadow-xl hover:brightness-110 transition-all text-center">Confirmar</button>
             </div>
           </div>
         </div>
@@ -3437,8 +3561,8 @@ const PermissionMatrix = ({ permissions, onChange, targetProfile }: { permission
   };
 
   return (
-    <div className="w-full overflow-hidden border border-slate-200 rounded-[2rem] bg-slate-50/30">
-      <table className="w-full text-left border-collapse">
+    <div className="w-full overflow-x-auto border border-slate-200 rounded-[2rem] bg-slate-50/30 custom-scrollbar">
+      <table className="w-full text-left border-collapse min-w-[600px]">
         <thead className="bg-slate-100/50">
           <tr>
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200">Módulo</th>
@@ -3495,6 +3619,8 @@ const UsersPage = () => {
   const [hasWhatsapp, setHasWhatsapp] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
 
@@ -3605,33 +3731,44 @@ const UsersPage = () => {
     link.click();
   };
 
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredUsers.slice(start, start + itemsPerPage);
+  }, [filteredUsers, currentPage]);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchTerm]);
+
   return (
-    <div className="p-8 space-y-6 animate-in fade-in duration-500">
-      <div className="flex justify-between items-center">
+    <div className="p-4 md:p-8 space-y-6 animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <p className="text-slate-500 font-medium">Gestão de Usuários e Acessos ao Sistema.</p>
-        <div className="flex gap-4 items-center">
+        <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
           {isAdmin && (
-            <div className="relative">
+            <div className="relative flex-1 md:flex-none">
               <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
                 type="text" 
                 placeholder="Buscar usuários..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 pr-6 py-3 rounded-2xl border border-slate-200 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-medium w-64"
+                className="pl-12 pr-6 py-3 rounded-2xl border border-slate-200 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-medium w-full md:w-64"
               />
             </div>
           )}
           {isAdmin && (
-            <button onClick={exportToCSV} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-200 flex items-center gap-2 transition-all">
+            <button onClick={exportToCSV} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-200 flex items-center justify-center gap-2 transition-all flex-1 md:flex-none">
               <Icon name="download" /> Exportar
             </button>
           )}
-          {isAdmin && <button onClick={() => openModal(null)} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center gap-2"><Icon name="plus" /> Novo Usuário</button>}
+          {isAdmin && <button onClick={() => openModal(null)} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 flex-1 md:flex-none"><Icon name="plus" /> Novo Usuário</button>}
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredUsers.map(u => (
+        {paginatedUsers.map(u => (
           <div key={u.id} className="bg-white p-8 rounded-[3rem] border border-slate-200 shadow-sm hover:shadow-xl transition-all text-center space-y-4">
              <img src={u.foto || `https://picsum.photos/seed/${u.id}/200`} className="w-24 h-24 rounded-[2.5rem] object-cover border-4 border-slate-50 shadow-lg mx-auto" />
              <div>
@@ -3641,40 +3778,42 @@ const UsersPage = () => {
              <button onClick={() => openModal(u)} className="w-full px-6 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase hover:bg-primary transition-all">{isAdmin ? 'Gerenciar' : 'Ver Perfil'}</button>
           </div>
         ))}
+        {paginatedUsers.length === 0 && <div className="col-span-full p-10 text-center text-slate-300 italic font-bold">Nenhum usuário encontrado.</div>}
       </div>
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-4xl max-h-[95vh] shadow-2xl p-14 space-y-10 animate-in zoom-in duration-300 overflow-hidden flex flex-col">
-            <h3 className="text-3xl font-black text-slate-800 tracking-tighter text-center">Acesso ao Sistema</h3>
-            <div className="flex justify-center">
+          <div className="bg-white rounded-[3rem] w-full max-w-4xl max-h-[95vh] shadow-2xl p-6 md:p-10 lg:p-14 space-y-6 md:space-y-10 animate-in zoom-in duration-300 overflow-hidden flex flex-col">
+            <h3 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tighter text-center shrink-0">Acesso ao Sistema</h3>
+            <div className="flex justify-center shrink-0">
                 <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                    <img src={modalPhoto || `https://picsum.photos/seed/${editingUser?.id || 'new'}/200`} className="w-32 h-32 rounded-[2.5rem] object-cover border-4 border-slate-50 shadow-xl" />
+                    <img src={modalPhoto || `https://picsum.photos/seed/${editingUser?.id || 'new'}/200`} className="w-24 h-24 md:w-32 md:h-32 rounded-[2.5rem] object-cover border-4 border-slate-50 shadow-xl" />
                     <div className="absolute inset-0 bg-black/40 rounded-[2.5rem] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Icon name="camera" className="text-white text-2xl" />
+                        <Icon name="camera" className="text-white text-xl md:text-2xl" />
                     </div>
                     <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
                 </div>
             </div>
-            <form id="userForm" onSubmit={handleSubmit} className="space-y-10 overflow-y-auto pr-4 flex-1">
-              <section className="space-y-6">
+            <form id="userForm" onSubmit={handleSubmit} className="space-y-6 md:space-y-10 overflow-y-auto pr-2 md:pr-4 flex-1 custom-scrollbar">
+              <section className="space-y-4 md:space-y-6">
                 <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Identificação</h4>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome Exibição</label>
-                    <input name="nome" readOnly={!isAdmin} defaultValue={editingUser?.nome} required className="w-full px-6 py-4 rounded-3xl border border-slate-100 bg-slate-50 outline-none font-bold shadow-inner" />
+                    <input name="nome" readOnly={!isAdmin} defaultValue={editingUser?.nome} required className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 bg-slate-50 outline-none font-bold shadow-inner text-sm md:text-base" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-mail Corporativo</label>
-                    <input name="email" readOnly={!isAdmin} defaultValue={editingUser?.email} required type="email" className="w-full px-6 py-4 rounded-3xl border border-slate-100 bg-slate-50 outline-none font-bold shadow-inner" />
+                    <input name="email" readOnly={!isAdmin} defaultValue={editingUser?.email} required type="email" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 bg-slate-50 outline-none font-bold shadow-inner text-sm md:text-base" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Chave de Acesso (Senha)</label>
-                    <input name="senha" type="password" placeholder="Defina a senha" defaultValue={editingUser?.senha} required className="w-full px-6 py-4 rounded-3xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold shadow-inner" />
+                    <input name="senha" type="password" placeholder="Defina a senha" defaultValue={editingUser?.senha} required className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold shadow-inner text-sm md:text-base" />
                   </div>
                   {isAdmin && (
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Status da Conta</label>
-                      <select name="status" defaultValue={editingUser?.status || EntityStatus.ACTIVE} className="w-full px-6 py-4 rounded-3xl border border-slate-100 bg-slate-50 outline-none font-bold">
+                      <select name="status" defaultValue={editingUser?.status || EntityStatus.ACTIVE} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 bg-slate-50 outline-none font-bold text-sm md:text-base">
                         <option value={EntityStatus.ACTIVE}>Ativo</option>
                         <option value={EntityStatus.INACTIVE}>Inativo</option>
                       </select>
@@ -3682,14 +3821,14 @@ const UsersPage = () => {
                   )}
                 </div>
               </section>
-              <section className="space-y-6">
+              <section className="space-y-4 md:space-y-6">
                 <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Contato Direto</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                    <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Celular</label>
-                    <PhoneInput name="celular" defaultValue={editingUser?.celular} className={`w-full px-6 py-4 rounded-3xl border border-slate-100 outline-none font-bold transition-colors shadow-inner ${hasWhatsapp ? 'bg-emerald-100 border-emerald-300' : 'bg-slate-50'}`} />
+                    <PhoneInput name="celular" defaultValue={editingUser?.celular} className={`w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 outline-none font-bold transition-colors shadow-inner text-sm md:text-base ${hasWhatsapp ? 'bg-emerald-100 border-emerald-300' : 'bg-slate-50'}`} />
                    </div>
-                   <div className="flex items-center gap-3 pt-6">
+                   <div className="flex items-center gap-3 pt-2 md:pt-6">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <div onClick={() => setHasWhatsapp(!hasWhatsapp)} className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${hasWhatsapp ? 'bg-primary border-primary' : 'border-slate-300'}`}>
                           {hasWhatsapp && <Icon name="check" className="text-white text-[10px]" />}
@@ -3700,11 +3839,11 @@ const UsersPage = () => {
                 </div>
               </section>
               {isAdmin && (
-                <section className="space-y-6">
-                  <div className="grid grid-cols-2 gap-6">
+                <section className="space-y-4 md:space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Perfil Corporativo</label>
-                      <select name="perfil" value={modalProfile} onChange={(e) => handleProfileChange(e.target.value as UserRole)} className="w-full px-6 py-4 rounded-3xl border border-slate-100 bg-slate-50 outline-none font-bold">
+                      <select name="perfil" value={modalProfile} onChange={(e) => handleProfileChange(e.target.value as UserRole)} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 bg-slate-50 outline-none font-bold text-sm md:text-base">
                         <option value={UserRole.ADMIN}>Administrador</option>
                         <option value={UserRole.USER}>Usuário</option>
                       </select>
@@ -3715,9 +3854,9 @@ const UsersPage = () => {
                 </section>
               )}
             </form>
-            <div className="flex justify-end gap-4 pt-8 border-t border-slate-50">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-10 py-4 rounded-2xl border-2 border-slate-200 text-slate-500 font-black text-xs uppercase hover:bg-slate-50 transition-all">Cancelar</button>
-                <button type="submit" form="userForm" className="px-14 py-4 rounded-2xl bg-primary text-white font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all">Confirmar</button>
+            <div className="flex flex-col sm:flex-row justify-end gap-3 md:gap-4 pt-6 md:pt-8 border-t border-slate-50 shrink-0">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-10 py-3 md:py-4 rounded-2xl border-2 border-slate-200 text-slate-500 font-black text-xs uppercase hover:bg-slate-50 transition-all">Cancelar</button>
+                <button type="submit" form="userForm" className="w-full sm:w-auto px-14 py-3 md:py-4 rounded-2xl bg-primary text-white font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all">Confirmar</button>
             </div>
           </div>
         </div>
@@ -3731,12 +3870,17 @@ const TemplatesTab = () => {
   const { confirm } = useConfirm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<MailTemplate | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
   const perms = currentUser?.permissoes.malaDireta;
   const canEdit = isAdmin || perms?.editar;
   const canDelete = isAdmin || perms?.excluir;
   const canInclude = isAdmin || perms?.incluir;
+
+  const totalPages = Math.ceil(templates.length / itemsPerPage);
+  const paginatedTemplates = templates.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -3759,20 +3903,20 @@ const TemplatesTab = () => {
 
   return (
     <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-10 animate-in slide-in-from-bottom-2">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
            <h3 className="text-2xl font-black text-slate-800 tracking-tight">Templates de Mensagem</h3>
            <p className="text-sm text-slate-400 font-medium mt-1">Gerencie os modelos de e-mail e WhatsApp para mala direta.</p>
         </div>
         {canInclude && (
-          <button onClick={() => { setEditingTemplate(null); setIsModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
+          <button onClick={() => { setEditingTemplate(null); setIsModalOpen(true); }} className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center justify-center gap-2 transition-all">
             <Icon name="plus" /> Novo Template
           </button>
         )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {templates.map(t => (
+        {paginatedTemplates.map(t => (
           <div key={t.id} className="bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all group relative">
             <div className="flex justify-between items-start mb-4">
               <h3 className="font-black text-slate-800 text-lg">{t.name}</h3>
@@ -3799,42 +3943,50 @@ const TemplatesTab = () => {
             </div>
           </div>
         ))}
-        {templates.length === 0 && (
+        {paginatedTemplates.length === 0 && (
           <div className="col-span-full p-20 text-center text-slate-400 font-bold italic bg-slate-50 rounded-[3rem] border border-slate-200 border-dashed">
             Nenhum template cadastrado.
           </div>
         )}
       </div>
 
+      {totalPages > 1 && (
+        <Pagination 
+          currentPage={currentPage} 
+          totalPages={totalPages} 
+          onPageChange={setCurrentPage} 
+        />
+      )}
+
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in duration-300">
-            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
+          <div className="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in duration-300 max-h-[90vh]">
+            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30 shrink-0">
                <div>
                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingTemplate ? 'Edição' : 'Novo Cadastro'}</span>
-                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Template de Mensagem</h3>
+                 <h3 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Template de Mensagem</h3>
                </div>
                <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
+            <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-4 md:space-y-6 overflow-y-auto custom-scrollbar">
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Template</label>
-                <input name="name" required defaultValue={editingTemplate?.name} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" placeholder="Ex: Boas-vindas" />
+                <input name="name" required defaultValue={editingTemplate?.name} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary text-sm md:text-base" placeholder="Ex: Boas-vindas" />
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assunto (Para E-mails)</label>
-                <input name="subject" defaultValue={editingTemplate?.subject} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" placeholder="Assunto do e-mail" />
+                <input name="subject" defaultValue={editingTemplate?.subject} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary text-sm md:text-base" placeholder="Assunto do e-mail" />
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Conteúdo</label>
-                <textarea name="content" required rows={8} defaultValue={editingTemplate?.content} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-medium outline-none focus:border-primary resize-none" placeholder="Conteúdo da mensagem. Use {nome} para o nome do cliente." />
+                <textarea name="content" required rows={8} defaultValue={editingTemplate?.content} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 font-medium outline-none focus:border-primary resize-none text-sm md:text-base" placeholder="Conteúdo da mensagem. Use {nome} para o nome do cliente." />
                 <p className="text-xs text-slate-400 mt-2 ml-1">Variáveis disponíveis: <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{nome}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{empresa}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{email}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{telefone}'}</code></p>
               </div>
 
-              <div className="pt-6 flex justify-end gap-4">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all uppercase text-[10px] tracking-widest">Cancelar</button>
-                <button type="submit" className="px-8 py-4 rounded-2xl bg-primary text-white font-bold hover:brightness-110 transition-all uppercase text-[10px] tracking-widest shadow-lg shadow-primary/30">Salvar Template</button>
+              <div className="pt-4 md:pt-6 flex flex-col sm:flex-row justify-end gap-3 md:gap-4 shrink-0">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-8 py-3 md:py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all uppercase text-[10px] tracking-widest">Cancelar</button>
+                <button type="submit" className="w-full sm:w-auto px-8 py-3 md:py-4 rounded-2xl bg-primary text-white font-bold hover:brightness-110 transition-all uppercase text-[10px] tracking-widest shadow-lg shadow-primary/30">Salvar Template</button>
               </div>
             </form>
           </div>
@@ -3856,6 +4008,11 @@ const ConfiguracoesPage = () => {
   const [isCustomFieldModalOpen, setIsCustomFieldModalOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; type: 'sector' | 'category' | 'customField'; name: string } | null>(null);
   
+  const [currentPageSectors, setCurrentPageSectors] = useState(1);
+  const [currentPageCategories, setCurrentPageCategories] = useState(1);
+  const [currentPageCustomFields, setCurrentPageCustomFields] = useState(1);
+  const itemsPerPage = 6;
+
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
 
   const tabs = [
@@ -3964,8 +4121,8 @@ const ConfiguracoesPage = () => {
   };
 
   return (
-    <div className="p-8 space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-wrap gap-2 bg-white p-2 rounded-3xl border border-slate-200 w-fit shadow-sm">
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-wrap gap-2 bg-white p-2 rounded-3xl border border-slate-200 w-full md:w-fit shadow-sm overflow-x-auto custom-scrollbar">
         {tabs.map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-bold text-sm transition-all ${activeTab === tab.id ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}>
             <Icon name={tab.icon} />{tab.label}
@@ -3976,9 +4133,9 @@ const ConfiguracoesPage = () => {
       <div className="max-w-5xl">
         {activeTab === 'setores' && isAdmin && (
           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                <div className="flex items-center gap-4">
-                 <div className="w-16 h-16 rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-2xl shadow-inner">
+                 <div className="w-16 h-16 rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-2xl shadow-inner shrink-0">
                    <Icon name="building" />
                  </div>
                  <div>
@@ -3986,12 +4143,12 @@ const ConfiguracoesPage = () => {
                    <p className="text-sm text-slate-400 font-medium mt-1">Gerencie os departamentos e suas respectivas lideranças.</p>
                  </div>
                </div>
-               <button onClick={() => { setEditingSector(null); setIsSectorModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center gap-2 transition-all">
+               <button onClick={() => { setEditingSector(null); setIsSectorModalOpen(true); }} className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center justify-center gap-2 transition-all">
                  <Icon name="plus" /> Novo Setor
                </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {sectors.map(s => {
+              {sectors.slice((currentPageSectors - 1) * itemsPerPage, currentPageSectors * itemsPerPage).map(s => {
                 const manager = users.find(u => u.id === s.responsavelId);
                 return (
                   <div key={s.id} className="p-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 flex justify-between items-start group hover:bg-white hover:shadow-md transition-all shadow-sm">
@@ -4041,14 +4198,21 @@ const ConfiguracoesPage = () => {
                 </div>
               )}
             </div>
+            {sectors.length > itemsPerPage && (
+              <Pagination 
+                currentPage={currentPageSectors} 
+                totalPages={Math.ceil(sectors.length / itemsPerPage)} 
+                onPageChange={setCurrentPageSectors} 
+              />
+            )}
           </div>
         )}
 
         {activeTab === 'categorias' && isAdmin && (
           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                <div className="flex items-center gap-4">
-                 <div className="w-16 h-16 rounded-[2rem] bg-emerald-50 text-emerald-500 flex items-center justify-center text-2xl shadow-inner">
+                 <div className="w-16 h-16 rounded-[2rem] bg-emerald-50 text-emerald-500 flex items-center justify-center text-2xl shadow-inner shrink-0">
                    <Icon name="tag" />
                  </div>
                  <div>
@@ -4056,13 +4220,13 @@ const ConfiguracoesPage = () => {
                    <p className="text-sm text-slate-400 font-medium mt-1">Gerencie as segmentações para organizar sua base de clientes.</p>
                  </div>
                </div>
-               <button onClick={() => { setEditingCategory(null); setIsCategoryModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center gap-2">
+               <button onClick={() => { setEditingCategory(null); setIsCategoryModalOpen(true); }} className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
                  <Icon name="plus" /> Nova Categoria
                </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {clientCategories.map(cat => (
+              {clientCategories.slice((currentPageCategories - 1) * itemsPerPage, currentPageCategories * itemsPerPage).map(cat => (
                 <div key={cat.id} className="p-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 flex justify-between items-start group hover:bg-white hover:shadow-md transition-all shadow-sm">
                   <div className="flex-1 overflow-hidden pr-4">
                     <div className="flex items-center gap-3 mb-2">
@@ -4108,14 +4272,21 @@ const ConfiguracoesPage = () => {
                 </div>
               )}
             </div>
+            {clientCategories.length > itemsPerPage && (
+              <Pagination 
+                currentPage={currentPageCategories} 
+                totalPages={Math.ceil(clientCategories.length / itemsPerPage)} 
+                onPageChange={setCurrentPageCategories} 
+              />
+            )}
           </div>
         )}
 
         {activeTab === 'customFields' && isAdmin && (
           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                <div className="flex items-center gap-4">
-                 <div className="w-16 h-16 rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-2xl shadow-inner">
+                 <div className="w-16 h-16 rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-2xl shadow-inner shrink-0">
                    <Icon name="list-alt" />
                  </div>
                  <div>
@@ -4123,13 +4294,13 @@ const ConfiguracoesPage = () => {
                    <p className="text-sm text-slate-400 font-medium mt-1">Crie campos dinâmicos para o cadastro de clientes.</p>
                  </div>
                </div>
-               <button onClick={() => { setEditingCustomField(null); setIsCustomFieldModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center gap-2">
+               <button onClick={() => { setEditingCustomField(null); setIsCustomFieldModalOpen(true); }} className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
                  <Icon name="plus" /> Novo Campo
                </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {customFields.map(field => (
+              {customFields.slice((currentPageCustomFields - 1) * itemsPerPage, currentPageCustomFields * itemsPerPage).map(field => (
                 <div key={field.id} className="p-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 flex justify-between items-start group hover:bg-white hover:shadow-md transition-all shadow-sm">
                   <div className="flex-1 overflow-hidden pr-4">
                     <div className="flex items-center gap-3 mb-2">
@@ -4162,21 +4333,28 @@ const ConfiguracoesPage = () => {
                 </div>
               )}
             </div>
+            {customFields.length > itemsPerPage && (
+              <Pagination 
+                currentPage={currentPageCustomFields} 
+                totalPages={Math.ceil(customFields.length / itemsPerPage)} 
+                onPageChange={setCurrentPageCustomFields} 
+              />
+            )}
           </div>
         )}
 
         {activeTab === 'sla' && isAdmin && (
-           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-10 animate-in slide-in-from-bottom-2">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-[2rem] bg-blue-50 text-blue-500 flex items-center justify-center text-2xl shadow-inner">
+           <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-6 md:space-y-10 animate-in slide-in-from-bottom-2">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.5rem] md:rounded-[2rem] bg-blue-50 text-blue-500 flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
                   <Icon name="clock" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">Parametrização de SLA</h3>
-                  <p className="text-sm text-slate-400 font-medium mt-1">Defina o prazo de entrega (em dias) para cada nível de criticidade.</p>
+                  <h3 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Parametrização de SLA</h3>
+                  <p className="text-xs md:text-sm text-slate-400 font-medium mt-1">Defina o prazo de entrega (em dias) para cada nível de criticidade.</p>
                 </div>
               </div>
-              <form onSubmit={handleSaveSLA} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <form onSubmit={handleSaveSLA} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                  {Object.keys(slaSettings).map(p => {
                    const colors: Record<string, string> = {
                      'Baixa': 'text-emerald-500 bg-emerald-50',
@@ -4189,22 +4367,22 @@ const ConfiguracoesPage = () => {
                    const textClass = colorClass.split(' ')[0];
                    
                    return (
-                     <div key={p} className="bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
+                     <div key={p} className="bg-slate-50 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
                         <div className={`absolute top-0 left-0 w-2 h-full ${bgClass.replace('50', '500')}`} />
-                        <div className="flex items-center justify-between mb-4 pl-4">
-                          <label className={`text-xs font-black uppercase tracking-widest flex items-center gap-2 ${textClass}`}>
+                        <div className="flex items-center justify-between mb-3 md:mb-4 pl-4">
+                          <label className={`text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-2 ${textClass}`}>
                             <div className={`w-2 h-2 rounded-full ${bgClass.replace('50', '500')}`} />
                             Prioridade {p}
                           </label>
                         </div>
                         <div className="relative pl-4">
-                          <input name={p} type="number" min="0" defaultValue={slaSettings[p as keyof SLASettings]} className="w-full px-6 py-5 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-black text-3xl text-slate-800 focus:border-primary transition-all shadow-sm" />
-                          <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 font-black text-xs uppercase">Dias</span>
+                          <input name={p} type="number" min="0" defaultValue={slaSettings[p as keyof SLASettings]} className="w-full px-4 md:px-6 py-3 md:py-5 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-black text-2xl md:text-3xl text-slate-800 focus:border-primary transition-all shadow-sm" />
+                          <span className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-slate-300 font-black text-[10px] md:text-xs uppercase">Dias</span>
                         </div>
                      </div>
                    );
                  })}
-                 <button type="submit" className="md:col-span-2 py-5 bg-primary text-white rounded-[2rem] font-black text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1 flex items-center justify-center gap-3">
+                 <button type="submit" className="md:col-span-2 py-4 md:py-5 bg-primary text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-base md:text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1 flex items-center justify-center gap-2 md:gap-3">
                    <Icon name="save" /> Efetivar Configurações de SLA
                  </button>
               </form>
@@ -4212,23 +4390,23 @@ const ConfiguracoesPage = () => {
         )}
 
         {activeTab === 'email' && isAdmin && (
-           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-10 animate-in slide-in-from-bottom-2">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-2xl shadow-inner">
+           <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-6 md:space-y-10 animate-in slide-in-from-bottom-2">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.5rem] md:rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
                   <Icon name="envelope" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">Configurações de E-mail</h3>
-                  <p className="text-sm text-slate-400 font-medium mt-1">Defina as credenciais do servidor SMTP para envio de mala direta.</p>
+                  <h3 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Configurações de E-mail</h3>
+                  <p className="text-xs md:text-sm text-slate-400 font-medium mt-1">Defina as credenciais do servidor SMTP para envio de mala direta.</p>
                 </div>
               </div>
-              <form onSubmit={handleSaveEmail} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <div className="space-y-1 md:col-span-2 bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100">
+              <form onSubmit={handleSaveEmail} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                 <div className="space-y-1 md:col-span-2 bg-slate-50 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Provedor</label>
                     <select 
                       name="provider" 
                       defaultValue={emailSettings.provider} 
-                      className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm mt-2"
+                      className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm mt-2 text-sm md:text-base"
                       onChange={(e) => {
                         const provider = e.target.value;
                         setSelectedProvider(provider);
@@ -4275,38 +4453,38 @@ const ConfiguracoesPage = () => {
                  </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Host SMTP</label>
-                    <input name="host" required defaultValue={emailSettings.host} placeholder="smtp.exemplo.com" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm" />
+                    <input name="host" required defaultValue={emailSettings.host} placeholder="smtp.exemplo.com" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
                  </div>
                  <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Porta</label>
-                    <input name="port" type="number" required defaultValue={emailSettings.port} placeholder="587" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm" />
+                    <input name="port" type="number" required defaultValue={emailSettings.port} placeholder="587" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
                  </div>
                  <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Usuário</label>
-                    <input name="user" required defaultValue={emailSettings.user} placeholder="seu-email@exemplo.com" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm" />
+                    <input name="user" required defaultValue={emailSettings.user} placeholder="seu-email@exemplo.com" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
                  </div>
                  <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Senha</label>
-                    <input name="pass" type="password" required defaultValue={emailSettings.pass} placeholder="••••••••" className="w-full px-6 py-4 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm" />
+                    <input name="pass" type="password" required defaultValue={emailSettings.pass} placeholder="••••••••" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
                  </div>
-                 <div className="space-y-1 md:col-span-2 flex items-center gap-3 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                 <div className="space-y-1 md:col-span-2 flex items-center gap-3 bg-slate-50 p-4 md:p-6 rounded-xl md:rounded-2xl border border-slate-100">
                     <input name="secure" type="checkbox" id="secure" defaultChecked={emailSettings.secure} className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary" />
-                    <label htmlFor="secure" className="text-sm font-bold text-slate-700">Usar conexão segura (SSL/TLS)</label>
+                    <label htmlFor="secure" className="text-xs md:text-sm font-bold text-slate-700">Usar conexão segura (SSL/TLS)</label>
                  </div>
                  {(selectedProvider === 'GMail' || selectedProvider === 'Office365') && (
-                   <div className="md:col-span-2 bg-amber-50 border border-amber-200 p-6 rounded-[2rem] flex gap-4 items-start shadow-sm">
+                   <div className="md:col-span-2 bg-amber-50 border border-amber-200 p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] flex flex-col sm:flex-row gap-4 items-start shadow-sm">
                      <div className="text-amber-500 shrink-0 mt-1 bg-white p-2 rounded-xl shadow-sm">
                        <Icon name="exclamation-triangle" />
                      </div>
                      <div>
-                       <h4 className="font-black text-amber-800 text-sm mb-1">Atenção: Senha de Aplicativo Necessária</h4>
-                       <p className="text-xs text-amber-700 font-medium leading-relaxed">
+                       <h4 className="font-black text-amber-800 text-xs md:text-sm mb-1">Atenção: Senha de Aplicativo Necessária</h4>
+                       <p className="text-[10px] md:text-xs text-amber-700 font-medium leading-relaxed">
                          Para provedores como {selectedProvider}, você não pode usar a senha normal da sua conta se a Autenticação em Duas Etapas (2FA) estiver ativada. Você precisará gerar uma <strong>Senha de Aplicativo</strong> nas configurações de segurança da sua conta e inseri-la no campo "Senha" acima.
                        </p>
                      </div>
                    </div>
                  )}
-                 <button type="submit" className="md:col-span-2 py-5 bg-primary text-white rounded-[2rem] font-black text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1 flex items-center justify-center gap-3">
+                 <button type="submit" className="md:col-span-2 py-4 md:py-5 bg-primary text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-base md:text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1 flex items-center justify-center gap-2 md:gap-3">
                    <Icon name="save" /> Salvar Configurações de E-mail
                  </button>
               </form>
@@ -4318,24 +4496,24 @@ const ConfiguracoesPage = () => {
         )}
 
         {activeTab === 'aparencia' && (
-           <div className="bg-slate-900 p-12 rounded-[3.5rem] shadow-2xl space-y-10 animate-in slide-in-from-bottom-2 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-              <div className="relative z-10 flex items-center gap-4">
-                <div className="w-16 h-16 rounded-[2rem] bg-white/10 text-white flex items-center justify-center text-2xl backdrop-blur-md border border-white/10">
+           <div className="bg-slate-900 p-6 md:p-12 rounded-[2rem] md:rounded-[3.5rem] shadow-2xl space-y-6 md:space-y-10 animate-in slide-in-from-bottom-2 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+              <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-4">
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.5rem] md:rounded-[2rem] bg-white/10 text-white flex items-center justify-center text-xl md:text-2xl backdrop-blur-md border border-white/10 shrink-0">
                   <Icon name="palette" />
                 </div>
                 <div>
-                  <h3 className="text-3xl font-black text-white tracking-tight">Ecossistema Visual</h3>
-                  <p className="text-sm text-slate-400 font-medium mt-1">Personalize a identidade do framework para seu perfil.</p>
+                  <h3 className="text-xl md:text-3xl font-black text-white tracking-tight">Ecossistema Visual</h3>
+                  <p className="text-xs md:text-sm text-slate-400 font-medium mt-1">Personalize a identidade do framework para seu perfil.</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 relative z-10">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6 relative z-10">
                  {THEMES.map(t => (
-                   <button key={t.id} onClick={() => updateUser({ ...currentUser!, tema: t.id })} className={`p-6 rounded-[2.5rem] border-2 transition-all flex flex-col items-center gap-4 relative group ${currentUser?.tema === t.id ? 'border-primary bg-white/10 shadow-lg shadow-primary/20' : 'border-white/5 bg-white/5 hover:border-white/20 hover:bg-white/10'}`}>
-                     <div className="w-16 h-16 rounded-full shadow-2xl transition-transform group-hover:scale-110 flex items-center justify-center" style={{ backgroundColor: t.color, boxShadow: `0 0 30px ${t.color}66` }}>
-                       {currentUser?.tema === t.id && <Icon name="check" className="text-white text-xl drop-shadow-md" />}
+                   <button key={t.id} onClick={() => updateUser({ ...currentUser!, tema: t.id })} className={`p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] border-2 transition-all flex flex-col items-center gap-3 md:gap-4 relative group ${currentUser?.tema === t.id ? 'border-primary bg-white/10 shadow-lg shadow-primary/20' : 'border-white/5 bg-white/5 hover:border-white/20 hover:bg-white/10'}`}>
+                     <div className="w-12 h-12 md:w-16 md:h-16 rounded-full shadow-2xl transition-transform group-hover:scale-110 flex items-center justify-center" style={{ backgroundColor: t.color, boxShadow: `0 0 30px ${t.color}66` }}>
+                       {currentUser?.tema === t.id && <Icon name="check" className="text-white text-lg md:text-xl drop-shadow-md" />}
                      </div>
-                     <span className="text-[10px] font-black uppercase text-white tracking-widest">{t.name}</span>
+                     <span className="text-[9px] md:text-[10px] font-black uppercase text-white tracking-widest text-center">{t.name}</span>
                    </button>
                  ))}
               </div>
@@ -4343,9 +4521,9 @@ const ConfiguracoesPage = () => {
         )}
 
         {activeTab === 'notificacoes' && (
-          <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-10 animate-in slide-in-from-bottom-2">
+          <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-10 animate-in slide-in-from-bottom-2">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-[2rem] bg-purple-50 text-purple-500 flex items-center justify-center text-2xl shadow-inner">
+              <div className="w-16 h-16 rounded-[2rem] bg-purple-50 text-purple-500 flex items-center justify-center text-2xl shadow-inner shrink-0">
                 <Icon name="bell" />
               </div>
               <div>
@@ -4393,19 +4571,19 @@ const ConfiguracoesPage = () => {
 
       {isSectorModalOpen && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl p-10 animate-in zoom-in duration-300">
-            <div className="flex justify-between items-center mb-8">
-               <h3 className="text-2xl font-black text-slate-800">{editingSector ? 'Configurar Setor' : 'Novo Setor'}</h3>
+          <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl p-6 md:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6 md:mb-8">
+               <h3 className="text-xl md:text-2xl font-black text-slate-800">{editingSector ? 'Configurar Setor' : 'Novo Setor'}</h3>
                <button onClick={() => setIsSectorModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
-            <form onSubmit={handleSaveSector} className="space-y-6">
+            <form onSubmit={handleSaveSector} className="space-y-4 md:space-y-6">
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Setor</label>
-                <input name="nome" required defaultValue={editingSector?.nome} placeholder="Ex: Engenharia, Comercial..." className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner" />
+                <input name="nome" required defaultValue={editingSector?.nome} placeholder="Ex: Engenharia, Comercial..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Responsável pelo Setor</label>
-                <select name="responsavelId" defaultValue={editingSector?.responsavelId} required className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary">
+                <select name="responsavelId" defaultValue={editingSector?.responsavelId} required className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary text-sm md:text-base">
                   <option value="">Selecione um gestor...</option>
                   {users.filter(u => u.status === EntityStatus.ACTIVE).map(u => (
                     <option key={u.id} value={u.id}>{u.nome}</option>
@@ -4414,11 +4592,11 @@ const ConfiguracoesPage = () => {
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
-                <textarea name="descricao" rows={3} defaultValue={editingSector?.descricao} placeholder="Breve resumo da responsabilidade da equipe..." className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium resize-none focus:border-primary shadow-inner" />
+                <textarea name="descricao" rows={3} defaultValue={editingSector?.descricao} placeholder="Breve resumo da responsabilidade da equipe..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium resize-none focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
-              <div className="flex justify-end gap-3 pt-6">
-                 <button type="button" onClick={() => setIsSectorModalOpen(false)} className="px-8 py-3 rounded-xl border border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all">Desistir</button>
-                 <button type="submit" className="px-10 py-3 rounded-xl bg-primary text-white font-black hover:brightness-110 shadow-lg transition-all">Confirmar</button>
+              <div className="flex flex-col md:flex-row justify-end gap-3 pt-4 md:pt-6">
+                 <button type="button" onClick={() => setIsSectorModalOpen(false)} className="w-full md:w-auto px-8 py-3 rounded-xl border border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all text-sm md:text-base">Desistir</button>
+                 <button type="submit" className="w-full md:w-auto px-10 py-3 rounded-xl bg-primary text-white font-black hover:brightness-110 shadow-lg transition-all text-sm md:text-base">Confirmar</button>
               </div>
             </form>
           </div>
@@ -4427,15 +4605,15 @@ const ConfiguracoesPage = () => {
 
       {isCategoryModalOpen && (
         <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl p-10 animate-in zoom-in duration-300">
-            <div className="flex justify-between items-center mb-8">
-               <h3 className="text-2xl font-black text-slate-800">{editingCategory ? 'Configurar Categoria' : 'Nova Categoria'}</h3>
+          <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl p-6 md:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6 md:mb-8">
+               <h3 className="text-xl md:text-2xl font-black text-slate-800">{editingCategory ? 'Configurar Categoria' : 'Nova Categoria'}</h3>
                <button onClick={() => setIsCategoryModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
-            <form onSubmit={handleSaveCategory} className="space-y-6">
+            <form onSubmit={handleSaveCategory} className="space-y-4 md:space-y-6">
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome da Categoria</label>
-                <input name="nome" required defaultValue={editingCategory?.nome} placeholder="Ex: VIP, Atacadista..." className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner" />
+                <input name="nome" required defaultValue={editingCategory?.nome} placeholder="Ex: VIP, Atacadista..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cor de Identificação</label>
@@ -4443,11 +4621,11 @@ const ConfiguracoesPage = () => {
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
-                <textarea name="descricao" rows={3} defaultValue={editingCategory?.descricao} placeholder="Defina o perfil desta categoria..." className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium resize-none focus:border-primary shadow-inner" />
+                <textarea name="descricao" rows={3} defaultValue={editingCategory?.descricao} placeholder="Defina o perfil desta categoria..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium resize-none focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
-              <div className="flex justify-end gap-3 pt-6">
-                 <button type="button" onClick={() => setIsCategoryModalOpen(false)} className="px-8 py-3 rounded-xl border border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all">Desistir</button>
-                 <button type="submit" className="px-10 py-3 rounded-xl bg-primary text-white font-black hover:brightness-110 shadow-lg transition-all">Confirmar</button>
+              <div className="flex flex-col md:flex-row justify-end gap-3 pt-4 md:pt-6">
+                 <button type="button" onClick={() => setIsCategoryModalOpen(false)} className="w-full md:w-auto px-8 py-3 rounded-xl border border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all text-sm md:text-base">Desistir</button>
+                 <button type="submit" className="w-full md:w-auto px-10 py-3 rounded-xl bg-primary text-white font-black hover:brightness-110 shadow-lg transition-all text-sm md:text-base">Confirmar</button>
               </div>
             </form>
           </div>
@@ -4455,20 +4633,20 @@ const ConfiguracoesPage = () => {
       )}
       {isCustomFieldModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl p-10 animate-in zoom-in duration-300">
-            <div className="flex justify-between items-center mb-8">
-               <h3 className="text-2xl font-black text-slate-800">{editingCustomField ? 'Editar Campo' : 'Novo Campo Personalizado'}</h3>
+          <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl p-6 md:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6 md:mb-8">
+               <h3 className="text-xl md:text-2xl font-black text-slate-800">{editingCustomField ? 'Editar Campo' : 'Novo Campo Personalizado'}</h3>
                <button onClick={() => setIsCustomFieldModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
-            <form onSubmit={handleSaveCustomField} className="space-y-6">
+            <form onSubmit={handleSaveCustomField} className="space-y-4 md:space-y-6">
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Campo</label>
-                <input name="name" required defaultValue={editingCustomField?.name} placeholder="Ex: Data de Aniversário" className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner" />
+                <input name="name" required defaultValue={editingCustomField?.name} placeholder="Ex: Data de Aniversário" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo</label>
-                  <select name="type" required defaultValue={editingCustomField?.type || 'text'} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner">
+                  <select name="type" required defaultValue={editingCustomField?.type || 'text'} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base">
                     <option value="text">Texto Curto</option>
                     <option value="number">Número</option>
                     <option value="date">Data</option>
@@ -4477,21 +4655,21 @@ const ConfiguracoesPage = () => {
                   </select>
                 </div>
                 <div className="space-y-1 flex flex-col justify-center">
-                  <label className="flex items-center gap-3 mt-6 cursor-pointer">
+                  <label className="flex items-center gap-3 mt-2 md:mt-6 cursor-pointer">
                     <input type="checkbox" name="required" defaultChecked={editingCustomField?.required} className="w-5 h-5 rounded text-primary focus:ring-primary" />
-                    <span className="font-bold text-slate-700">Campo Obrigatório</span>
+                    <span className="font-bold text-slate-700 text-sm md:text-base">Campo Obrigatório</span>
                   </label>
                 </div>
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Opções (Apenas para Lista de Seleção)</label>
-                <input name="options" defaultValue={editingCustomField?.options?.join(', ')} placeholder="Opção 1, Opção 2, Opção 3..." className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium focus:border-primary shadow-inner" />
+                <input name="options" defaultValue={editingCustomField?.options?.join(', ')} placeholder="Opção 1, Opção 2, Opção 3..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium focus:border-primary shadow-inner text-sm md:text-base" />
                 <p className="text-xs text-slate-400 ml-2 mt-1">Separe as opções por vírgula.</p>
               </div>
               
-              <div className="pt-4 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsCustomFieldModalOpen(false)} className="px-6 py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-colors">Cancelar</button>
-                <button type="submit" className="bg-primary text-white px-8 py-4 rounded-2xl font-black uppercase shadow-xl hover:brightness-110 transition-all flex items-center gap-2">
+              <div className="pt-4 flex flex-col md:flex-row justify-end gap-3">
+                <button type="button" onClick={() => setIsCustomFieldModalOpen(false)} className="w-full md:w-auto px-6 py-3 md:py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-colors text-sm md:text-base">Cancelar</button>
+                <button type="submit" className="w-full md:w-auto bg-primary text-white px-8 py-3 md:py-4 rounded-2xl font-black uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2 text-sm md:text-base">
                   <Icon name="save" /> Salvar Campo
                 </button>
               </div>
@@ -4502,18 +4680,18 @@ const ConfiguracoesPage = () => {
 
       {deleteConfirm && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl space-y-8 animate-in zoom-in duration-200">
-            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto">
-              <AlertTriangle size={40} className="text-red-500" />
+          <div className="bg-white rounded-[2.5rem] w-full max-w-md p-6 md:p-10 shadow-2xl space-y-6 md:space-y-8 animate-in zoom-in duration-200">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto">
+              <AlertTriangle size={32} className="text-red-500 md:w-10 md:h-10" />
             </div>
             <div className="text-center space-y-2">
-              <h3 className="text-2xl font-black text-slate-800">Confirmar Exclusão</h3>
-              <p className="text-slate-500 font-medium">Você tem certeza que deseja remover {deleteConfirm.type === 'sector' ? 'o setor' : 'a categoria'} <span className="font-bold text-slate-800">"{deleteConfirm.name}"</span>? Esta ação não pode ser desfeita.</p>
+              <h3 className="text-xl md:text-2xl font-black text-slate-800">Confirmar Exclusão</h3>
+              <p className="text-slate-500 font-medium text-sm md:text-base">Você tem certeza que deseja remover {deleteConfirm.type === 'sector' ? 'o setor' : 'a categoria'} <span className="font-bold text-slate-800">"{deleteConfirm.name}"</span>? Esta ação não pode ser desfeita.</p>
             </div>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
               <button 
                 onClick={() => setDeleteConfirm(null)}
-                className="flex-1 py-4 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-all"
+                className="flex-1 py-3 md:py-4 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-all text-sm md:text-base"
               >
                 Cancelar
               </button>
@@ -4523,7 +4701,7 @@ const ConfiguracoesPage = () => {
                   else deleteClientCategory(deleteConfirm.id);
                   setDeleteConfirm(null);
                 }}
-                className="flex-1 py-4 rounded-2xl bg-red-500 text-white font-bold shadow-lg shadow-red-200 hover:bg-red-600 transition-all"
+                className="flex-1 py-3 md:py-4 rounded-2xl bg-red-500 text-white font-bold shadow-lg shadow-red-200 hover:bg-red-600 transition-all text-sm md:text-base"
               >
                 Confirmar
               </button>
@@ -4540,6 +4718,8 @@ const AuditoriaPage = () => {
   const { confirm } = useConfirm();
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
   
   const filteredLogs = useMemo(() => {
     let logs = currentUser?.perfil === UserRole.ADMIN ? auditLogs : auditLogs.filter(log => log.userId === currentUser?.id);
@@ -4602,13 +4782,24 @@ const AuditoriaPage = () => {
     link.click();
   };
 
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+  const paginatedLogs = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredLogs.slice(start, start + itemsPerPage);
+  }, [filteredLogs, currentPage]);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchTerm]);
+
   return (
-    <div className="p-8 space-y-6 animate-in fade-in duration-500">
+    <div className="p-4 md:p-8 space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
            <p className="text-slate-500 font-medium">Log completo de segurança e rastreabilidade de dados.</p>
         </div>
-        <div className="flex items-center gap-4 w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
           <div className="relative flex-1 md:w-80">
             <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
@@ -4620,101 +4811,175 @@ const AuditoriaPage = () => {
             />
           </div>
           {isAdmin && (
-            <button onClick={exportToCSV} className="bg-slate-100 text-slate-600 px-5 py-3 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-200 flex items-center gap-2 transition-all whitespace-nowrap">
+            <button onClick={exportToCSV} className="bg-slate-100 text-slate-600 px-5 py-3 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-200 flex items-center justify-center gap-2 transition-all whitespace-nowrap flex-1 md:flex-none">
               <Icon name="download" /> Exportar
             </button>
           )}
-          {isAdmin && <button onClick={() => { confirm({ title: 'Limpar Histórico', message: 'Limpar logs permanentemente?', onConfirm: () => { auditService.clearLogs(); window.location.reload(); } }); }} className="text-red-600 bg-red-50 px-5 py-3 rounded-2xl text-xs font-black uppercase border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm whitespace-nowrap"><Icon name="trash" className="inline-block mr-2 -mt-1" />Limpar Histórico</button>}
+          {isAdmin && <button onClick={() => { confirm({ title: 'Limpar Histórico', message: 'Limpar logs permanentemente?', onConfirm: () => { auditService.clearLogs(); window.location.reload(); } }); }} className="text-red-600 bg-red-50 px-5 py-3 rounded-2xl text-xs font-black uppercase border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm whitespace-nowrap flex-1 md:flex-none justify-center flex items-center"><Icon name="trash" className="inline-block mr-2 -mt-1" />Limpar Histórico</button>}
         </div>
       </div>
 
-      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-32">Horário</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-48">Autor</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-40">Módulo</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-32">Operação</th>
-              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalhes & Comparação</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {filteredLogs.map(log => (
-              <tr key={log.id} className="hover:bg-slate-50/50 transition-colors group">
-                <td className="px-6 py-5 align-top">
-                   <div className="flex flex-col">
-                      <span className="text-[11px] font-black text-slate-700 whitespace-nowrap">{new Date(log.timestamp).toLocaleDateString()}</span>
-                      <span className="text-[10px] font-bold text-slate-400 font-mono">{new Date(log.timestamp).toLocaleTimeString()}</span>
-                   </div>
-                </td>
-                <td className="px-6 py-5 align-top">
-                   <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500 uppercase shadow-sm">
-                         {log.userName.charAt(0)}
-                      </div>
-                      <span className="text-xs font-bold text-slate-700">{log.userName}</span>
-                   </div>
-                </td>
-                <td className="px-6 py-5 align-top">
-                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-lg">{getModuleLabel(log.module)}</span>
-                </td>
-                <td className="px-6 py-5 text-center align-top">
-                   <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase border ${getActionColor(log.action)}`}>
-                      {log.action}
-                   </span>
-                </td>
-                <td className="px-6 py-5 align-top">
-                   <div className="space-y-3">
-                     <p className="text-xs font-medium text-slate-600 leading-relaxed">
-                       {log.details.split('Alterações:')[0]}
-                     </p>
-                     
-                     {log.diff && log.diff.length > 0 && (
-                       <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden mt-2">
-                         <div className="bg-slate-100 px-4 py-2 border-b border-slate-200">
-                           <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                             <Icon name="file-text" className="text-slate-400" /> Comparação de Alterações
-                           </span>
-                         </div>
-                         <div className="p-4 space-y-3">
-                           {log.diff.map((d, idx) => (
-                             <div key={idx} className="text-xs font-mono grid grid-cols-[120px_1fr] gap-4 items-start">
-                               <span className="font-bold text-slate-500 text-right pt-1">{d.field}:</span>
-                               <div className="space-y-1 flex-1">
-                                 <div className="bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-100 flex items-start gap-2 break-all">
-                                   <span className="text-red-400 font-black select-none">-</span>
-                                   <span className="line-through opacity-80">{d.oldValue}</span>
-                                 </div>
-                                 <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-100 flex items-start gap-2 break-all">
-                                   <span className="text-emerald-500 font-black select-none">+</span>
-                                   <span className="font-medium">{d.newValue}</span>
+      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse hidden md:table">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-32">Horário</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-48">Autor</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-40">Módulo</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-32">Operação</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalhes & Comparação</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {paginatedLogs.map(log => (
+                <tr key={log.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-6 py-5 align-top">
+                     <div className="flex flex-col">
+                        <span className="text-[11px] font-black text-slate-700 whitespace-nowrap">{new Date(log.timestamp).toLocaleDateString()}</span>
+                        <span className="text-[10px] font-bold text-slate-400 font-mono">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                     </div>
+                  </td>
+                  <td className="px-6 py-5 align-top">
+                     <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500 uppercase shadow-sm">
+                           {log.userName.charAt(0)}
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">{log.userName}</span>
+                     </div>
+                  </td>
+                  <td className="px-6 py-5 align-top">
+                     <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-lg">{getModuleLabel(log.module)}</span>
+                  </td>
+                  <td className="px-6 py-5 text-center align-top">
+                     <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase border ${getActionColor(log.action)}`}>
+                        {log.action}
+                     </span>
+                  </td>
+                  <td className="px-6 py-5 align-top">
+                     <div className="space-y-3">
+                       <p className="text-xs font-medium text-slate-600 leading-relaxed">
+                         {log.details.split('Alterações:')[0]}
+                       </p>
+                       
+                       {log.diff && log.diff.length > 0 && (
+                         <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden mt-2">
+                           <div className="bg-slate-100 px-4 py-2 border-b border-slate-200">
+                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                               <Icon name="file-text" className="text-slate-400" /> Comparação de Alterações
+                             </span>
+                           </div>
+                           <div className="p-4 space-y-3">
+                             {log.diff.map((d, idx) => (
+                               <div key={idx} className="text-xs font-mono grid grid-cols-[120px_1fr] gap-4 items-start">
+                                 <span className="font-bold text-slate-500 text-right pt-1">{d.field}:</span>
+                                 <div className="space-y-1 flex-1">
+                                   <div className="bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-100 flex items-start gap-2 break-all">
+                                     <span className="text-red-400 font-black select-none">-</span>
+                                     <span className="line-through opacity-80">{d.oldValue}</span>
+                                   </div>
+                                   <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-100 flex items-start gap-2 break-all">
+                                     <span className="text-emerald-500 font-black select-none">+</span>
+                                     <span className="font-medium">{d.newValue}</span>
+                                   </div>
                                  </div>
                                </div>
-                             </div>
-                           ))}
+                             ))}
+                           </div>
                          </div>
-                       </div>
-                     )}
-                   </div>
-                </td>
-              </tr>
-            ))}
-            {filteredLogs.length === 0 && (
-               <tr>
-                 <td colSpan={5} className="p-20 text-center text-slate-400">
-                   <div className="flex flex-col items-center justify-center">
-                     <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
-                       <Icon name="search" className="text-3xl text-slate-300" />
+                       )}
                      </div>
-                     <p className="font-bold text-slate-500 text-lg">Nenhum registro encontrado</p>
-                     <p className="text-sm text-slate-400 mt-1">Não há logs de auditoria que correspondam à sua busca.</p>
+                  </td>
+                </tr>
+              ))}
+              {paginatedLogs.length === 0 && (
+                 <tr>
+                   <td colSpan={5} className="p-20 text-center text-slate-400">
+                     <div className="flex flex-col items-center justify-center">
+                       <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
+                         <Icon name="search" className="text-3xl text-slate-300" />
+                       </div>
+                       <p className="font-bold text-slate-500 text-lg">Nenhum registro encontrado</p>
+                       <p className="text-sm text-slate-400 mt-1">Não há logs de auditoria que correspondam à sua busca.</p>
+                     </div>
+                   </td>
+                 </tr>
+              )}
+            </tbody>
+          </table>
+
+          {/* Mobile View */}
+          <div className="md:hidden divide-y divide-slate-100">
+            {paginatedLogs.map(log => (
+              <div key={log.id} className="p-4 space-y-4 hover:bg-slate-50/50 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500 uppercase shadow-sm shrink-0">
+                       {log.userName.charAt(0)}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-slate-700">{log.userName}</span>
+                      <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 font-mono">
+                        <span>{new Date(log.timestamp).toLocaleDateString()}</span>
+                        <span>•</span>
+                        <span>{new Date(log.timestamp).toLocaleTimeString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span className={`px-2 py-1 rounded-full text-[8px] font-black uppercase border shrink-0 ${getActionColor(log.action)}`}>
+                    {log.action}
+                  </span>
+                </div>
+                
+                <div>
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 px-2 py-1 rounded-lg inline-block mb-2">{getModuleLabel(log.module)}</span>
+                  <p className="text-xs font-medium text-slate-600 leading-relaxed">
+                    {log.details.split('Alterações:')[0]}
+                  </p>
+                </div>
+
+                {log.diff && log.diff.length > 0 && (
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden mt-2">
+                    <div className="bg-slate-100 px-3 py-2 border-b border-slate-200">
+                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                        <Icon name="file-text" className="text-slate-400 w-3 h-3" /> Comparação
+                      </span>
+                    </div>
+                    <div className="p-3 space-y-3">
+                      {log.diff.map((d, idx) => (
+                        <div key={idx} className="text-[10px] font-mono flex flex-col gap-1">
+                          <span className="font-bold text-slate-500">{d.field}:</span>
+                          <div className="space-y-1">
+                            <div className="bg-red-50 text-red-700 px-2 py-1 rounded-lg border border-red-100 flex items-start gap-1 break-all">
+                              <span className="text-red-400 font-black select-none">-</span>
+                              <span className="line-through opacity-80">{d.oldValue}</span>
+                            </div>
+                            <div className="bg-emerald-50 text-emerald-700 px-2 py-1 rounded-lg border border-emerald-100 flex items-start gap-1 break-all">
+                              <span className="text-emerald-500 font-black select-none">+</span>
+                              <span className="font-medium">{d.newValue}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+            {paginatedLogs.length === 0 && (
+               <div className="p-10 text-center text-slate-400">
+                 <div className="flex flex-col items-center justify-center">
+                   <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
+                     <Icon name="search" className="text-3xl text-slate-300" />
                    </div>
-                 </td>
-               </tr>
+                   <p className="font-bold text-slate-500 text-lg">Nenhum registro encontrado</p>
+                   <p className="text-sm text-slate-400 mt-1">Não há logs de auditoria que correspondam à sua busca.</p>
+                 </div>
+               </div>
             )}
-          </tbody>
-        </table>
+          </div>
+        </div>
+        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
     </div>
   );
@@ -4724,21 +4989,21 @@ const SobrePage = () => {
   const { users, clients, tasks, history } = useApp();
 
   return (
-    <div className="p-8 space-y-10 animate-in fade-in duration-700 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-8 space-y-6 sm:space-y-10 animate-in fade-in duration-700 max-w-7xl mx-auto">
       {/* Banner */}
-      <div className="bg-[#337ab7] rounded-xl p-10 text-white text-center space-y-4 shadow-lg">
+      <div className="bg-[#337ab7] rounded-xl p-6 sm:p-10 text-white text-center space-y-4 shadow-lg">
         <div className="flex items-center justify-center gap-3">
-          <Icon name="users" className="text-3xl" />
-          <h1 className="text-3xl font-bold tracking-tight">NelMac Sistemas</h1>
+          <Icon name="users" className="text-2xl sm:text-3xl" />
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">NelMac Sistemas</h1>
         </div>
         <div className="h-px bg-white/30 w-full max-w-4xl mx-auto" />
-        <p className="text-sm font-medium opacity-90">Soluções em tecnologia para otimizar sua gestão empresarial</p>
+        <p className="text-xs sm:text-sm font-medium opacity-90">Soluções em tecnologia para otimizar sua gestão empresarial</p>
       </div>
 
       {/* Main Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
         {/* Column 1: Informações do Sistema */}
-        <div className="bg-slate-50/50 rounded-3xl p-8 border border-slate-100 space-y-8">
+        <div className="bg-slate-50/50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-slate-100 space-y-6 sm:space-y-8">
           <div className="flex items-center gap-2 text-primary">
             <Icon name="code" className="text-lg" />
             <h3 className="font-black uppercase tracking-widest text-xs">Informações do Sistema</h3>
@@ -4800,7 +5065,7 @@ const SobrePage = () => {
         </div>
 
         {/* Column 2: Características Técnicas */}
-        <div className="bg-slate-50/50 rounded-3xl p-8 border border-slate-100 space-y-8">
+        <div className="bg-slate-50/50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-slate-100 space-y-6 sm:space-y-8">
           <div className="flex items-center gap-2 text-primary">
             <Icon name="settings" className="text-lg" />
             <h3 className="font-black uppercase tracking-widest text-xs">Características Técnicas</h3>
@@ -4848,7 +5113,7 @@ const SobrePage = () => {
         </div>
 
         {/* Column 3: Segurança e Privacidade */}
-        <div className="bg-slate-50/50 rounded-3xl p-8 border border-slate-100 space-y-8">
+        <div className="bg-slate-50/50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-slate-100 space-y-6 sm:space-y-8">
           <div className="flex items-center gap-2 text-primary">
             <Icon name="shield-alt" className="text-lg" />
             <h3 className="font-black uppercase tracking-widest text-xs">Segurança e Privacidade</h3>
@@ -4885,7 +5150,7 @@ const SobrePage = () => {
       </div>
 
       {/* Funcionalidades Principais */}
-      <div className="space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         <div className="flex items-center gap-2 text-primary">
           <Icon name="star" className="text-lg" />
           <h3 className="text-sm font-black uppercase tracking-widest">Funcionalidades Principais</h3>
@@ -4900,7 +5165,7 @@ const SobrePage = () => {
             { icon: 'users', title: 'Gestão de Usuários', desc: 'Controle de acesso multi-nível com permissões granulares por módulo' },
             { icon: 'smartphone', title: 'Design Responsivo', desc: 'Interface adaptável para todos os dispositivos com experiência otimizada' },
           ].map((func, i) => (
-            <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm text-center space-y-4 hover:border-primary/30 transition-all group">
+            <div key={i} className="bg-white p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm text-center space-y-4 hover:border-primary/30 transition-all group">
               <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto text-primary group-hover:bg-primary group-hover:text-white transition-all">
                 <Icon name={func.icon} />
               </div>
@@ -4912,7 +5177,7 @@ const SobrePage = () => {
       </div>
 
       {/* Footer / Contato */}
-      <div className="bg-slate-50/50 rounded-[3rem] p-10 border border-slate-100 space-y-10">
+      <div className="bg-slate-50/50 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 border border-slate-100 space-y-6 sm:space-y-10">
         <div className="flex items-center gap-2 text-primary">
           <Icon name="message-square" className="text-lg" />
           <h3 className="text-sm font-black uppercase tracking-widest">Contato & Suporte</h3>
@@ -4969,18 +5234,18 @@ const LoginPage = () => {
     if (!login(data.get('email') as string, data.get('pass') as string)) setError('Acesso negado: Credenciais ou conta inativa.');
   };
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-primary/5 rounded-full blur-[150px]" />
-      <div className="w-full max-w-md bg-white rounded-[4rem] shadow-2xl p-14 z-10 animate-in slide-in-from-bottom-8 duration-700 text-center">
-        <div className="inline-block p-7 bg-primary rounded-[2.5rem] mb-10 shadow-primary/20">
-          <Icon name="users-cog" className="text-5xl text-white" />
+      <div className="w-full max-w-md bg-white rounded-[2.5rem] sm:rounded-[4rem] shadow-2xl p-8 sm:p-14 z-10 animate-in slide-in-from-bottom-8 duration-700 text-center">
+        <div className="inline-block p-5 sm:p-7 bg-primary rounded-[2rem] sm:rounded-[2.5rem] mb-8 sm:mb-10 shadow-primary/20">
+          <Icon name="users-cog" className="text-4xl sm:text-5xl text-white" />
         </div>
-        <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-12 italic">SenseiRM <span className="text-primary"></span></h2>
-        <form onSubmit={handleLogin} className="space-y-8 text-left">
-          <input name="email" type="email" required className="w-full px-7 py-5 rounded-3xl border border-slate-100 bg-slate-50 outline-none focus:border-primary focus:bg-white font-bold transition-all shadow-inner" placeholder="ex: admin@senseirm.com" />
-          <input name="pass" type="password" required className="w-full px-7 py-5 rounded-3xl border border-slate-100 bg-slate-50 outline-none focus:border-primary focus:bg-white font-bold transition-all shadow-inner" placeholder="••••••••" />
+        <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tighter mb-8 sm:mb-12 italic">SenseiRM <span className="text-primary"></span></h2>
+        <form onSubmit={handleLogin} className="space-y-6 sm:space-y-8 text-left">
+          <input name="email" type="email" required className="w-full px-5 sm:px-7 py-4 sm:py-5 rounded-2xl sm:rounded-3xl border border-slate-100 bg-slate-50 outline-none focus:border-primary focus:bg-white font-bold transition-all shadow-inner text-sm sm:text-base" placeholder="ex: admin@senseirm.com" />
+          <input name="pass" type="password" required className="w-full px-5 sm:px-7 py-4 sm:py-5 rounded-2xl sm:rounded-3xl border border-slate-100 bg-slate-50 outline-none focus:border-primary focus:bg-white font-bold transition-all shadow-inner text-sm sm:text-base" placeholder="••••••••" />
           {error && <p className="text-red-500 text-xs font-black text-center">{error}</p>}
-          <button type="submit" className="w-full py-5 bg-primary text-white rounded-3xl font-black text-xl shadow-2xl hover:brightness-110 transition-all">Autenticar</button>
+          <button type="submit" className="w-full py-4 sm:py-5 bg-primary text-white rounded-2xl sm:rounded-3xl font-black text-lg sm:text-xl shadow-2xl hover:brightness-110 transition-all">Autenticar</button>
         </form>
       </div>
     </div>
@@ -4995,6 +5260,8 @@ const MailListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [filterRating, setFilterRating] = useState<number | 'all'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   
   const [message, setMessage] = useState('');
   const [subject, setSubject] = useState('');
@@ -5037,6 +5304,13 @@ const MailListPage = () => {
       return matchesSearch && matchesRating;
     });
   }, [clients, debouncedSearchTerm, filterRating, type]);
+
+  const totalPages = Math.ceil(filteredClients.length / itemsPerPage);
+  const paginatedClients = filteredClients.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchTerm, filterRating, type]);
 
   const selectAll = () => {
     const ids = filteredClients.map(c => c.id);
@@ -5141,46 +5415,46 @@ const MailListPage = () => {
   };
 
   return (
-    <div className="p-8 flex gap-8 animate-in fade-in duration-500 h-[calc(100vh-100px)] relative">
+    <div className="p-4 md:p-8 flex flex-col lg:flex-row gap-6 md:gap-8 animate-in fade-in duration-500 h-auto lg:h-[calc(100vh-100px)] relative">
       {/* WhatsApp Queue Overlay */}
       {whatsappQueue.length > 0 && (
-        <div className="absolute inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center rounded-[3.5rem]">
-          <div className="bg-white p-10 rounded-[3rem] shadow-2xl max-w-md w-full text-center space-y-8 animate-in zoom-in-95">
-            <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-              <Icon name="phone" className="text-4xl" />
+        <div className="absolute inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center rounded-[2rem] sm:rounded-[3.5rem] p-4">
+          <div className="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] shadow-2xl max-w-md w-full text-center space-y-6 sm:space-y-8 animate-in zoom-in-95">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+              <Icon name="phone" className="text-3xl sm:text-4xl" />
             </div>
             <div>
-              <h3 className="text-2xl font-black text-slate-800 tracking-tight">Fila de Envio WhatsApp</h3>
-              <p className="text-sm text-slate-500 font-medium mt-2">
+              <h3 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">Fila de Envio WhatsApp</h3>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-2">
                 Enviando {whatsappIndex + 1} de {whatsappQueue.length}
               </p>
             </div>
             
             {whatsappIndex < whatsappQueue.length ? (
-              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-left">
+              <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-100 text-left">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Próximo Destinatário:</p>
-                <p className="font-bold text-slate-700">{clients.find(c => c.id === whatsappQueue[whatsappIndex])?.nomeRazaoSocial}</p>
+                <p className="font-bold text-slate-700 text-sm sm:text-base">{clients.find(c => c.id === whatsappQueue[whatsappIndex])?.nomeRazaoSocial}</p>
                 <p className="text-xs text-slate-500">{clients.find(c => c.id === whatsappQueue[whatsappIndex])?.telefoneSecundario || clients.find(c => c.id === whatsappQueue[whatsappIndex])?.telefonePrincipal}</p>
               </div>
             ) : (
-              <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
-                <p className="font-bold text-emerald-700">Todos os envios foram processados!</p>
+              <div className="bg-emerald-50 p-4 sm:p-6 rounded-2xl border border-emerald-100">
+                <p className="font-bold text-emerald-700 text-sm sm:text-base">Todos os envios foram processados!</p>
               </div>
             )}
 
             <div className="flex flex-col gap-3">
               {whatsappIndex < whatsappQueue.length ? (
                 <>
-                  <button onClick={processNextWhatsApp} className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black shadow-lg hover:bg-emerald-600 transition-all">
+                  <button onClick={processNextWhatsApp} className="w-full py-3 sm:py-4 bg-emerald-500 text-white rounded-2xl font-black shadow-lg hover:bg-emerald-600 transition-all text-sm sm:text-base">
                     Abrir WhatsApp Web
                   </button>
                   <div className="flex gap-3">
-                    <button onClick={skipWhatsApp} className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all">Pular</button>
-                    <button onClick={cancelWhatsAppQueue} className="flex-1 py-3 bg-red-50 text-red-600 rounded-2xl font-bold hover:bg-red-100 transition-all">Cancelar Fila</button>
+                    <button onClick={skipWhatsApp} className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all text-sm sm:text-base">Pular</button>
+                    <button onClick={cancelWhatsAppQueue} className="flex-1 py-3 bg-red-50 text-red-600 rounded-2xl font-bold hover:bg-red-100 transition-all text-sm sm:text-base">Cancelar Fila</button>
                   </div>
                 </>
               ) : (
-                <button onClick={cancelWhatsAppQueue} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black shadow-lg hover:bg-slate-900 transition-all">
+                <button onClick={cancelWhatsAppQueue} className="w-full py-3 sm:py-4 bg-slate-800 text-white rounded-2xl font-black shadow-lg hover:bg-slate-900 transition-all text-sm sm:text-base">
                   Concluir
                 </button>
               )}
@@ -5189,14 +5463,14 @@ const MailListPage = () => {
         </div>
       )}
 
-      <div className="flex-1 bg-white p-12 rounded-[3.5rem] shadow-sm border border-slate-200 flex flex-col space-y-8 overflow-hidden">
-         <div className="flex bg-slate-50 p-2 rounded-3xl border border-slate-100 shadow-inner shrink-0">
-            <button type="button" onClick={() => setType('email')} className={`flex-1 py-5 rounded-2xl font-black tracking-widest text-sm transition-all ${type === 'email' ? 'bg-white text-primary shadow-xl' : 'text-slate-400'}`}>MAIL SERVICE</button>
-            <button type="button" onClick={() => setType('whatsapp')} className={`flex-1 py-5 rounded-2xl font-black tracking-widest text-sm transition-all ${type === 'whatsapp' ? 'bg-white text-primary shadow-xl' : 'text-slate-400'}`}>WHATSAPP API</button>
+      <div className="flex-1 bg-white p-4 sm:p-6 md:p-12 rounded-[2rem] sm:rounded-[3.5rem] shadow-sm border border-slate-200 flex flex-col space-y-6 md:space-y-8 overflow-hidden min-h-[600px] lg:min-h-0">
+         <div className="flex bg-slate-50 p-2 rounded-2xl sm:rounded-3xl border border-slate-100 shadow-inner shrink-0">
+            <button type="button" onClick={() => setType('email')} className={`flex-1 py-3 sm:py-5 rounded-xl sm:rounded-2xl font-black tracking-widest text-xs sm:text-sm transition-all ${type === 'email' ? 'bg-white text-primary shadow-xl' : 'text-slate-400'}`}>MAIL SERVICE</button>
+            <button type="button" onClick={() => setType('whatsapp')} className={`flex-1 py-3 sm:py-5 rounded-xl sm:rounded-2xl font-black tracking-widest text-xs sm:text-sm transition-all ${type === 'whatsapp' ? 'bg-white text-primary shadow-xl' : 'text-slate-400'}`}>WHATSAPP API</button>
          </div>
          
          <div className="flex gap-2 shrink-0 flex-wrap">
-           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center mr-2">Variáveis Dinâmicas:</span>
+           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center mr-2 w-full sm:w-auto mb-2 sm:mb-0">Variáveis Dinâmicas:</span>
            {['{nome}', '{empresa}', '{email}', '{telefone}'].map(tag => (
              <button type="button" key={tag} onClick={() => setMessage(prev => prev + tag)} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-mono font-bold transition-colors">
                {tag}
@@ -5204,11 +5478,11 @@ const MailListPage = () => {
            ))}
          </div>
 
-         <form onSubmit={handleSend} className="flex-1 flex flex-col space-y-6 overflow-hidden">
+         <form onSubmit={handleSend} className="flex-1 flex flex-col space-y-4 sm:space-y-6 overflow-hidden">
             <div className="flex gap-4 shrink-0">
                <select 
                  onChange={(e) => applyTemplate(e.target.value)} 
-                 className="flex-1 px-7 py-5 rounded-3xl border border-slate-200 outline-none font-bold focus:border-primary shadow-inner bg-white text-slate-600"
+                 className="flex-1 px-5 sm:px-7 py-4 sm:py-5 rounded-2xl sm:rounded-3xl border border-slate-200 outline-none font-bold focus:border-primary shadow-inner bg-white text-slate-600 text-sm sm:text-base"
                >
                  <option value="">Carregar Template Rápido...</option>
                  {templates.map(t => (
@@ -5222,14 +5496,14 @@ const MailListPage = () => {
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 required 
-                className="w-full px-7 py-5 rounded-3xl border border-slate-200 outline-none font-bold focus:border-primary shadow-inner shrink-0" 
+                className="w-full px-5 sm:px-7 py-4 sm:py-5 rounded-2xl sm:rounded-3xl border border-slate-200 outline-none font-bold focus:border-primary shadow-inner shrink-0 text-sm sm:text-base" 
                 placeholder="Assunto da Comunicação" 
               />
             )}
             
             <div className="flex-1 flex flex-col min-h-0 relative">
               {type === 'email' ? (
-                <div className="flex-1 overflow-hidden flex flex-col rounded-3xl border border-slate-200 focus-within:border-primary transition-colors">
+                <div className="flex-1 overflow-hidden flex flex-col rounded-2xl sm:rounded-3xl border border-slate-200 focus-within:border-primary transition-colors">
                   <ReactQuill 
                     theme="snow" 
                     value={message} 
@@ -5244,13 +5518,13 @@ const MailListPage = () => {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   required 
-                  className="flex-1 w-full px-7 py-6 rounded-[2.5rem] border border-slate-200 outline-none resize-none font-medium focus:border-primary shadow-inner" 
+                  className="flex-1 w-full px-5 sm:px-7 py-4 sm:py-6 rounded-[2rem] sm:rounded-[2.5rem] border border-slate-200 outline-none resize-none font-medium focus:border-primary shadow-inner text-sm sm:text-base" 
                   placeholder="Mensagem estruturada para WhatsApp..." 
                 />
               )}
             </div>
 
-            <button type="submit" disabled={!canSend || isSending} className={`w-full py-6 rounded-3xl font-black text-xl shadow-2xl transition-all shrink-0 flex items-center justify-center gap-3 ${canSend && !isSending ? 'bg-primary text-white hover:brightness-110' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>
+            <button type="submit" disabled={!canSend || isSending} className={`w-full py-4 sm:py-6 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-xl shadow-2xl transition-all shrink-0 flex items-center justify-center gap-3 ${canSend && !isSending ? 'bg-primary text-white hover:brightness-110' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>
                {isSending ? (
                  <>Enviando... <Icon name="loader" className="animate-spin" /></>
                ) : (
@@ -5260,7 +5534,7 @@ const MailListPage = () => {
          </form>
       </div>
       
-      <div className="w-96 bg-white p-8 rounded-[3.5rem] border border-slate-200 flex flex-col shadow-sm overflow-hidden">
+      <div className="w-full lg:w-96 bg-white p-4 sm:p-6 md:p-8 rounded-[2rem] sm:rounded-[3.5rem] border border-slate-200 flex flex-col shadow-sm overflow-hidden h-[600px] lg:h-auto">
         <h4 className="font-black text-slate-800 mb-6 uppercase tracking-widest text-xs border-b border-slate-50 pb-4 shrink-0">
           Destinos Válidos <span className="text-slate-400 font-medium ml-1">({filteredClients.length})</span>
         </h4>
@@ -5312,13 +5586,13 @@ const MailListPage = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
-          {filteredClients.length === 0 ? (
+          {paginatedClients.length === 0 ? (
             <div className="text-center py-10 opacity-30">
               <Icon name="search" className="text-3xl mb-2 mx-auto" />
               <p className="text-[10px] font-black uppercase tracking-widest">Nenhum cliente válido encontrado</p>
             </div>
           ) : (
-            filteredClients.map(c => (
+            paginatedClients.map(c => (
               <label 
                 key={c.id} 
                 title={type === 'email' ? `E-mail: ${c.emailPrincipal}` : `WhatsApp: ${c.telefoneSecundario || c.telefonePrincipal}`}
@@ -5343,6 +5617,16 @@ const MailListPage = () => {
             ))
           )}
         </div>
+
+        {totalPages > 1 && (
+          <div className="mt-4 shrink-0">
+            <Pagination 
+              currentPage={currentPage} 
+              totalPages={totalPages} 
+              onPageChange={setCurrentPage} 
+            />
+          </div>
+        )}
         
         <div className="mt-6 pt-4 border-t border-slate-50 flex justify-between items-center shrink-0">
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Selecionado</span>
@@ -5370,9 +5654,9 @@ const MainLayout = () => {
   return (
     <div className="flex bg-slate-50 min-h-screen">
       <Sidebar />
-      <div className="flex-1 ml-64 min-h-screen flex flex-col">
+      <div className="flex-1 lg:ml-64 min-h-screen flex flex-col w-full">
         <Header title={titles[Object.keys(titles).find(k => location.pathname.startsWith(k)) || ''] || 'SenseiRM Framework'} />
-        <main className="flex-1 pb-16">
+        <main className="flex-1 pb-24 lg:pb-16 w-full max-w-[100vw] overflow-x-hidden">
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/clientes" element={<ClientsPage />} />
