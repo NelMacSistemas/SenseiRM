@@ -1355,12 +1355,13 @@ const Dashboard = () => {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
+  const isManager = currentUser?.perfil === UserRole.MANAGER;
   const perms = currentUser?.permissoes;
 
   // Membros calculados para KPIs
   const kpis = useMemo(() => {
     // Escopo de tarefas
-    const scopeTasks = isAdmin ? tasks : tasks.filter(t => t.responsavelId === currentUser?.id);
+    const scopeTasks = (isAdmin || isManager) ? tasks : tasks.filter(t => t.responsavelId === currentUser?.id);
     const now = new Date();
     
     // Indicadores de CLIENTES
@@ -1780,11 +1781,12 @@ const ClientsPage = () => {
   const today = new Date().toISOString().split('T')[0];
 
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
-  const perms = currentUser?.permissoes.clientes;
+  const isManager = currentUser?.perfil === UserRole.MANAGER;
+  const perms = currentUser?.permissoes;
 
-  const canEdit = isAdmin || perms?.editar;
-  const canDelete = isAdmin || perms?.excluir;
-  const canInclude = isAdmin || perms?.incluir;
+  const canEdit = isAdmin || perms?.clientes?.editar;
+  const canDelete = isAdmin || perms?.clientes?.excluir;
+  const canInclude = isAdmin || perms?.clientes?.incluir;
 
   useEffect(() => {
     if (editingClient) {
@@ -2882,16 +2884,17 @@ const TasksPage = () => {
   const itemsPerPage = 10;
 
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
-  const perms = currentUser?.permissoes.tarefas;
+  const isManager = currentUser?.perfil === UserRole.MANAGER;
+  const perms = currentUser?.permissoes;
 
-  const canEdit = isAdmin || perms?.editar;
-  const canDelete = isAdmin || perms?.excluir;
-  const canInclude = isAdmin || perms?.incluir;
+  const canEdit = isAdmin || perms?.tarefas?.editar;
+  const canDelete = isAdmin || perms?.tarefas?.excluir;
+  const canInclude = isAdmin || perms?.tarefas?.incluir;
 
   const activeUsers = useMemo(() => users.filter(u => u.status === EntityStatus.ACTIVE), [users]);
 
   const filteredTasks = useMemo(() => {
-    let baseTasks = isAdmin && !filterMyTasks ? tasks : tasks.filter(t => t.responsavelId === currentUser?.id);
+    let baseTasks = (isAdmin || isManager) && !filterMyTasks ? tasks : tasks.filter(t => t.responsavelId === currentUser?.id);
     
     if (debouncedSearchTerm) {
       const lowerSearch = debouncedSearchTerm.toLowerCase();
@@ -3702,7 +3705,7 @@ const PermissionMatrix = ({ permissions, onChange, targetProfile }: { permission
     { key: 'configuracoes', label: 'Configurações' },
     { key: 'auditoria', label: 'Auditoria' }
   ].filter(m => {
-    if (targetProfile === UserRole.USER) {
+    if (targetProfile === UserRole.USER || targetProfile === UserRole.VIEWER) {
       return !['auditoria', 'usuarios', 'configuracoes'].includes(m.key);
     }
     return true;
@@ -3810,9 +3813,10 @@ const UsersPage = () => {
   const itemsPerPage = 10;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
+  const isManager = currentUser?.perfil === UserRole.MANAGER;
 
   useEffect(() => {
-    if (location.state?.openModal && isAdmin) {
+    if (location.state?.openModal && (isAdmin || isManager)) {
       setEditingUser(null);
       setModalPhoto('');
       setModalPerms(INITIAL_USER.permissoes);
@@ -3824,7 +3828,7 @@ const UsersPage = () => {
   }, [location.state, navigate, location.pathname, isAdmin]);
 
   const filteredUsers = useMemo(() => {
-    let result = isAdmin ? users : users.filter(u => u.id === currentUser?.id);
+    let result = (isAdmin || isManager) ? users : users.filter(u => u.id === currentUser?.id);
     if (debouncedSearchTerm) {
       const lowerSearch = debouncedSearchTerm.toLowerCase();
       result = result.filter(u => 
@@ -3887,7 +3891,14 @@ const UsersPage = () => {
 
   const handleProfileChange = (newRole: UserRole) => {
     setModalProfile(newRole);
-    if (newRole === UserRole.USER) {
+    if (newRole === UserRole.USER || newRole === UserRole.VIEWER) {
+      setModalPerms(prev => ({
+        ...prev,
+        auditoria: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        usuarios: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        configuracoes: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false }
+      }));
+    } else if (newRole === UserRole.MANAGER) {
       setModalPerms(prev => ({
         ...prev,
         auditoria: { acesso: true, leitura: true, incluir: false, editar: false, excluir: false },
@@ -3918,6 +3929,10 @@ const UsersPage = () => {
     link.click();
   };
 
+  const permsUsers = currentUser?.permissoes.usuarios;
+  const canInclude = isAdmin || permsUsers?.incluir;
+  const canExport = isAdmin || permsUsers?.leitura; // Assuming export is part of reading users list
+
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const paginatedUsers = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -3934,7 +3949,7 @@ const UsersPage = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <p className="text-slate-500 font-medium">Gestão de Usuários e Acessos ao Sistema.</p>
         <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
-          {isAdmin && (
+          {(isAdmin || isManager) && (
             <div className="relative flex-1 md:flex-none">
               <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
@@ -3946,12 +3961,12 @@ const UsersPage = () => {
               />
             </div>
           )}
-          {isAdmin && (
+          {canExport && (
             <button onClick={exportToCSV} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-200 flex items-center justify-center gap-2 transition-all flex-1 md:flex-none">
               <Icon name="download" /> Exportar
             </button>
           )}
-          {isAdmin && <button onClick={() => openModal(null)} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 flex-1 md:flex-none"><Icon name="plus" /> Novo Usuário</button>}
+          {canInclude && <button onClick={() => openModal(null)} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 flex-1 md:flex-none"><Icon name="plus" /> Novo Usuário</button>}
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -3962,7 +3977,7 @@ const UsersPage = () => {
                 <h4 className="text-lg font-black text-slate-800">{u.nome}</h4>
                 <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{u.perfil}</p>
              </div>
-             <button onClick={() => openModal(u)} className="w-full px-6 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase hover:bg-primary transition-all">{isAdmin ? 'Gerenciar' : 'Ver Perfil'}</button>
+             <button onClick={() => openModal(u)} className="w-full px-6 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase hover:bg-primary transition-all">{(isAdmin || isManager) ? 'Gerenciar' : 'Ver Perfil'}</button>
           </div>
         ))}
         {paginatedUsers.length === 0 && <div className="col-span-full p-10 text-center text-slate-300 italic font-bold">Nenhum usuário encontrado.</div>}
@@ -3987,17 +4002,17 @@ const UsersPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome Exibição</label>
-                    <input name="nome" readOnly={!isAdmin} defaultValue={editingUser?.nome} required className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 bg-slate-50 outline-none font-bold shadow-inner text-sm md:text-base" />
+                    <input name="nome" readOnly={!(isAdmin || isManager)} defaultValue={editingUser?.nome} required className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 bg-slate-50 outline-none font-bold shadow-inner text-sm md:text-base" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-mail Corporativo</label>
-                    <input name="email" readOnly={!isAdmin} defaultValue={editingUser?.email} required type="email" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 bg-slate-50 outline-none font-bold shadow-inner text-sm md:text-base" />
+                    <input name="email" readOnly={!(isAdmin || isManager)} defaultValue={editingUser?.email} required type="email" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 bg-slate-50 outline-none font-bold shadow-inner text-sm md:text-base" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Chave de Acesso (Senha)</label>
                     <input name="senha" type="password" placeholder="Defina a senha" defaultValue={editingUser?.senha} required className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold shadow-inner text-sm md:text-base" />
                   </div>
-                  {isAdmin && (
+                  {(isAdmin || isManager) && (
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Status da Conta</label>
                       <select name="status" defaultValue={editingUser?.status || EntityStatus.ACTIVE} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 bg-slate-50 outline-none font-bold text-sm md:text-base">
@@ -4025,14 +4040,16 @@ const UsersPage = () => {
                    </div>
                 </div>
               </section>
-              {isAdmin && (
+              {(isAdmin || isManager) && (
                 <section className="space-y-4 md:space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Perfil Corporativo</label>
                       <select name="perfil" value={modalProfile} onChange={(e) => handleProfileChange(e.target.value as UserRole)} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 bg-slate-50 outline-none font-bold text-sm md:text-base">
                         <option value={UserRole.ADMIN}>Administrador</option>
+                        <option value={UserRole.MANAGER}>Gerente</option>
                         <option value={UserRole.USER}>Usuário</option>
+                        <option value={UserRole.VIEWER}>Visualizador</option>
                       </select>
                     </div>
                   </div>
@@ -4201,14 +4218,16 @@ const ConfiguracoesPage = () => {
   const itemsPerPage = 6;
 
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
+  const isManager = currentUser?.perfil === UserRole.MANAGER;
+  const perms = currentUser?.permissoes;
 
   const tabs = [
-    ...(isAdmin ? [{ id: 'setores', label: 'Setores', icon: 'building' }] : []),
-    ...(isAdmin ? [{ id: 'categorias', label: 'Categorias', icon: 'tag' }] : []),
-    ...(isAdmin ? [{ id: 'customFields', label: 'Campos Personalizados', icon: 'list-alt' }] : []),
-    ...(isAdmin ? [{ id: 'sla', label: 'Regras de SLA', icon: 'clock' }] : []),
-    ...(isAdmin ? [{ id: 'email', label: 'E-mail', icon: 'email' }] : []),
-    ...(isAdmin || currentUser?.permissoes.malaDireta ? [{ id: 'templates', label: 'Templates', icon: 'file-alt' }] : []),
+    ...((isAdmin || perms?.configuracoes?.acesso) ? [{ id: 'setores', label: 'Setores', icon: 'building' }] : []),
+    ...((isAdmin || perms?.configuracoes?.acesso) ? [{ id: 'categorias', label: 'Categorias', icon: 'tag' }] : []),
+    ...((isAdmin || perms?.configuracoes?.acesso) ? [{ id: 'customFields', label: 'Campos Personalizados', icon: 'list-alt' }] : []),
+    ...((isAdmin || perms?.configuracoes?.acesso) ? [{ id: 'sla', label: 'Regras de SLA', icon: 'clock' }] : []),
+    ...((isAdmin || perms?.configuracoes?.acesso) ? [{ id: 'email', label: 'E-mail', icon: 'email' }] : []),
+    ...((isAdmin || perms?.malaDireta?.acesso) ? [{ id: 'templates', label: 'Templates', icon: 'file-alt' }] : []),
     { id: 'aparencia', label: 'Aparência', icon: 'palette' },
     { id: 'notificacoes', label: 'Notificações', icon: 'bell' }
   ];
@@ -4318,7 +4337,7 @@ const ConfiguracoesPage = () => {
       </div>
       
       <div className="max-w-5xl">
-        {activeTab === 'setores' && isAdmin && (
+        {activeTab === 'setores' && (isAdmin || isManager) && (
           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                <div className="flex items-center gap-4">
@@ -4395,7 +4414,7 @@ const ConfiguracoesPage = () => {
           </div>
         )}
 
-        {activeTab === 'categorias' && isAdmin && (
+        {activeTab === 'categorias' && (isAdmin || isManager) && (
           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                <div className="flex items-center gap-4">
@@ -4469,7 +4488,7 @@ const ConfiguracoesPage = () => {
           </div>
         )}
 
-        {activeTab === 'customFields' && isAdmin && (
+        {activeTab === 'customFields' && (isAdmin || isManager) && (
           <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                <div className="flex items-center gap-4">
@@ -4530,7 +4549,7 @@ const ConfiguracoesPage = () => {
           </div>
         )}
 
-        {activeTab === 'sla' && isAdmin && (
+        {activeTab === 'sla' && (isAdmin || isManager) && (
            <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-6 md:space-y-10 animate-in slide-in-from-bottom-2">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.5rem] md:rounded-[2rem] bg-blue-50 text-blue-500 flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
@@ -4576,7 +4595,7 @@ const ConfiguracoesPage = () => {
            </div>
         )}
 
-        {activeTab === 'email' && isAdmin && (
+        {activeTab === 'email' && (isAdmin || isManager) && (
            <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-6 md:space-y-10 animate-in slide-in-from-bottom-2">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.5rem] md:rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
@@ -4678,7 +4697,7 @@ const ConfiguracoesPage = () => {
            </div>
         )}
 
-        {activeTab === 'templates' && (isAdmin || currentUser?.permissoes.malaDireta) && (
+        {activeTab === 'templates' && (isAdmin || perms?.malaDireta?.acesso) && (
            <TemplatesTab />
         )}
 
@@ -4923,6 +4942,11 @@ const AuditoriaPage = () => {
   }, [auditLogs, currentUser, debouncedSearchTerm]);
   
   const isAdmin = currentUser?.perfil === UserRole.ADMIN;
+  const isManager = currentUser?.perfil === UserRole.MANAGER;
+  const perms = currentUser?.permissoes.auditoria;
+
+  const canExport = isAdmin || perms?.leitura;
+  const canClear = isAdmin; // Only super admin can clear logs
 
   const getActionColor = (action: string) => {
     switch (action) {
@@ -4997,12 +5021,12 @@ const AuditoriaPage = () => {
               className="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-medium text-sm text-slate-700 focus:border-primary transition-all shadow-sm"
             />
           </div>
-          {isAdmin && (
+          {canExport && (
             <button onClick={exportToCSV} className="bg-slate-100 text-slate-600 px-5 py-3 rounded-2xl font-black text-xs uppercase shadow-sm hover:bg-slate-200 flex items-center justify-center gap-2 transition-all whitespace-nowrap flex-1 md:flex-none">
               <Icon name="download" /> Exportar
             </button>
           )}
-          {isAdmin && <button onClick={() => { confirm({ title: 'Limpar Histórico', message: 'Limpar logs permanentemente?', onConfirm: () => { auditService.clearLogs(); window.location.reload(); } }); }} className="text-red-600 bg-red-50 px-5 py-3 rounded-2xl text-xs font-black uppercase border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm whitespace-nowrap flex-1 md:flex-none justify-center flex items-center"><Icon name="trash" className="inline-block mr-2 -mt-1" />Limpar Histórico</button>}
+          {canClear && <button onClick={() => { confirm({ title: 'Limpar Histórico', message: 'Limpar logs permanentemente?', onConfirm: () => { auditService.clearLogs(); window.location.reload(); } }); }} className="text-red-600 bg-red-50 px-5 py-3 rounded-2xl text-xs font-black uppercase border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm whitespace-nowrap flex-1 md:flex-none justify-center flex items-center"><Icon name="trash" className="inline-block mr-2 -mt-1" />Limpar Histórico</button>}
         </div>
       </div>
 

@@ -12,6 +12,8 @@ export const THEMES = [
 ];
 
 const fullPermission = { acesso: true, leitura: false, incluir: true, editar: true, excluir: true };
+const readOnlyPermission = { acesso: true, leitura: true, incluir: false, editar: false, excluir: false };
+const noPermission = { acesso: false, leitura: false, incluir: false, editar: false, excluir: false };
 
 export const INITIAL_USER: User = {
   id: '1',

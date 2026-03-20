@@ -1,7 +1,9 @@
 
 export enum UserRole {
   ADMIN = 'admin',
-  USER = 'usuario'
+  MANAGER = 'gerente',
+  USER = 'usuario',
+  VIEWER = 'visualizador'
 }
 
 export enum EntityStatus {
