@@ -16,6 +16,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+// Trust proxy settings for Cloud Run / Nginx
+// Set to 1 to trust the first hop (the immediate proxy)
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
@@ -32,13 +35,17 @@ const DATA_FILE = path.join(__dirname, 'data.json');
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // Limit each IP to 10 login requests per windowMs
-  message: { error: 'Muitas tentativas de login. Tente novamente em 15 minutos.' }
+  message: { error: 'Muitas tentativas de login. Tente novamente em 15 minutos.' },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 100, // Limit each IP to 100 requests per minute
-  message: { error: 'Muitas requisições. Tente novamente em breve.' }
+  max: 1000, // Increased further to prevent blocking during intensive operations
+  message: { error: 'Muitas requisições. Tente novamente em breve.' },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Handle Socket.IO connections
@@ -89,13 +96,122 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' })); // For base64 images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// --- Utility Functions ---
+const maskPII = (text: string): string => {
+  if (!text || typeof text !== 'string') return text;
+  
+  // Mask emails: user@example.com -> u***@example.com
+  let masked = text.replace(/([a-zA-Z0-9._%+-])([a-zA-Z0-9._%+-]+)(@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, (match, first, middle, rest) => {
+    return first + '*'.repeat(Math.min(middle.length, 5)) + rest;
+  });
+
+  // Mask phone numbers: (51) 99273-3121 -> (51) 9****-3121
+  masked = masked.replace(/(\(?\d{2}\)?\s?\d)(\d{4})(\d{4})/g, (match, prefix, middle, suffix) => {
+    return prefix + '****' + suffix;
+  });
+
+  // Mask CPF: 123.456.789-00 -> 123.***.***-00
+  masked = masked.replace(/(\d{3})\.(\d{3})\.(\d{3})-(\d{2})/g, '$1.***.***-$4');
+
+  return masked;
+};
+
+const maskObject = (obj: any): any => {
+  if (!obj || typeof obj !== 'object') return obj;
+  
+  const masked = Array.isArray(obj) ? [...obj] : { ...obj };
+  
+  for (const key in masked) {
+    if (typeof masked[key] === 'string') {
+      // Check if key name suggests PII
+      const piiKeys = ['email', 'telefone', 'celular', 'cpf', 'cnpj', 'senha', 'password', 'documento'];
+      if (piiKeys.some(k => key.toLowerCase().includes(k))) {
+        masked[key] = '********';
+      } else {
+        masked[key] = maskPII(masked[key]);
+      }
+    } else if (typeof masked[key] === 'object') {
+      masked[key] = maskObject(masked[key]);
+    }
+  }
+  
+  return masked;
+};
+
+const maskDiff = (diff: any[]): any[] => {
+  if (!Array.isArray(diff)) return diff;
+  return diff.map(item => {
+    const piiKeys = ['email', 'telefone', 'celular', 'cpf', 'cnpj', 'senha', 'password', 'documento'];
+    const isPIIField = piiKeys.some(k => item.field?.toLowerCase().includes(k));
+    
+    return {
+      ...item,
+      oldValue: isPIIField ? '********' : (typeof item.oldValue === 'string' ? maskPII(item.oldValue) : item.oldValue),
+      newValue: isPIIField ? '********' : (typeof item.newValue === 'string' ? maskPII(item.newValue) : item.newValue)
+    };
+  });
+};
+
 // --- Data Store ---
+const defaultRoles = [
+  {
+    id: 'admin',
+    name: 'Administrador',
+    description: 'Acesso total ao sistema',
+    permissions: {
+      dashboard: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+      clientes: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+      malaDireta: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+      tarefas: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+      usuarios: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+      configuracoes: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+      auditoria: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+      calendario: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true }
+    }
+  },
+  {
+    id: 'user',
+    name: 'Usuário Padrão',
+    description: 'Acesso básico ao sistema',
+    permissions: {
+      dashboard: { acesso: true, leitura: true, incluir: false, editar: false, excluir: false },
+      clientes: { acesso: true, leitura: true, incluir: false, editar: false, excluir: false },
+      malaDireta: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+      tarefas: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+      usuarios: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+      configuracoes: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+      auditoria: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+      calendario: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true }
+    }
+  }
+];
+
+const salt = bcrypt.genSaltSync(10);
+const defaultAdmin = [
+  {
+    id: '1',
+    nome: 'Administrador',
+    email: 'admin@senseirm.com',
+    senha: bcrypt.hashSync('admin123', salt),
+    roleId: 'admin',
+    status: 'ativo',
+    tema: 'verde',
+    dataCriacao: new Date().toISOString(),
+    foto: 'https://picsum.photos/200',
+    telefone: '5133334444',
+    celular: '51992733121',
+    possuiWhatsapp: true
+  }
+];
+
 let db = {
-  users: [],
+  users: [...defaultAdmin],
+  roles: [...defaultRoles],
   clients: [],
   tasks: [],
   sectors: [],
   clientCategories: [],
+  customFields: [],
   auditLogs: [],
   history: [],
   templates: [
@@ -117,50 +233,75 @@ let db = {
     user: '',
     pass: '',
     secure: false
-  }
+  },
+  systemSettings: {
+    companyName: 'CRM Ecosystem',
+    appLogo: ''
+  },
+  notifications: [],
 };
+
+let isDataLoaded = false;
+
+function saveData() {
+  if (!isDataLoaded) {
+    console.warn('Attempted to save data before it was loaded. Skipping to prevent data loss.');
+    return;
+  }
+  
+  // Final integrity check before saving
+  if (!db.users || db.users.length === 0 || !db.roles || db.roles.length === 0) {
+    console.error('CRITICAL: Attempted to save data with empty users or roles. Aborting save to prevent system lockout.');
+    console.error('Current state:', { users: db.users?.length, roles: db.roles?.length });
+    console.error('Users detail:', JSON.stringify(db.users?.map(u => ({ id: u.id, email: u.email }))));
+    return;
+  }
+
+  console.log(`Saving data to ${DATA_FILE}. Users: ${db.users.length}, Roles: ${db.roles.length}, AuditLogs: ${db.auditLogs.length}`);
+
+  try {
+    const tempFile = DATA_FILE + '.tmp';
+    fs.writeFileSync(tempFile, JSON.stringify(db, null, 2));
+    fs.renameSync(tempFile, DATA_FILE);
+    console.log('Data saved successfully.');
+  } catch (error) {
+    console.error('Error saving data:', error);
+  }
+}
 
 // Load initial data
 if (fs.existsSync(DATA_FILE)) {
   try {
-    const data = fs.readFileSync(DATA_FILE, 'utf-8');
-    db = JSON.parse(data);
+    const content = fs.readFileSync(DATA_FILE, 'utf-8');
+    if (content.trim()) {
+      const parsed = JSON.parse(content);
+      // Merge carefully to preserve defaults if parsed data is missing or empty
+      db.users = Array.isArray(parsed.users) && parsed.users.length > 0 ? parsed.users : [...defaultAdmin];
+      db.roles = Array.isArray(parsed.roles) && parsed.roles.length > 0 ? parsed.roles : [...defaultRoles];
+      db.clients = Array.isArray(parsed.clients) ? parsed.clients : [];
+      db.tasks = Array.isArray(parsed.tasks) ? parsed.tasks : [];
+      db.sectors = Array.isArray(parsed.sectors) ? parsed.sectors : [];
+      db.auditLogs = Array.isArray(parsed.auditLogs) ? parsed.auditLogs : [];
+      db.history = Array.isArray(parsed.history) ? parsed.history : [];
+      db.templates = Array.isArray(parsed.templates) ? parsed.templates : [];
+      db.slaSettings = parsed.slaSettings || { ...db.slaSettings };
+      db.emailSettings = parsed.emailSettings || { ...db.emailSettings };
+      db.systemSettings = parsed.systemSettings || { ...db.systemSettings };
+      db.clientCategories = Array.isArray(parsed.clientCategories) ? parsed.clientCategories : [];
+      db.customFields = Array.isArray(parsed.customFields) ? parsed.customFields : [];
+      db.notifications = Array.isArray(parsed.notifications) ? parsed.notifications : [];
+      
+      console.log('Data loaded successfully from data.json');
+    }
+    isDataLoaded = true;
   } catch (e) {
-    console.error('Error reading data.json', e);
+    console.error('Error reading data.json, using defaults', e);
+    isDataLoaded = true; // We use defaults, so it's "loaded"
   }
 } else {
-  // Initialize with default admin
-  const salt = bcrypt.genSaltSync(10);
-  const hash = bcrypt.hashSync('admin123', salt);
-  const fullPermission = { acesso: true, leitura: true, incluir: true, editar: true, excluir: true };
-  db.users.push({
-    id: '1',
-    nome: 'Administrador',
-    email: 'admin@senseirm.com',
-    senha: hash, // Hashed password
-    perfil: 'admin',
-    status: 'ativo',
-    tema: 'verde',
-    dataCriacao: new Date().toISOString(),
-    foto: 'https://picsum.photos/200',
-    telefone: '5133334444',
-    celular: '51992733121',
-    possuiWhatsapp: true,
-    permissoes: {
-      dashboard: fullPermission,
-      clientes: fullPermission,
-      malaDireta: fullPermission,
-      tarefas: fullPermission,
-      usuarios: fullPermission,
-      configuracoes: fullPermission,
-      auditoria: fullPermission
-    }
-  });
+  isDataLoaded = true;
   saveData();
-}
-
-function saveData() {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+  console.log('No data.json found, initialized with defaults');
 }
 
 // --- Middleware ---
@@ -181,9 +322,12 @@ const checkPermission = (module: string, action: 'acesso' | 'leitura' | 'incluir
     const user = db.users.find((u: any) => u.id === req.user.id);
     if (!user) return res.sendStatus(404);
     
-    if (user.perfil === 'admin') return next();
+    const role = db.roles.find((r: any) => r.id === user.roleId);
+    if (!role) return res.status(403).json({ error: 'Função não encontrada' });
     
-    const permissions = user.permissoes?.[module];
+    if (role.id === 'admin') return next();
+    
+    const permissions = role.permissions?.[module];
     if (permissions && permissions[action]) {
       return next();
     }
@@ -194,30 +338,62 @@ const checkPermission = (module: string, action: 'acesso' | 'leitura' | 'incluir
 
 // --- API Routes ---
 
+// Health Check
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    dataLoaded: isDataLoaded,
+    usersCount: db.users?.length,
+    rolesCount: db.roles?.length
+  });
+});
+
 // Auth
 app.post('/api/auth/login', loginLimiter, (req, res) => {
   const { email, pass } = req.body;
+  console.log(`Login attempt for email: ${email}`);
+  
+  if (!db.users || db.users.length === 0) {
+    console.error('CRITICAL: db.users is empty in memory during login attempt! Attempting emergency restore.');
+    db.users = [...defaultAdmin];
+  }
+
   const user = db.users.find((u: any) => u.email === email && u.status === 'ativo');
   
-  if (user && bcrypt.compareSync(pass, user.senha)) {
-    const token = jwt.sign({ id: user.id, email: user.email, perfil: user.perfil }, JWT_SECRET, { expiresIn: '24h' });
-    
-    // Log audit
-    db.auditLogs.unshift({
-      id: Math.random().toString(36).substring(2, 11),
-      timestamp: new Date().toISOString(),
-      userId: user.id,
-      userName: user.nome,
-      action: 'LOGIN',
-      module: 'AUTH',
-      details: `Usuário ${user.nome} autenticou.`
-    } as never);
-    saveData();
-    
-    // Don't send password hash to client
-    const { senha, ...userWithoutPass } = user;
-    res.json({ token, user: userWithoutPass });
+  if (user) {
+    console.log(`User found: ${user.nome}. Comparing password...`);
+    try {
+      if (bcrypt.compareSync(pass, user.senha)) {
+        console.log(`Password match for user: ${user.nome}`);
+        const token = jwt.sign({ id: user.id, email: user.email, roleId: user.roleId }, JWT_SECRET, { expiresIn: '24h' });
+        
+        // Log audit
+        db.auditLogs.unshift({
+          id: Math.random().toString(36).substring(2, 11),
+          timestamp: new Date().toISOString(),
+          userId: user.id,
+          userName: user.nome,
+          action: 'LOGIN',
+          module: 'AUTH',
+          details: `Usuário ${user.nome} autenticou.`,
+          ip: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress
+        } as any);
+        saveData();
+        
+        // Don't send password hash to client
+        const { senha, ...userWithoutPass } = user;
+        res.json({ token, user: userWithoutPass });
+      } else {
+        console.warn(`Password mismatch for user: ${user.nome}`);
+        res.status(401).json({ error: 'Credenciais inválidas ou usuário inativo' });
+      }
+    } catch (err) {
+      console.error(`Error during password comparison for ${email}:`, err);
+      res.status(500).json({ error: 'Erro interno no servidor durante a autenticação' });
+    }
   } else {
+    console.warn(`User not found or inactive for email: ${email}. Total users in memory: ${db.users.length}`);
     res.status(401).json({ error: 'Credenciais inválidas ou usuário inativo' });
   }
 });
@@ -251,8 +427,9 @@ app.get('/api/data', authenticateToken, apiLimiter, (req: any, res: any) => {
   const user = db.users.find((u: any) => u.id === req.user.id);
   if (!user) return res.sendStatus(404);
 
-  const isAdmin = user.perfil === 'admin';
-  const perms = user.permissoes || {};
+  const role = db.roles.find((r: any) => r.id === user.roleId);
+  const isAdmin = role?.id === 'admin';
+  const perms: any = role?.permissions || {};
 
   // Filter data based on permissions
   const safeUsers = db.users
@@ -261,6 +438,7 @@ app.get('/api/data', authenticateToken, apiLimiter, (req: any, res: any) => {
 
   res.json({
     users: safeUsers,
+    roles: db.roles,
     clients: (isAdmin || perms.clientes?.acesso) ? db.clients : [],
     tasks: (isAdmin || perms.tarefas?.acesso) ? db.tasks : [],
     sectors: (isAdmin || perms.configuracoes?.acesso) ? db.sectors : [],
@@ -268,8 +446,13 @@ app.get('/api/data', authenticateToken, apiLimiter, (req: any, res: any) => {
     auditLogs: (isAdmin || perms.auditoria?.acesso) ? db.auditLogs : [],
     history: (isAdmin || perms.clientes?.acesso) ? db.history : [],
     templates: (isAdmin || perms.configuracoes?.acesso) ? db.templates : [],
+    customFields: (isAdmin || perms.configuracoes?.acesso) ? db.customFields : [],
     slaSettings: (isAdmin || perms.configuracoes?.acesso) ? db.slaSettings : {},
-    emailSettings: isAdmin ? db.emailSettings : {} // Only admin sees email settings
+    emailSettings: isAdmin ? db.emailSettings : {}, // Only admin sees email settings
+    systemSettings: {
+      companyName: (db.systemSettings as any)?.companyName || (db.systemSettings as any)?.appSlogan || 'CRM Ecosystem',
+      appLogo: db.systemSettings?.appLogo || ''
+    }
   });
 });
 
@@ -279,19 +462,22 @@ app.post('/api/sync', authenticateToken, apiLimiter, (req: any, res: any) => {
   const user = db.users.find((u: any) => u.id === req.user.id);
   if (!user) return res.sendStatus(404);
 
-  const isAdmin = user.perfil === 'admin';
-  const perms = user.permissoes || {};
+  const role = db.roles.find((r: any) => r.id === user.roleId);
+  const isAdmin = role?.id === 'admin';
+  const perms: any = role?.permissions || {};
 
   // Map collection types to permission modules
   const typeToModule: Record<string, string> = {
     'users': 'usuarios',
+    'roles': 'configuracoes',
     'clients': 'clientes',
     'tasks': 'tarefas',
     'sectors': 'configuracoes',
     'clientCategories': 'configuracoes',
     'templates': 'configuracoes',
     'slaSettings': 'configuracoes',
-    'emailSettings': 'configuracoes'
+    'emailSettings': 'configuracoes',
+    'systemSettings': 'configuracoes'
   };
 
   const module = typeToModule[type];
@@ -302,7 +488,7 @@ app.post('/api/sync', authenticateToken, apiLimiter, (req: any, res: any) => {
   }
   
   if (action === 'ADD') {
-    if (type === 'users' && payload.senha) {
+    if (type === 'users' && payload.senha && !/^\$2[aby]\$/.test(payload.senha.substring(0, 4))) {
       payload.senha = bcrypt.hashSync(payload.senha, 10);
     }
     (db as any)[type].push(payload);
@@ -316,7 +502,7 @@ app.post('/api/sync', authenticateToken, apiLimiter, (req: any, res: any) => {
   } else if (action === 'UPDATE') {
     const index = (db as any)[type].findIndex((item: any) => item.id === payload.id);
     if (index !== -1) {
-      if (type === 'users' && payload.senha && !payload.senha.startsWith('$2a$')) {
+      if (type === 'users' && payload.senha && !/^\$2[aby]\$/.test(payload.senha.substring(0, 4))) {
         payload.senha = bcrypt.hashSync(payload.senha, 10);
       } else if (type === 'users' && !payload.senha) {
         payload.senha = (db as any)[type][index].senha; // Keep old password if not provided
@@ -344,8 +530,21 @@ app.post('/api/sync', authenticateToken, apiLimiter, (req: any, res: any) => {
       }
     }
   } else if (action === 'DELETE') {
-    (db as any)[type] = (db as any)[type].filter((item: any) => item.id !== payload.id);
+    if (type === 'users' && payload.id === '1') {
+      return res.status(400).json({ error: 'Não é permitido excluir o administrador principal.' });
+    }
+    const newArray = (db as any)[type].filter((item: any) => item.id !== payload.id);
+    if ((type === 'users' || type === 'roles') && newArray.length === 0) {
+      console.error(`CRITICAL: Attempted to DELETE last item of ${type}. Aborting sync.`);
+      return res.status(400).json({ error: `Não é permitido excluir o último item de ${type}.` });
+    }
+    (db as any)[type] = newArray;
   } else if (action === 'SET') {
+    if ((type === 'users' || type === 'roles') && (!Array.isArray(payload) || payload.length === 0)) {
+      console.error(`CRITICAL: Attempted to SET ${type} with empty or invalid payload. Aborting sync.`);
+      return res.status(400).json({ error: `Não é permitido limpar a lista de ${type} via sincronização.` });
+    }
+    console.log(`SET action for type: ${type}. Payload size: ${Array.isArray(payload) ? payload.length : 'N/A'}`);
     (db as any)[type] = payload;
   }
   
@@ -412,6 +611,54 @@ app.post('/api/mail/send', authenticateToken, checkPermission('malaDireta', 'inc
   }
 });
 
+app.post('/api/audit/clear', authenticateToken, (req: any, res: any) => {
+  const user = db.users.find((u: any) => u.id === req.user.id);
+  if (!user) return res.sendStatus(404);
+
+  const role = db.roles.find((r: any) => r.id === user.roleId);
+  if (role?.id !== 'admin') {
+    return res.status(403).json({ error: 'Apenas administradores podem limpar os logs.' });
+  }
+
+  const { reason } = req.body;
+  if (!reason || reason.trim().length < 5) {
+    return res.status(400).json({ error: 'Um motivo válido (mínimo 5 caracteres) é obrigatório.' });
+  }
+
+  // Clear logs
+  console.log(`[AUDIT CLEAR] Request received. Reason: ${reason}. Current users count: ${db.users?.length}`);
+  
+  if (!db.users || db.users.length === 0) {
+    console.error('[AUDIT CLEAR] CRITICAL: db.users is empty before processing. Restoring from defaultAdmin.');
+    db.users = [...defaultAdmin];
+  }
+
+  // Register the clearing action
+  const clearEntry = {
+    id: Math.random().toString(36).substring(2, 11),
+    timestamp: new Date().toISOString(),
+    userId: req.user.id,
+    userName: user.nome,
+    action: 'DELETE',
+    module: 'AUDITORIA',
+    details: maskPII(`Histórico de auditoria limpo integralmente. Motivo: ${reason}`),
+    ip: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress
+  };
+  
+  // Clear logs and add the clearing action as the first entry
+  console.log(`[AUDIT CLEAR] Before clearing logs: users=${db.users?.length}`);
+  db.auditLogs = [clearEntry as any];
+  console.log(`[AUDIT CLEAR] After clearing logs: users=${db.users?.length}`);
+
+  saveData();
+  
+  // Broadcast to all clients using SET to ensure they get the new state with the clearing log
+  io.emit('data_updated', { type: 'auditLogs', action: 'SET', payload: db.auditLogs });
+  
+  console.log(`[AUDIT CLEAR] Data saved successfully. Final users count: ${db.users?.length}`);
+  res.json({ success: true });
+});
+
 app.post('/api/audit', authenticateToken, (req: any, res: any) => {
   const { action, module, details, entityId, diff } = req.body;
   const user = db.users.find((u: any) => u.id === req.user.id);
@@ -423,16 +670,18 @@ app.post('/api/audit', authenticateToken, (req: any, res: any) => {
     userName: user ? (user as any).nome : 'Sistema',
     action,
     module,
-    details,
+    details: maskPII(details),
     entityId,
-    diff
-  } as never);
+    diff: maskDiff(diff),
+    ip: req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress
+  } as any);
   
   if (db.auditLogs.length > 1000) {
     db.auditLogs = db.auditLogs.slice(0, 1000);
   }
   
   saveData();
+  io.emit('data_updated', { type: 'auditLogs', action: 'ADD' });
   res.json({ success: true });
 });
 
@@ -453,6 +702,11 @@ async function startServer() {
 
   server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
+    console.log('Initial state:', { 
+      users: db.users?.length, 
+      roles: db.roles?.length,
+      dataLoaded: isDataLoaded 
+    });
   });
 }
 

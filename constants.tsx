@@ -1,4 +1,4 @@
-import { UserRole, EntityStatus, User } from './types';
+import { EntityStatus, User } from './types';
 
 export const THEMES = [
   { id: 'verde', name: 'Esmeralda', color: '#10b981', class: 'emerald' },
@@ -20,21 +20,12 @@ export const INITIAL_USER: User = {
   nome: 'Administrador',
   email: 'admin@senseirm.com',
   senha: 'admin',
-  perfil: UserRole.ADMIN,
+  roleId: 'admin',
   status: EntityStatus.ACTIVE,
   tema: 'verde',
   dataCriacao: new Date().toISOString(),
   foto: 'https://picsum.photos/200',
   telefone: '5133334444',
   celular: '51992733121',
-  possuiWhatsapp: true,
-  permissoes: {
-    dashboard: fullPermission,
-    clientes: fullPermission,
-    malaDireta: fullPermission,
-    tarefas: fullPermission,
-    usuarios: fullPermission,
-    configuracoes: fullPermission,
-    auditoria: fullPermission
-  }
+  possuiWhatsapp: true
 };

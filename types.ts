@@ -1,11 +1,4 @@
 
-export enum UserRole {
-  ADMIN = 'admin',
-  MANAGER = 'gerente',
-  USER = 'usuario',
-  VIEWER = 'visualizador'
-}
-
 export enum EntityStatus {
   ACTIVE = 'ativo',
   INACTIVE = 'inativo',
@@ -81,6 +74,7 @@ export interface UserPermissions {
   usuarios: Permission;
   configuracoes: Permission;
   auditoria: Permission;
+  calendario: Permission;
 }
 
 export interface SLASettings {
@@ -97,6 +91,9 @@ export interface CustomField {
   options?: string[]; // For select type
   required: boolean;
   entity: 'client'; // Currently only for clients
+  regex?: string;
+  maxLength?: number;
+  placeholder?: string;
 }
 
 export interface NotificationPreferences {
@@ -104,16 +101,22 @@ export interface NotificationPreferences {
   system: boolean;
 }
 
+export interface Role {
+  id: string;
+  name: string;
+  description: string;
+  permissions: UserPermissions;
+}
+
 export interface User {
   id: string;
   nome: string;
   email: string;
   senha?: string;
-  perfil: UserRole;
+  roleId: string;
   status: EntityStatus;
   tema: string;
   dataCriacao: string;
-  permissoes: UserPermissions;
   foto?: string;
   telefone?: string;
   celular?: string;
@@ -250,6 +253,7 @@ export interface AuditEntry {
   details: string;
   entityId?: string;
   diff?: { field: string; oldValue: any; newValue: any }[];
+  ip?: string;
 }
 
 export interface MailHistory {
@@ -284,4 +288,10 @@ export interface EmailSettings {
   user: string;
   pass: string;
   secure: boolean;
+}
+
+export interface SystemSettings {
+  appName: string;
+  appSlogan: string;
+  appLogo: string;
 }
