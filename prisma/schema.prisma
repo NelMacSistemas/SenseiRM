@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Sector {
+  id            String   @id @default(cuid())
+  nome          String
+  responsavelId String?
+  descricao     String?
+  dataCriacao   String
+}
+
+model ClientCategory {
+  id          String   @id @default(cuid())
+  nome        String
+  descricao   String?
+  cor         String?
+  dataCriacao String
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  permissions String   // Stored as JSON string
+}
+
+model User {
+  id                      String   @id @default(cuid())
+  nome                    String
+  email                   String   @unique
+  senha                   String?
+  roleId                  String
+  status                  String
+  tema                    String
+  dataCriacao             String
+  foto                    String?
+  telefone                String?
+  celular                 String?
+  possuiWhatsapp          Boolean  @default(false)
+  notificationPreferences String?  // Stored as JSON string
+}
+
+model Client {
+  id                 String   @id @default(cuid())
+  clientCode         String
+  tipoPessoa         String
+  nomeRazaoSocial    String
+  nomeFantasia       String?
+  documento          String
+  inscricaoEstadual  String?
+  inscricaoMunicipal String?
+  dataCadastro       String
+  status             String
+  cep                String?
+  logradouro         String?
+  numero             String?
+  complemento        String?
+  bairro             String?
+  cidade             String?
+  uf                 String?
+  pais               String
+  customData         String?  // JSON string
+  telefonePrincipal  String
+  telefoneSecundario String?
+  emailPrincipal     String
+  emailFinanceiro    String?
+  site               String?
+  banco              String?
+  agencia            String?
+  conta              String?
+  tipoConta          String?
+  chavePix           String?
+  tipoChavePix       String?
+  categoria          String?
+  origem             String?
+  observacoes        String?
+  situacao           String
+  motivoBloqueio     String?
+  dataUltimaVenda    String?
+  avaliacaoInterna   Int?
+
+  // We will store these relations as JSON strings to avoid complex deep update logic in the /api/sync endpoint, 
+  // ensuring identical payload compatibility in SQLite without major refactoring.
+  pessoasContato     String?  @default("[]") // JSON String
+  attachments        String?  @default("[]") // JSON String
+  interactions       String?  @default("[]") // JSON String
+}
+
+model Task {
+  id                String   @id @default(cuid())
+  taskNumber        String
+  titulo            String
+  descricao         String
+  tipo              String
+  solicitanteId     String
+  responsavelId     String
+  setorId           String
+  interessados      String
+  prioridade        String
+  status            String
+  dataCriacao       String
+  dataVencimento    String?
+  dataInicio        String?
+  dataConclusaoReal String?
+  tempoGasto        String
+
+  // Stored as JSON strings
+  logs              String?  @default("[]") // JSON String
+  attachments       String?  @default("[]") // JSON String
+  subtasks          String?  @default("[]") // JSON String
+  comments          String?  @default("[]") // JSON String
+}
+
+model CustomField {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  options     String?  // JSON array string
+  required    Boolean  @default(false)
+  entity      String
+  regex       String?
+  maxLength   Int?
+  placeholder String?
+}
+
+model AuditEntry {
+  id        String   @id @default(cuid())
+  timestamp String
+  userId    String
+  userName  String
+  action    String
+  module    String
+  details   String
+  entityId  String?
+  diff      String?  // JSON String
+  ip        String?
+}
+
+model MailHistory {
+  id            String   @id @default(cuid())
+  data          String
+  tipo          String
+  destinatarios String   // JSON string
+  assunto       String
+  mensagem      String
+}
+
+model MailTemplate {
+  id      String   @id @default(cuid())
+  name    String
+  subject String
+  content String
+}
+
+// Singletons (we'll just use a single row for settings)
+model SystemSettings {
+  id        String @id @default("1")
+  companyName   String
+  appLogo   String
+}
+
+model EmailSettings {
+  id        String  @id @default("1")
+  provider  String
+  host      String
+  port      Int
+  user      String
+  pass      String
+  secure    Boolean
+}
+
+model SLASettings {
+  id      String @id @default("1")
+  baixa   Int
+  media   Int
+  alta    Int
+  critica Int
+}
