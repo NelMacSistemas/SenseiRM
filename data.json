@@ -4,7 +4,6 @@
       "id": "1",
       "nome": "Administrador",
       "email": "admin@senseirm.com",
-      "senha": "$2b$10$7t2Z4zTKi3NmEgppbYmr4ujRQYcerL4hqrlaKZcyZyJlFIVbhFH8u",
       "roleId": "admin",
       "status": "ativo",
       "tema": "verde",
@@ -12,7 +11,12 @@
       "foto": "https://picsum.photos/200",
       "telefone": "5133334444",
       "celular": "51992733121",
-      "possuiWhatsapp": true
+      "possuiWhatsapp": true,
+      "notificationPreferences": {
+        "email": true,
+        "system": false
+      },
+      "senha": "$2b$10$7t2Z4zTKi3NmEgppbYmr4ujRQYcerL4hqrlaKZcyZyJlFIVbhFH8u"
     }
   ],
   "roles": [
@@ -145,10 +149,125 @@
   ],
   "clients": [],
   "tasks": [],
-  "sectors": [],
+  "sectors": [
+    {
+      "id": "xvf6uu0zkmnrkw39z",
+      "nome": "Engenharia",
+      "responsavelId": "1",
+      "descricao": "aaaaaa",
+      "dataCriacao": "2026-04-09T14:34:40.151Z"
+    },
+    {
+      "id": "zyimbkx7nmnrkx16p",
+      "nome": "Engenharia",
+      "responsavelId": "1",
+      "descricao": "aaa",
+      "dataCriacao": "2026-04-09T14:35:24.097Z"
+    }
+  ],
   "clientCategories": [],
   "customFields": [],
   "auditLogs": [
+    {
+      "id": "d4hzihzla",
+      "timestamp": "2026-04-09T14:37:31.495Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "af4te7lmi",
+      "timestamp": "2026-04-09T14:35:19.881Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "SETORES",
+      "details": "Setor \"Engenharia\" criado.",
+      "entityId": "zyimbkx7nmnrkx16p",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "5yt0pzkf6",
+      "timestamp": "2026-04-09T14:34:59.305Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "4nrwgrrw6",
+      "timestamp": "2026-04-09T14:34:45.505Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "mk43plid9",
+      "timestamp": "2026-04-09T14:34:35.941Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "SETORES",
+      "details": "Setor \"Engenharia\" criado.",
+      "entityId": "xvf6uu0zkmnrkw39z",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "ma33n0qd8",
+      "timestamp": "2026-04-09T14:34:14.345Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Administrador alterado. Alterações: [Celular: \"Vazio\" → \"519****3121\"]",
+      "entityId": "1",
+      "diff": [
+        {
+          "field": "Celular",
+          "oldValue": "********",
+          "newValue": "********"
+        }
+      ],
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "56ji8k24b",
+      "timestamp": "2026-04-09T14:34:00.685Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "paip5v83o",
+      "timestamp": "2026-04-09T14:33:51.351Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "9q1fbswzx",
+      "timestamp": "2026-04-09T14:33:10.230Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
     {
       "id": "yicg6330s",
       "timestamp": "2026-04-09T13:51:41.887Z",
