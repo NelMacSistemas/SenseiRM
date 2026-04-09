@@ -14,7 +14,7 @@
       "possuiWhatsapp": true,
       "notificationPreferences": {
         "email": true,
-        "system": false
+        "system": true
       },
       "senha": "$2b$10$7t2Z4zTKi3NmEgppbYmr4ujRQYcerL4hqrlaKZcyZyJlFIVbhFH8u"
     }
@@ -246,11 +246,106 @@
       "responsavelId": "1",
       "descricao": "aaadfdsfsad",
       "dataCriacao": "2026-04-09T18:23:52.047Z"
+    },
+    {
+      "id": "pprnh428qmnrtactk",
+      "nome": "Compras",
+      "responsavelId": "1",
+      "descricao": "aaaaa",
+      "dataCriacao": "2026-04-09T18:29:42.632Z"
+    },
+    {
+      "id": "4e7d8mzaemnruc1ct",
+      "nome": "Nelson Macedo",
+      "responsavelId": "1",
+      "descricao": "dsfgdsfg",
+      "dataCriacao": "2026-04-09T18:59:00.701Z"
     }
   ],
   "clientCategories": [],
   "customFields": [],
   "auditLogs": [
+    {
+      "id": "renrb3b0i",
+      "timestamp": "2026-04-09T18:59:35.373Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "5or2e3lui",
+      "timestamp": "2026-04-09T18:59:26.059Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "TEMPLATE",
+      "details": "Template \"Boas Vindas\" criado.",
+      "entityId": "6ab4c0a9-ff95-4f26-8d40-a723d47fdddd",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "k8yh58uyv",
+      "timestamp": "2026-04-09T18:59:14.689Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Administrador alterado. Alterações: [Celular: \"Vazio\" → \"519****3121\"]",
+      "entityId": "1",
+      "diff": [
+        {
+          "field": "Celular",
+          "oldValue": "********",
+          "newValue": "********"
+        }
+      ],
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "5kaixgws9",
+      "timestamp": "2026-04-09T18:59:00.842Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "SETORES",
+      "details": "Setor \"Nelson Macedo\" criado.",
+      "entityId": "4e7d8mzaemnruc1ct",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "mra2z0yz5",
+      "timestamp": "2026-04-09T18:58:35.426Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "y7916lewf",
+      "timestamp": "2026-04-09T18:29:42.858Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "SETORES",
+      "details": "Setor \"Compras\" criado.",
+      "entityId": "pprnh428qmnrtactk",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "v2mivja9j",
+      "timestamp": "2026-04-09T18:29:28.399Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
     {
       "id": "3ox97lmja",
       "timestamp": "2026-04-09T18:23:58.891Z",
@@ -666,6 +761,12 @@
       "name": "Pesquisa de Satisfação",
       "subject": "Sua opinião é importante",
       "content": "Oi {nome},\n\nSua opinião é muito importante para nós! Poderia responder a uma rápida pesquisa sobre nosso atendimento?\n\nObrigado!"
+    },
+    {
+      "id": "6ab4c0a9-ff95-4f26-8d40-a723d47fdddd",
+      "name": "Boas Vindas",
+      "subject": "aaaa",
+      "content": "sdfgdsgsdg"
     }
   ],
   "slaSettings": {

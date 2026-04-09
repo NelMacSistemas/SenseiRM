@@ -756,7 +756,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
-          console.log('SYNC OK', type);
+          
         const data = await res.json();
         console.log('loadData: /api/data success');
         if (data.users && data.users.length > 0) setUsers(data.users);
@@ -765,19 +765,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         setTasks(data.tasks || []);
         setSectors(data.sectors || []);
         setClientCategories(data.clientCategories || []);
-        setCustomFields(data.customFields || []);
-        setHistory(data.history || []);
-        setTemplates(data.templates || []);
-        setSlaSettings(data.slaSettings || { Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
-        setEmailSettings(data.emailSettings || { provider: 'SMTP', host: '', port: 587, user: '', pass: '', secure: false });
-        setSystemSettings({
-          companyName: (data.systemSettings as any)?.companyName || (data.systemSettings as any)?.appSlogan || 'CRM Ecosystem',
-          appLogo: data.systemSettings?.appLogo || ''
-        });
-        setAuditLogs(data.auditLogs || []);
-      } else if (res.status === 401 || res.status === 403) {
-        console.log('loadData: /api/data auth failed, logging out');
-        logout();
       } else if (res.status === 429) {
         alert('Muitas requisições ao servidor. Por favor, aguarde um momento e recarregue a página.');
       } else {
@@ -6472,6 +6459,16 @@ const MailListPage = () => {
 
     if (type === 'whatsapp') {
       addMailHistory(entry);
+      setCustomFields(data.customFields || []);
+      setHistory(data.history || []);
+      setTemplates(data.templates || []);
+      setSlaSettings(data.slaSettings || { Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
+      setEmailSettings(data.emailSettings || { provider: 'SMTP', host: '', port: 587, user: '', pass: '', secure: false });
+      setSystemSettings({
+        companyName: (data.systemSettings as any)?.companyName || (data.systemSettings as any)?.appSlogan || 'CRM Ecosystem',
+        appLogo: data.systemSettings?.appLogo || ''
+      });
+      setAuditLogs(data.auditLogs || []);
       setWhatsappQueue(selectedClients);
       setWhatsappIndex(0);
       setWhatsappMessage(message);
