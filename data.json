@@ -170,11 +170,67 @@
       "responsavelId": "1",
       "descricao": "aaa",
       "dataCriacao": "2026-04-09T15:17:07.544Z"
+    },
+    {
+      "id": "686jj5txemnrmx725",
+      "nome": "Engenharia",
+      "responsavelId": "1",
+      "descricao": "aaaa",
+      "dataCriacao": "2026-04-09T15:31:30.941Z"
     }
   ],
   "clientCategories": [],
   "customFields": [],
   "auditLogs": [
+    {
+      "id": "e5txj5jb9",
+      "timestamp": "2026-04-09T15:31:31.693Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "il3yh9whf",
+      "timestamp": "2026-04-09T15:31:26.585Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "SETORES",
+      "details": "Setor \"Engenharia\" criado.",
+      "entityId": "686jj5txemnrmx725",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "m1igmf97y",
+      "timestamp": "2026-04-09T15:31:15.167Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIG",
+      "details": "Configurações do Sistema atualizadas. Alterações: [Nome da Empresa: \"CRM Ecosystem\" → \"by NelMac Sistemas\"]",
+      "entityId": "systemSettings",
+      "diff": [
+        {
+          "field": "Nome da Empresa",
+          "oldValue": "CRM Ecosystem",
+          "newValue": "by NelMac Sistemas"
+        }
+      ],
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "0tfnd6ifp",
+      "timestamp": "2026-04-09T15:31:03.473Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
     {
       "id": "lu0cuxz7x",
       "timestamp": "2026-04-09T15:17:03.220Z",
