@@ -6214,7 +6214,7 @@ const SobrePage = () => {
               { title: 'Gestão Avançada', desc: 'Filtros dinâmicos e busca fonética inteligente.', icon: 'search' },
               { title: 'WhatsApp 2.0', desc: 'Comunicação instantânea integrada ao fluxo.', icon: 'message-circle' },
               { title: 'Importação CSV', desc: 'Migração de dados com mapeamento automático.', icon: 'upload' },
-              { title: 'Custom Fields', desc: 'Adapte o sistema à sua realidade de negócio.', icon: 'settings' },
+              { title: 'Campos Customizáveis', desc: 'Adapte o sistema à sua realidade de negócio.', icon: 'settings' },
               { title: 'Auditoria 360', desc: 'Rastreamento completo de todas as operações.', icon: 'shield' },
               { title: 'High Performance', desc: 'Resposta ultra-rápida com novo motor de cache.', icon: 'zap' },
             ].map((f, i) => (

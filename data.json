@@ -1,0 +1,209 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "nome": "Administrador",
+      "email": "admin@senseirm.com",
+      "senha": "$2b$10$7t2Z4zTKi3NmEgppbYmr4ujRQYcerL4hqrlaKZcyZyJlFIVbhFH8u",
+      "roleId": "admin",
+      "status": "ativo",
+      "tema": "verde",
+      "dataCriacao": "2026-04-09T13:51:02.383Z",
+      "foto": "https://picsum.photos/200",
+      "telefone": "5133334444",
+      "celular": "51992733121",
+      "possuiWhatsapp": true
+    }
+  ],
+  "roles": [
+    {
+      "id": "admin",
+      "name": "Administrador",
+      "description": "Acesso total ao sistema",
+      "permissions": {
+        "dashboard": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "clientes": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "malaDireta": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "tarefas": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "usuarios": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "configuracoes": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "auditoria": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "calendario": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        }
+      }
+    },
+    {
+      "id": "user",
+      "name": "Usuário Padrão",
+      "description": "Acesso básico ao sistema",
+      "permissions": {
+        "dashboard": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": false,
+          "editar": false,
+          "excluir": false
+        },
+        "clientes": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": false,
+          "editar": false,
+          "excluir": false
+        },
+        "malaDireta": {
+          "acesso": false,
+          "leitura": false,
+          "incluir": false,
+          "editar": false,
+          "excluir": false
+        },
+        "tarefas": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "usuarios": {
+          "acesso": false,
+          "leitura": false,
+          "incluir": false,
+          "editar": false,
+          "excluir": false
+        },
+        "configuracoes": {
+          "acesso": false,
+          "leitura": false,
+          "incluir": false,
+          "editar": false,
+          "excluir": false
+        },
+        "auditoria": {
+          "acesso": false,
+          "leitura": false,
+          "incluir": false,
+          "editar": false,
+          "excluir": false
+        },
+        "calendario": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        }
+      }
+    }
+  ],
+  "clients": [],
+  "tasks": [],
+  "sectors": [],
+  "clientCategories": [],
+  "customFields": [],
+  "auditLogs": [
+    {
+      "id": "yicg6330s",
+      "timestamp": "2026-04-09T13:51:41.887Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    }
+  ],
+  "history": [],
+  "templates": [
+    {
+      "id": "t1",
+      "name": "Boas-vindas",
+      "subject": "Bem-vindo(a) à nossa plataforma!",
+      "content": "Olá {nome},\n\nSeja muito bem-vindo(a) à nossa plataforma! É um prazer ter você conosco.\n\nQualquer dúvida, estamos à disposição.\n\nAbraços,\nEquipe"
+    },
+    {
+      "id": "t2",
+      "name": "Aviso de Vencimento",
+      "subject": "Lembrete de Vencimento",
+      "content": "Prezado(a) {nome},\n\nLembramos que sua fatura vence nos próximos dias. Por favor, desconsidere se já houver efetuado o pagamento.\n\nAtenciosamente,\nFinanceiro"
+    },
+    {
+      "id": "t3",
+      "name": "Promoção Especial",
+      "subject": "Oferta Exclusiva para Você",
+      "content": "Olá {nome}!\n\nTemos uma oferta exclusiva para você este mês. Aproveite nossos descontos especiais para clientes VIP.\n\nConfira em nosso site!"
+    },
+    {
+      "id": "t4",
+      "name": "Pesquisa de Satisfação",
+      "subject": "Sua opinião é importante",
+      "content": "Oi {nome},\n\nSua opinião é muito importante para nós! Poderia responder a uma rápida pesquisa sobre nosso atendimento?\n\nObrigado!"
+    }
+  ],
+  "slaSettings": {
+    "Baixa": 72,
+    "Média": 48,
+    "Alta": 24,
+    "Crítica": 4
+  },
+  "emailSettings": {
+    "provider": "SMTP",
+    "host": "",
+    "port": 587,
+    "user": "",
+    "pass": "",
+    "secure": false
+  },
+  "systemSettings": {
+    "companyName": "CRM Ecosystem",
+    "appLogo": ""
+  },
+  "notifications": []
+}
