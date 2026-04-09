@@ -773,6 +773,22 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         if (data.emailSettings) setEmailSettings(data.emailSettings);
         if (data.systemSettings) setSystemSettings(data.systemSettings);
         if (data.notifications) setNotifications(data.notifications);
+        setCustomFields(data.customFields || []);
+        setHistory(data.history || []);
+        setTemplates(data.templates || []);
+        setAuditLogs(data.auditLogs || []);
+        if (data.slaSettings) setSlaSettings(data.slaSettings);
+        if (data.emailSettings) setEmailSettings(data.emailSettings);
+        if (data.systemSettings) setSystemSettings(data.systemSettings);
+        if (data.notifications) setNotifications(data.notifications);
+        setCustomFields(data.customFields || []);
+        setHistory(data.history || []);
+        setTemplates(data.templates || []);
+        setAuditLogs(data.auditLogs || []);
+        if (data.slaSettings) setSlaSettings(data.slaSettings);
+        if (data.emailSettings) setEmailSettings(data.emailSettings);
+        if (data.systemSettings) setSystemSettings(data.systemSettings);
+        if (data.notifications) setNotifications(data.notifications);
       } else if (res.status === 429) {
         alert('Muitas requisições ao servidor. Por favor, aguarde um momento e recarregue a página.');
       } else {
@@ -5006,11 +5022,12 @@ const ConfiguracoesPage = () => {
     const newId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
     if (editingSector) {
       updateSector({ ...editingSector, nome, responsavelId, descricao });
+      setEditingSector({ ...editingSector, nome, responsavelId, descricao });
     } else {
-      addSector({ id: newId, nome, responsavelId, descricao, dataCriacao: new Date().toISOString() });
+      const novo = { id: newId, nome, responsavelId, descricao, dataCriacao: new Date().toISOString() };
+      addSector(novo);
+      setEditingSector(novo);
     }
-    setIsSectorModalOpen(false);
-    setEditingSector(null);
   };
 
   const handleSaveSLA = (e: React.FormEvent<HTMLFormElement>) => {
@@ -5034,11 +5051,12 @@ const ConfiguracoesPage = () => {
     const newId = Math.random().toString(36).substring(2, 11);
     if (editingCategory) {
       updateClientCategory({ ...editingCategory, nome, descricao, cor });
+      setEditingCategory({ ...editingCategory, nome, descricao, cor });
     } else {
-      addClientCategory({ id: newId, nome, descricao, cor, dataCriacao: new Date().toISOString() });
+      const nova = { id: newId, nome, descricao, cor, dataCriacao: new Date().toISOString() };
+      addClientCategory(nova);
+      setEditingCategory(nova);
     }
-    setIsCategoryModalOpen(false);
-    setEditingCategory(null);
   };
 
   const handleSaveCustomField = (e: React.FormEvent<HTMLFormElement>) => {
@@ -5056,11 +5074,12 @@ const ConfiguracoesPage = () => {
     const newId = Math.random().toString(36).substring(2, 11);
     if (editingCustomField) {
       updateCustomField({ ...editingCustomField, name, type, required, options, regex, maxLength, placeholder });
+      setEditingCustomField({ ...editingCustomField, name, type, required, options, regex, maxLength, placeholder });
     } else {
-      addCustomField({ id: newId, name, type, required, options, entity: 'client', regex, maxLength, placeholder });
+      const novo = { id: newId, name, type, required, options, entity: 'client', regex, maxLength, placeholder };
+      addCustomField(novo);
+      setEditingCustomField(novo);
     }
-    setIsCustomFieldModalOpen(false);
-    setEditingCustomField(null);
   };
 
   const handleSaveNotificationPrefs = (e: React.FormEvent<HTMLFormElement>) => {

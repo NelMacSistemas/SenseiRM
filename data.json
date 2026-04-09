@@ -218,6 +218,27 @@
       "responsavelId": "1",
       "descricao": "adfsafsdfs",
       "dataCriacao": "2026-04-09T20:06:49.797Z"
+    },
+    {
+      "id": "lqyu823ifmnrxmhx1",
+      "nome": "Planejamento",
+      "responsavelId": "1",
+      "descricao": "aadfsafasf",
+      "dataCriacao": "2026-04-09T20:31:07.573Z"
+    },
+    {
+      "id": "fafpu8kfqmnrxn05h",
+      "nome": "Comercial",
+      "responsavelId": "1",
+      "descricao": "asdfdsadfsf",
+      "dataCriacao": "2026-04-09T20:31:31.205Z"
+    },
+    {
+      "id": "ldy46rq94mnryece6",
+      "nome": "Secretaria",
+      "responsavelId": "1",
+      "descricao": "sdafsafasfsa",
+      "dataCriacao": "2026-04-09T20:52:46.782Z"
     }
   ],
   "clientCategories": [
@@ -227,10 +248,119 @@
       "descricao": "aadfadsfdasf",
       "cor": "#10b981",
       "dataCriacao": "2026-04-09T20:06:03.845Z"
+    },
+    {
+      "id": "9rf4yiw5j",
+      "nome": "Atacadista",
+      "descricao": "sdfsafas",
+      "cor": "#10b981",
+      "dataCriacao": "2026-04-09T20:53:10.177Z"
     }
   ],
   "customFields": [],
   "auditLogs": [
+    {
+      "id": "cbxkgkpkn",
+      "timestamp": "2026-04-09T20:53:32.192Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "d1u7r2lch",
+      "timestamp": "2026-04-09T20:53:09.651Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "CONFIG",
+      "details": "Categoria \"Atacadista\" criada.",
+      "entityId": "9rf4yiw5j",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "sawmrpn68",
+      "timestamp": "2026-04-09T20:52:46.267Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "SETORES",
+      "details": "Setor \"Secretaria\" criado.",
+      "entityId": "ldy46rq94mnryece6",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "aj9fcvnm5",
+      "timestamp": "2026-04-09T20:52:31.375Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "26g0xnkkn",
+      "timestamp": "2026-04-09T20:34:53.625Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "krvqtz7qw",
+      "timestamp": "2026-04-09T20:31:30.794Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "SETORES",
+      "details": "Setor \"Comercial\" criado.",
+      "entityId": "fafpu8kfqmnrxn05h",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "rmncbl3t2",
+      "timestamp": "2026-04-09T20:31:07.162Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "SETORES",
+      "details": "Setor \"Planejamento\" criado.",
+      "entityId": "lqyu823ifmnrxmhx1",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "hq3zjw4wz",
+      "timestamp": "2026-04-09T20:30:47.706Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIG",
+      "details": "Configurações do Sistema atualizadas. Alterações: [Nome da Empresa: \"testessssss\" → \"by NelMac Sistemas\"]",
+      "entityId": "systemSettings",
+      "diff": [
+        {
+          "field": "Nome da Empresa",
+          "oldValue": "testessssss",
+          "newValue": "by NelMac Sistemas"
+        }
+      ],
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "olpc1i5i4",
+      "timestamp": "2026-04-09T20:30:37.141Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
     {
       "id": "w5y4o9rt6",
       "timestamp": "2026-04-09T20:07:04.623Z",
@@ -965,7 +1095,7 @@
     "secure": false
   },
   "systemSettings": {
-    "companyName": "testessssss",
+    "companyName": "by NelMac Sistemas",
     "appLogo": ""
   },
   "notifications": []
