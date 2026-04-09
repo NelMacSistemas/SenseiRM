@@ -765,6 +765,14 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         setTasks(data.tasks || []);
         setSectors(data.sectors || []);
         setClientCategories(data.clientCategories || []);
+        setCustomFields(data.customFields || []);
+        setHistory(data.history || []);
+        setTemplates(data.templates || []);
+        setAuditLogs(data.auditLogs || []);
+        if (data.slaSettings) setSlaSettings(data.slaSettings);
+        if (data.emailSettings) setEmailSettings(data.emailSettings);
+        if (data.systemSettings) setSystemSettings(data.systemSettings);
+        if (data.notifications) setNotifications(data.notifications);
       } else if (res.status === 429) {
         alert('Muitas requisições ao servidor. Por favor, aguarde um momento e recarregue a página.');
       } else {
@@ -777,10 +785,10 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('senseirm_token');
-    if (token && !currentUser) {
+    if (token) {
       loadData();
     }
-  }, [currentUser]);
+  }, []);
 
   const apiSync = useCallback(async (type: string, action: 'ADD' | 'UPDATE' | 'DELETE' | 'SET', payload: any) => {
     try {
@@ -2340,9 +2348,9 @@ const ClientsPage = () => {
     } as Client;
 
     if (editingClient) updateClient(client); else addClient(client);
-    setIsModalOpen(false);
-    setEditingClient(null);
-    setActiveTab('id');
+    setEditingClient(client);
+    // keep activeTab as it is to let them continue
+    if (toast) toast({ message: 'Cliente salvo com sucesso!', type: 'success' });
   };
 
   const addContactPerson = () => {
@@ -3641,8 +3649,8 @@ const TasksPage = () => {
     } as Task;
 
     if (editingTask) updateTask(task); else addTask(task);
-    setIsModalOpen(false);
-    setEditingTask(null);
+    setEditingTask(task);
+    if (success) success('Tarefa salva!'); else if (toast) toast({ message: 'Tarefa salva!', type: 'success' });
   };
 
   const openTaskModal = (t: Task | null) => {
@@ -4425,8 +4433,8 @@ const UsersPage = () => {
       u.roleId = modalRoleId;
     }
     if (editingUser) updateUser(u); else addUser(u);
-    setIsModalOpen(false);
-    setEditingUser(null);
+    setEditingUser(u);
+    if (toast) toast({ message: 'Usuário salvo com sucesso!', type: 'success' });
   };
 
   const openModal = (u: User | null) => {
@@ -4624,9 +4632,8 @@ const TemplatesTab = () => {
 
     if (editingTemplate) updateTemplate(template);
     else addTemplate(template);
-    
-    setIsModalOpen(false);
-    setEditingTemplate(null);
+    setEditingTemplate(template);
+    if (toast) toast({ message: 'Template salvo com sucesso!', type: 'success' });
   };
 
   return (
@@ -4778,9 +4785,8 @@ const RolesTab = () => {
 
     if (editingRole) updateRole(role);
     else addRole(role);
-    
-    setIsModalOpen(false);
-    setEditingRole(null);
+    setEditingRole(role);
+    if (toast) toast({ message: 'Função salva com sucesso!', type: 'success' });
   };
 
   const togglePerm = (modKey: string, permKey: string) => {
