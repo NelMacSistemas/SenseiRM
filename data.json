@@ -147,7 +147,48 @@
       }
     }
   ],
-  "clients": [],
+  "clients": [
+    {
+      "id": "201eaa0d-6ee9-42be-b5f8-08692a179203",
+      "clientCode": "CLI-001",
+      "tipoPessoa": "Jurídica",
+      "nomeRazaoSocial": "GRUPPEN SERVICOS DE INFORMATICA LTDA",
+      "nomeFantasia": "",
+      "documento": "07.442.435/0001-35",
+      "inscricaoEstadual": "0963085352",
+      "dataCadastro": "2026-04-09T18:04:45.974Z",
+      "status": "ativo",
+      "cep": "94859-440",
+      "logradouro": "Rua Pedro Cláudio Monassa",
+      "numero": "2101",
+      "complemento": "SALA 01",
+      "bairro": "Jardim Algarve",
+      "cidade": "Alvorada",
+      "uf": "RS",
+      "pais": "Brasil",
+      "telefonePrincipal": "+55 (51) 98146-7081",
+      "telefoneSecundario": "+55 (51) 98046-7081",
+      "emailPrincipal": "nelsonrsmacedo@gmail.com",
+      "emailFinanceiro": "nelsonrsmacedo@gmail.com",
+      "site": "",
+      "pessoasContato": [],
+      "banco": "",
+      "agencia": "",
+      "conta": "",
+      "tipoConta": "Corrente",
+      "chavePix": "",
+      "tipoChavePix": "CPF/CNPJ",
+      "origem": "Indicação",
+      "observacoes": "",
+      "situacao": "Ativo",
+      "motivoBloqueio": "",
+      "dataUltimaVenda": "",
+      "avaliacaoInterna": 3,
+      "attachments": [],
+      "interactions": [],
+      "customData": {}
+    }
+  ],
   "tasks": [],
   "sectors": [
     {
@@ -177,11 +218,230 @@
       "responsavelId": "1",
       "descricao": "aaaa",
       "dataCriacao": "2026-04-09T15:31:30.941Z"
+    },
+    {
+      "id": "kvv1oigbzmnrs8jme",
+      "nome": "Engenharia",
+      "responsavelId": "1",
+      "descricao": "sdfgdfg",
+      "dataCriacao": "2026-04-09T18:00:18.518Z"
+    },
+    {
+      "id": "0h35nq7wimnrscolt",
+      "nome": "Engenharia",
+      "responsavelId": "1",
+      "descricao": "aaa",
+      "dataCriacao": "2026-04-09T18:03:31.601Z"
+    },
+    {
+      "id": "l2eotp4cimnrt1u7k",
+      "nome": "TI",
+      "responsavelId": "1",
+      "descricao": "aadfasdf",
+      "dataCriacao": "2026-04-09T18:23:05.264Z"
+    },
+    {
+      "id": "g5yf6jwf8mnrt2ub3",
+      "nome": "Engenharia",
+      "responsavelId": "1",
+      "descricao": "aaadfdsfsad",
+      "dataCriacao": "2026-04-09T18:23:52.047Z"
     }
   ],
   "clientCategories": [],
   "customFields": [],
   "auditLogs": [
+    {
+      "id": "3ox97lmja",
+      "timestamp": "2026-04-09T18:23:58.891Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "2miyjhbe9",
+      "timestamp": "2026-04-09T18:23:52.291Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "SETORES",
+      "details": "Setor \"Engenharia\" criado.",
+      "entityId": "g5yf6jwf8mnrt2ub3",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "lhp1ybern",
+      "timestamp": "2026-04-09T18:23:39.345Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "bkvcd53kg",
+      "timestamp": "2026-04-09T18:23:13.407Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "tt2moqns8",
+      "timestamp": "2026-04-09T18:23:05.508Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "SETORES",
+      "details": "Setor \"TI\" criado.",
+      "entityId": "l2eotp4cimnrt1u7k",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "kchjj8mw1",
+      "timestamp": "2026-04-09T18:22:53.594Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "6wkc0jdkt",
+      "timestamp": "2026-04-09T18:14:17.366Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "gic0m7nnq",
+      "timestamp": "2026-04-09T18:14:09.840Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIG",
+      "details": "Configurações do Sistema atualizadas. Alterações: [Nome da Empresa: \"CRM Ecosystem\" → \"by NelMac Sistemas\"]",
+      "entityId": "systemSettings",
+      "diff": [
+        {
+          "field": "Nome da Empresa",
+          "oldValue": "CRM Ecosystem",
+          "newValue": "by NelMac Sistemas"
+        }
+      ],
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "j565bqbl0",
+      "timestamp": "2026-04-09T18:13:39.019Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "y3fg8enhi",
+      "timestamp": "2026-04-09T18:04:49.763Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "1jmmcxow5",
+      "timestamp": "2026-04-09T18:04:46.276Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "CLIENTES",
+      "details": "Cliente GRUPPEN SERVICOS DE INFORMATICA LTDA (CLI-001) criado.",
+      "entityId": "201eaa0d-6ee9-42be-b5f8-08692a179203",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "o2sb2nfgt",
+      "timestamp": "2026-04-09T18:03:31.905Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "SETORES",
+      "details": "Setor \"Engenharia\" criado.",
+      "entityId": "0h35nq7wimnrscolt",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "luitktbnc",
+      "timestamp": "2026-04-09T18:03:21.943Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "edkfilptr",
+      "timestamp": "2026-04-09T18:03:16.984Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "438hwpvtb",
+      "timestamp": "2026-04-09T18:00:18.830Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "SETORES",
+      "details": "Setor \"Engenharia\" criado.",
+      "entityId": "kvv1oigbzmnrs8jme",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "dzt3rheir",
+      "timestamp": "2026-04-09T18:00:00.328Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIG",
+      "details": "Configurações do Sistema atualizadas. Alterações: [Nome da Empresa: \"CRM Ecosystem\" → \"by NelMac Sistemas\"]",
+      "entityId": "systemSettings",
+      "diff": [
+        {
+          "field": "Nome da Empresa",
+          "oldValue": "CRM Ecosystem",
+          "newValue": "by NelMac Sistemas"
+        }
+      ],
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "1r2nhpb7w",
+      "timestamp": "2026-04-09T17:59:35.247Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
     {
       "id": "e5txj5jb9",
       "timestamp": "2026-04-09T15:31:31.693Z",

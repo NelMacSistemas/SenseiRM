@@ -752,10 +752,11 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       }
 
       console.log('loadData: fetching /api/data');
-      const res = await fetch('/api/data', {
+      const res = await fetch(`/api/data?t=${Date.now()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
+          console.log('SYNC OK', type);
         const data = await res.json();
         console.log('loadData: /api/data success');
         if (data.users && data.users.length > 0) setUsers(data.users);
@@ -5146,7 +5147,7 @@ const ConfiguracoesPage = () => {
                  </div>
                  <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 dark:border-slate-800">
                     <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Nome da Empresa</label>
-                    <input name="companyName" required defaultValue={systemSettings.companyName} placeholder="Sua Empresa" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base text-slate-800 dark:text-slate-200" />
+                    <input name="companyName" key={systemSettings.companyName} required defaultValue={systemSettings.companyName} placeholder="Sua Empresa" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base text-slate-800 dark:text-slate-200" />
                  </div>
                  <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 dark:border-slate-800">
                     <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Logo do Sistema</label>

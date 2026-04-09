@@ -6,7 +6,7 @@ export const auditService = {
     console.log('auditService.getLogs called');
     try {
       const token = localStorage.getItem('senseirm_token');
-      const res = await fetch('/api/data', {
+      const res = await fetch(`/api/data?t=${Date.now()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
