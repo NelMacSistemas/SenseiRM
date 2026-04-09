@@ -429,6 +429,10 @@ app.post('/api/upload', authenticateToken, (req: any, res: any) => {
 
 // Data Sync (Get all data for the SPA)
 app.get('/api/data', authenticateToken, apiLimiter, (req: any, res: any) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
   const user = db.users.find((u: any) => u.id === req.user.id);
   if (!user) return res.sendStatus(404);
 
@@ -464,8 +468,15 @@ app.get('/api/data', authenticateToken, apiLimiter, (req: any, res: any) => {
 // Generic CRUD endpoints with permission checks
 app.post('/api/sync', authenticateToken, apiLimiter, (req: any, res: any) => {
   const { type, action, payload } = req.body;
+  console.log('--- SYNC REQUEST RECEIVED ---');
+  console.log('Type:', type, 'Action:', action);
+  console.log('Payload:', JSON.stringify(payload).substring(0, 100));
+  
   const user = db.users.find((u: any) => u.id === req.user.id);
-  if (!user) return res.sendStatus(404);
+  if (!user) {
+    console.log('User not found in memory:', req.user.id);
+    return res.sendStatus(404);
+  }
 
   const role = db.roles.find((r: any) => r.id === user.roleId);
   const isAdmin = role?.id === 'admin';
@@ -666,6 +677,7 @@ app.post('/api/audit/clear', authenticateToken, (req: any, res: any) => {
 
 app.post('/api/audit', authenticateToken, (req: any, res: any) => {
   const { action, module, details, entityId, diff } = req.body;
+  console.log(`--- AUDIT REQUEST RECEIVED --- Action: ${action}, Module: ${module}`);
   const user = db.users.find((u: any) => u.id === req.user.id);
   
   db.auditLogs.unshift({
