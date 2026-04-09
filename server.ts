@@ -41,8 +41,8 @@ const loginLimiter = rateLimit({
 });
 
 const apiLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 1000, // Increased further to prevent blocking during intensive operations
+  windowMs: 1 * 60 * 1000, 
+  max: 5000, 
   message: { error: 'Muitas requisições. Tente novamente em breve.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -92,8 +92,13 @@ const upload = multer({
   }
 });
 
-app.use(cors());
-app.use(express.json({ limit: '50mb' })); // For base64 images
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+}));
+app.use(express.json({ limit: '100mb' })); 
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // --- Utility Functions ---
