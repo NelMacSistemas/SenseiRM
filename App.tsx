@@ -348,7 +348,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const addToast = useCallback((options: { title?: string, message: string, type: ToastType } | string, type: ToastType = 'info') => {
-    const id = generateUUID();
+    const id = crypto.randomUUID();
     if (typeof options === 'string') {
       setToasts(prev => [...prev, { id, message: options, type }]);
     } else {
@@ -663,7 +663,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     socket.on('notification', (data: { title: string, message: string }) => {
       const newNotification: Notification = {
-        id: generateUUID(),
+        id: crypto.randomUUID(),
         title: data.title,
         message: data.message,
         timestamp: new Date().toISOString(),
@@ -928,7 +928,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // Notification for task assignment (Functional Improvement)
     if (oldTask && t.responsavelId !== oldTask.responsavelId && t.responsavelId) {
       const newNotification: Notification = {
-        id: generateUUID(),
+        id: crypto.randomUUID(),
         title: 'Nova Tarefa Atribuída',
         message: `Você foi definido como responsável pela tarefa: ${t.titulo}`,
         timestamp: new Date().toISOString(),
@@ -1221,7 +1221,7 @@ const AttachmentsManager = ({ attachments = [], onUpdate, canEdit }: { attachmen
       if (res.ok) {
         const data = await res.json();
         const newAttachment: Attachment = {
-          id: generateUUID(),
+          id: crypto.randomUUID(),
           name: data.name,
           url: data.url,
           size: data.size,
@@ -2284,7 +2284,7 @@ const ClientsPage = () => {
     
     const client: Client = {
       ...editingClient,
-      id: editingClient?.id || generateUUID(),
+      id: editingClient?.id || crypto.randomUUID(),
       clientCode: editingClient?.clientCode || `CLI-${String(clients.length + 1).padStart(3, '0')}`,
       tipoPessoa: tipoPessoa,
       nomeRazaoSocial: nomeRazaoSocial,
@@ -2349,7 +2349,7 @@ const ClientsPage = () => {
 
   const addContactPerson = () => {
     const newPerson: ContactPerson = {
-      id: generateUUID(),
+      id: crypto.randomUUID(),
       nome: '',
       cargo: '',
       telefone: '',
@@ -2369,7 +2369,7 @@ const ClientsPage = () => {
   const addInteraction = () => {
     if (!newInteractionDesc.trim()) return;
     const newInteraction: ClientInteraction = {
-      id: generateUUID(),
+      id: crypto.randomUUID(),
       date: new Date().toISOString(),
       type: newInteractionType,
       description: newInteractionDesc,
@@ -3605,7 +3605,7 @@ const TasksPage = () => {
         const justificativa = (needsLogEntry && actionRef.current?.value) ? actionRef.current.value : 'Ajuste de parâmetros técnicos.';
         
         logs.push({
-          id: generateUUID(),
+          id: crypto.randomUUID(),
           timestamp: new Date().toISOString(),
           fromStatus: editingTask.status,
           toStatus: currentStatus,
@@ -3618,7 +3618,7 @@ const TasksPage = () => {
       }
     } else {
       logs.push({
-        id: generateUUID(),
+        id: crypto.randomUUID(),
         timestamp: new Date().toISOString(),
         fromStatus: currentStatus,
         toStatus: currentStatus,
@@ -3633,7 +3633,7 @@ const TasksPage = () => {
     const task: Task = {
       ...editingTask,
       ...newTaskPartial,
-      id: editingTask?.id || generateUUID(),
+      id: editingTask?.id || crypto.randomUUID(),
       taskNumber: editingTask?.taskNumber || `TSK-${String(tasks.length + 1).padStart(3, '0')}`,
       dataCriacao: editingTask?.dataCriacao || new Date().toISOString(),
       dataVencimento: calculatedDeadline,
@@ -3692,7 +3692,7 @@ const TasksPage = () => {
     if (task && task.status !== status && canEdit) {
       const logs = [...(task.logs || [])];
       logs.push({
-        id: generateUUID(),
+        id: crypto.randomUUID(),
         timestamp: new Date().toISOString(),
         fromStatus: task.status,
         toStatus: status,
@@ -4172,7 +4172,7 @@ const TasksPage = () => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
                               if (newSubtaskTitle.trim()) {
-                                setSubtasks([...subtasks, { id: generateUUID(), title: newSubtaskTitle.trim(), completed: false }]);
+                                setSubtasks([...subtasks, { id: crypto.randomUUID(), title: newSubtaskTitle.trim(), completed: false }]);
                                 setNewSubtaskTitle('');
                               }
                             }
@@ -4182,7 +4182,7 @@ const TasksPage = () => {
                           type="button" 
                           onClick={() => {
                             if (newSubtaskTitle.trim()) {
-                              setSubtasks([...subtasks, { id: generateUUID(), title: newSubtaskTitle.trim(), completed: false }]);
+                              setSubtasks([...subtasks, { id: crypto.randomUUID(), title: newSubtaskTitle.trim(), completed: false }]);
                               setNewSubtaskTitle('');
                             }
                           }}
@@ -4229,7 +4229,7 @@ const TasksPage = () => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
                               if (newCommentText.trim()) {
-                                setComments([...comments, { id: generateUUID(), userId: currentUser?.id || 'sys', text: newCommentText.trim(), createdAt: new Date().toISOString() }]);
+                                setComments([...comments, { id: crypto.randomUUID(), userId: currentUser?.id || 'sys', text: newCommentText.trim(), createdAt: new Date().toISOString() }]);
                                 setNewCommentText('');
                               }
                             }
@@ -4239,7 +4239,7 @@ const TasksPage = () => {
                           type="button" 
                           onClick={() => {
                             if (newCommentText.trim()) {
-                              setComments([...comments, { id: generateUUID(), userId: currentUser?.id || 'sys', text: newCommentText.trim(), createdAt: new Date().toISOString() }]);
+                              setComments([...comments, { id: crypto.randomUUID(), userId: currentUser?.id || 'sys', text: newCommentText.trim(), createdAt: new Date().toISOString() }]);
                               setNewCommentText('');
                             }
                           }}
@@ -4411,7 +4411,7 @@ const UsersPage = () => {
     const formData = new FormData(e.currentTarget);
     const u: any = { 
       ...editingUser, 
-      id: editingUser?.id || generateUUID(), 
+      id: editingUser?.id || crypto.randomUUID(), 
       dataCriacao: editingUser?.dataCriacao || new Date().toISOString(), 
       tema: editingUser?.tema || 'verde',
       foto: modalPhoto,
@@ -4618,7 +4618,7 @@ const TemplatesTab = () => {
     const data = Object.fromEntries(formData.entries());
     
     const template: MailTemplate = {
-      id: editingTemplate?.id || generateUUID(),
+      id: editingTemplate?.id || crypto.randomUUID(),
       name: data.name as string,
       subject: data.subject as string,
       content: data.content as string
@@ -4772,7 +4772,7 @@ const RolesTab = () => {
     const data = Object.fromEntries(formData.entries());
     
     const role: Role = {
-      id: editingRole?.id || generateUUID(),
+      id: editingRole?.id || crypto.randomUUID(),
       name: data.name as string,
       description: data.description as string,
       permissions: modalPerms
@@ -6451,7 +6451,7 @@ const MailListPage = () => {
     const assunto = (formData.get('assunto') as string) || '';
 
     const entry: MailHistory = { 
-      id: generateUUID(), 
+      id: crypto.randomUUID(), 
       data: new Date().toISOString(), 
       tipo: type, 
       destinatarios: selectedClients, 
