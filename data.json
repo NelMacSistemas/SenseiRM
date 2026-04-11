@@ -17,6 +17,20 @@
         "system": true
       },
       "senha": "$2b$10$CykyspasThlL2Ect8sE7j.9ONoM2/CVwxSjcRNDKEODGr4pzoINPG"
+    },
+    {
+      "id": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "dataCriacao": "2026-04-11T22:19:48.257Z",
+      "tema": "verde",
+      "foto": "",
+      "nome": "Nelson Macedo",
+      "email": "nelsonrsmacedo@gmail.com",
+      "status": "ativo",
+      "telefone": null,
+      "celular": "+55 (51) 98146-7081",
+      "possuiWhatsapp": true,
+      "senha": "$2b$10$AKkezuc/wWfAQmF.8XaOXOWT5zyhxdhPe5vnyG/Yrj7a7zwGrTgE.",
+      "roleId": "user"
     }
   ],
   "roles": [
@@ -103,8 +117,8 @@
           "excluir": false
         },
         "malaDireta": {
-          "acesso": false,
-          "leitura": false,
+          "acesso": true,
+          "leitura": true,
           "incluir": false,
           "editar": false,
           "excluir": false
@@ -117,22 +131,22 @@
           "excluir": false
         },
         "usuarios": {
-          "acesso": false,
-          "leitura": false,
+          "acesso": true,
+          "leitura": true,
           "incluir": false,
           "editar": false,
           "excluir": false
         },
         "configuracoes": {
-          "acesso": false,
-          "leitura": false,
+          "acesso": true,
+          "leitura": true,
           "incluir": false,
           "editar": false,
           "excluir": false
         },
         "auditoria": {
-          "acesso": false,
-          "leitura": false,
+          "acesso": true,
+          "leitura": true,
           "incluir": false,
           "editar": false,
           "excluir": false
@@ -230,7 +244,184 @@
       "customData": {}
     }
   ],
-  "tasks": [],
+  "tasks": [
+    {
+      "titulo": "Teste Tarefa 1",
+      "descricao": "afafasfasfsafasfsa",
+      "tipo": "Melhoria",
+      "solicitanteId": "1",
+      "responsavelId": "1",
+      "setorId": "",
+      "interessados": "nelsonrsmacedo@gmail.com",
+      "prioridade": "Crítica",
+      "status": "Em análise",
+      "dataInicio": "2026-04-11",
+      "dataConclusaoReal": "2026-05-01",
+      "tempoGasto": "",
+      "attachments": [],
+      "subtasks": [
+        {
+          "id": "f98f56b8-789e-4925-b89a-8c8ab2e7681a",
+          "title": "testar",
+          "completed": false
+        },
+        {
+          "id": "e7044562-0dc4-457e-a057-38797be4c15a",
+          "title": "aprovar",
+          "completed": false
+        },
+        {
+          "id": "1ca91e6c-d6eb-49f3-b4cb-a9e6da1c5557",
+          "title": "construir",
+          "completed": false
+        }
+      ],
+      "comments": [
+        {
+          "id": "a10c6e8c-a836-45cb-a980-8bc04edd3deb",
+          "userId": "1",
+          "text": "asdfsafsadfsdafsadfsad",
+          "createdAt": "2026-04-11T21:58:24.128Z"
+        }
+      ],
+      "id": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "taskNumber": "TSK-001",
+      "dataCriacao": "2026-04-11T21:58:27.316Z",
+      "dataVencimento": "2026-04-15",
+      "logs": [
+        {
+          "id": "09522e52-e519-42e2-aaf7-b191f70166fa",
+          "timestamp": "2026-04-11T21:58:27.316Z",
+          "fromStatus": "Aberta",
+          "toStatus": "Aberta",
+          "action": "Criação da tarefa",
+          "changes": [
+            "Tarefa inicializada com os dados básicos."
+          ],
+          "justification": "Criação inicial",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "baec6d1d-7190-4498-b92e-22887477092f",
+          "timestamp": "2026-04-11T21:59:28.360Z",
+          "fromStatus": "Aberta",
+          "toStatus": "Aberta",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Subtarefa adicionada: \"construir\""
+          ],
+          "justification": "asfasfasfasfas",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "39f73bd4-6a96-4d7a-bb41-c5eca52da75c",
+          "timestamp": "2026-04-11T22:01:07.954Z",
+          "fromStatus": "Aberta",
+          "toStatus": "Aberta",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Conclusão Efetiva: \"2026-05-30\" → \"2026-05-01\""
+          ],
+          "justification": "sddfsds",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "1a9bbca5-0876-4434-a5ae-08f7dfeaa805",
+          "timestamp": "2026-04-11T22:04:21.395Z",
+          "fromStatus": "Aberta",
+          "toStatus": "Aberta",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Prioridade: \"Média\" → \"Crítica\""
+          ],
+          "justification": "fgfdgsdfgdsfgfds",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "e79b8885-2f28-4317-bb8c-1a37eaf7641d",
+          "timestamp": "2026-04-11T22:39:50.090Z",
+          "fromStatus": "Aberta",
+          "toStatus": "Em análise",
+          "action": "Movido via Kanban",
+          "changes": [
+            "Status: \"Aberta\" → \"Em análise\""
+          ],
+          "justification": "Movimentação rápida pelo quadro Kanban",
+          "userId": "1",
+          "userName": "Administrador"
+        }
+      ]
+    },
+    {
+      "titulo": "Tarefa 2",
+      "descricao": "ajustes no campo conclusao",
+      "tipo": "Solicitação",
+      "solicitanteId": "1",
+      "responsavelId": "1",
+      "setorId": "",
+      "interessados": "",
+      "prioridade": "Média",
+      "status": "Aberta",
+      "dataInicio": "2026-04-14",
+      "dataConclusaoReal": "",
+      "tempoGasto": "",
+      "attachments": [],
+      "subtasks": [
+        {
+          "id": "1d9e5b4c-28f4-4672-83f6-0372a0578915",
+          "title": "a",
+          "completed": false
+        },
+        {
+          "id": "d857c96c-a093-42b5-90d3-a6f052a888d6",
+          "title": "b",
+          "completed": false
+        },
+        {
+          "id": "61511845-180a-41db-b964-0feafe7adef7",
+          "title": "c",
+          "completed": false
+        }
+      ],
+      "comments": [
+        {
+          "id": "a30e6cf0-2b99-4d75-91fb-6cdaba79b41f",
+          "userId": "1",
+          "text": "aaa",
+          "createdAt": "2026-04-11T22:41:13.726Z"
+        },
+        {
+          "id": "596cd192-8356-4d85-a5de-2fd918a744ae",
+          "userId": "1",
+          "text": "bbb",
+          "createdAt": "2026-04-11T22:41:17.770Z"
+        }
+      ],
+      "id": "e178b8ae-12a5-495b-bfa4-0a9934329e2a",
+      "taskNumber": "TSK-002",
+      "dataCriacao": "2026-04-11T22:41:19.497Z",
+      "dataVencimento": "2026-06-01",
+      "logs": [
+        {
+          "id": "df7ad944-8156-423e-8f00-4816b5225c50",
+          "timestamp": "2026-04-11T22:41:19.497Z",
+          "fromStatus": "Aberta",
+          "toStatus": "Aberta",
+          "action": "Criação da tarefa",
+          "changes": [
+            "Tarefa inicializada com os dados básicos."
+          ],
+          "justification": "Criação inicial",
+          "userId": "1",
+          "userName": "Administrador"
+        }
+      ]
+    }
+  ],
   "sectors": [
     {
       "id": "0h35nq7wimnrscolt",
@@ -338,6 +529,295 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "ijbbri8l0",
+      "timestamp": "2026-04-11T22:41:50.287Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "zk9r4idxs",
+      "timestamp": "2026-04-11T22:41:18.014Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-002: \"Tarefa 2\" criada.",
+      "entityId": "e178b8ae-12a5-495b-bfa4-0a9934329e2a",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "u9braqwr2",
+      "timestamp": "2026-04-11T22:39:48.611Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Alterações: [Status: \"Aberta\" → \"Em análise\"]",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [
+        {
+          "field": "Status",
+          "oldValue": "Aberta",
+          "newValue": "Em análise"
+        }
+      ],
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "qrtz2jqkr",
+      "timestamp": "2026-04-11T22:38:00.791Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "j5wktuetk",
+      "timestamp": "2026-04-11T22:24:52.637Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "otnw8rhzw",
+      "timestamp": "2026-04-11T22:22:07.549Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "uh1opfebo",
+      "timestamp": "2026-04-11T22:21:33.838Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Nelson Macedo alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "diff": [],
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "ubj8yihre",
+      "timestamp": "2026-04-11T22:21:18.024Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Nelson Macedo autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "kx6617rus",
+      "timestamp": "2026-04-11T22:21:09.360Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "UPDATE",
+      "module": "SETORES",
+      "details": "Setor \"Engenharia\" atualizado. Alterações: [Descrição: \"aaa\" → \"aaafff\"]",
+      "entityId": "0h35nq7wimnrscolt",
+      "diff": [
+        {
+          "field": "Descrição",
+          "oldValue": "aaa",
+          "newValue": "aaafff"
+        }
+      ],
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "f2b4ipl8a",
+      "timestamp": "2026-04-11T22:20:37.495Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Nelson Macedo autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "hojwnf1zh",
+      "timestamp": "2026-04-11T22:20:31.099Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "3ifnjznkg",
+      "timestamp": "2026-04-11T22:20:26.254Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIGURACOES",
+      "details": "Função Usuário Padrão alterada.",
+      "entityId": "user",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "k60jttk9x",
+      "timestamp": "2026-04-11T22:19:46.931Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "USUARIOS",
+      "details": "Usuário Nelson Macedo criado.",
+      "entityId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "4serw45p4",
+      "timestamp": "2026-04-11T22:19:12.962Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "cmz5qr79h",
+      "timestamp": "2026-04-11T22:16:41.807Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.31"
+    },
+    {
+      "id": "tihe7brpl",
+      "timestamp": "2026-04-11T22:06:00.015Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "qga4ck7we",
+      "timestamp": "2026-04-11T22:04:20.015Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Alterações: [Prioridade: \"Média\" → \"Crítica\" | Vencimento: \"2026-05-29\" → \"2026-04-15\"]",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [
+        {
+          "field": "Prioridade",
+          "oldValue": "Média",
+          "newValue": "Crítica"
+        },
+        {
+          "field": "Vencimento",
+          "oldValue": "2026-05-29",
+          "newValue": "2026-04-15"
+        }
+      ],
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "ugjd48av6",
+      "timestamp": "2026-04-11T22:01:06.587Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Nenhuma alteração nos campos principais.",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [],
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "pxg1iosuw",
+      "timestamp": "2026-04-11T22:00:08.688Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "0cpn3v3ho",
+      "timestamp": "2026-04-11T22:00:01.764Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "urxl4j4tw",
+      "timestamp": "2026-04-11T21:59:26.992Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Nenhuma alteração nos campos principais.",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [],
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "gzq1ersrn",
+      "timestamp": "2026-04-11T21:58:58.105Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "j8yi4fita",
+      "timestamp": "2026-04-11T21:58:29.148Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "9iulhugy0",
+      "timestamp": "2026-04-11T21:58:25.954Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001: \"Teste Tarefa 1\" criada.",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "ip": "192.168.1.41"
+    },
+    {
+      "id": "srwghhsvy",
+      "timestamp": "2026-04-11T21:55:17.569Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.41"
+    },
     {
       "id": "81rv5wd57",
       "timestamp": "2026-04-11T21:27:05.395Z",

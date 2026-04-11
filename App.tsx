@@ -1354,23 +1354,9 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed bottom-6 right-6 z-[100] w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform"
-      >
-        <Icon name={isOpen ? 'times' : 'bars'} className="text-2xl" />
-      </button>
+      {/* Mobile Back Button (only where needed, maybe in Header instead) */}
 
-      {/* Backdrop */}
-      {isOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80]"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-
-      <div className={`w-64 bg-slate-900 h-screen flex flex-col fixed left-0 top-0 text-slate-300 shadow-xl z-[90] transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      <div className={`w-64 bg-slate-900 h-screen flex flex-col fixed left-0 top-0 text-slate-300 shadow-xl z-[90] transition-transform duration-300 hidden lg:flex`}>
         <div className="p-6 border-b border-slate-800 flex items-center gap-3">
           {systemSettings.appLogo ? (
             <img src={systemSettings.appLogo} alt="SenseiRM" className="w-10 h-10 rounded-lg object-contain bg-white/10 p-1" />
@@ -1423,6 +1409,89 @@ const Sidebar = () => {
           </button>
         </div>
       </div>
+    </>
+  );
+};
+
+const BottomNavigation = () => {
+  const { hasPermission } = useApp();
+  const location = useLocation();
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+
+  const mainItems = [
+    { path: '/dashboard', label: 'Início', icon: 'chart-line', perm: 'dashboard' },
+    { path: '/calendario', label: 'Agenda', icon: 'calendar', perm: 'calendario' },
+    { path: '/clientes', label: 'Clientes', icon: 'address-book', perm: 'clientes' },
+    { path: '/tarefas', label: 'Tarefas', icon: 'tasks', perm: 'tarefas' },
+  ];
+
+  const moreItems = [
+    { path: '/mala-direta', label: 'Mala Direta', icon: 'paper-plane', perm: 'malaDireta' },
+    { path: '/usuarios', label: 'Usuários', icon: 'users', perm: 'usuarios' },
+    { path: '/configuracoes', label: 'Configurações', icon: 'cog', perm: 'configuracoes' },
+    { path: '/auditoria', label: 'Auditoria', icon: 'shield-alt', perm: 'auditoria' },
+    { path: '/sobre', label: 'Sobre', icon: 'info-circle', perm: null },
+  ];
+
+  return (
+    <>
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 h-20 px-4 flex items-center justify-around z-[95] lg:hidden pb-safe">
+        {mainItems.map(item => {
+          if (item.perm && !hasPermission(item.perm as any, 'acesso')) return null;
+          const isActive = location.pathname.startsWith(item.path);
+          return (
+            <Link 
+              key={item.path} 
+              to={item.path}
+              className={`flex flex-col items-center gap-1 transition-all ${isActive ? 'text-primary' : 'text-slate-400'}`}
+            >
+              <div className={`p-2 rounded-xl ${isActive ? 'bg-primary/10' : ''}`}>
+                <Icon name={item.icon} className="text-xl" />
+              </div>
+              <span className="text-[9px] font-black uppercase tracking-tighter">{item.label}</span>
+            </Link>
+          );
+        })}
+        <button 
+          onClick={() => setIsMoreMenuOpen(true)}
+          className={`flex flex-col items-center gap-1 transition-all ${isMoreMenuOpen ? 'text-primary' : 'text-slate-400'}`}
+        >
+          <div className={`p-2 rounded-xl ${isMoreMenuOpen ? 'bg-primary/10' : ''}`}>
+            <Icon name="ellipsis-h" className="text-xl" />
+          </div>
+          <span className="text-[9px] font-black uppercase tracking-tighter">Mais</span>
+        </button>
+      </nav>
+
+      {/* More Menu Drawer */}
+      {isMoreMenuOpen && (
+        <div className="fixed inset-0 z-[100] lg:hidden animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMoreMenuOpen(false)} />
+          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-slate-900 rounded-t-[2.5rem] p-8 pb-12 shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mb-8" onClick={() => setIsMoreMenuOpen(false)} />
+            <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Menu Adicional</h3>
+            <div className="grid grid-cols-3 gap-6">
+              {moreItems.map(item => {
+                if (item.perm && !hasPermission(item.perm as any, 'acesso')) return null;
+                const isActive = location.pathname.startsWith(item.path);
+                return (
+                  <Link 
+                    key={item.path} 
+                    to={item.path}
+                    onClick={() => setIsMoreMenuOpen(false)}
+                    className="flex flex-col items-center gap-2 group"
+                  >
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${isActive ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 group-hover:bg-primary/10 group-hover:text-primary'}`}>
+                      <Icon name={item.icon} className="text-xl" />
+                    </div>
+                    <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-tighter text-center">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
@@ -1506,10 +1575,17 @@ const ThemeToggle = () => {
 };
 
 const Header = ({ title }: { title: React.ReactNode }) => (
-  <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 sticky top-0 z-40 transition-colors duration-300">
-    <div className="text-xl font-extrabold text-slate-800 dark:text-slate-50 tracking-tight">{title}</div>
-    <div className="flex items-center gap-4">
-      <ThemeToggle />
+  <header className="h-16 lg:h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40 transition-colors duration-300">
+    <div className="flex items-center gap-3">
+      <div className="lg:hidden w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+         <Icon name="rocket" className="text-primary text-sm" />
+      </div>
+      <div className="text-lg md:text-xl font-black text-slate-800 dark:text-slate-50 tracking-tight truncate max-w-[50vw]">{title}</div>
+    </div>
+    <div className="flex items-center gap-2 md:gap-4">
+      <div className="hidden sm:block">
+        <ThemeToggle />
+      </div>
       <NotificationsPopover />
     </div>
   </header>
@@ -1627,7 +1703,7 @@ const CalendarView = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-6 animate-in fade-in duration-700">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 flex flex-col h-full">
       {/* HEADER SECTION */}
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
         <div>
@@ -1635,7 +1711,7 @@ const CalendarView = () => {
              <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
                <Icon name="calendar" />
              </div>
-             <h1 className="text-3xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Calendário de Prazos</h1>
+             <h1 className="text-xl md:text-3xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Calendário de Prazos</h1>
           </div>
           <p className="text-slate-500 dark:text-slate-400 font-medium ml-1">Central de inteligência temporal e gestão de vencimentos</p>
         </div>
@@ -1677,7 +1753,7 @@ const CalendarView = () => {
       <div className="flex flex-wrap items-center gap-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-4 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
         <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 mr-2">
           <Icon name="filter" className="w-4 h-4" />
-          <span className="text-[10px] font-black uppercase tracking-widest">Filtros:</span>
+          <span className="text-[10px] font-black uppercase tracking-widest hidden sm:inline">Filtros:</span>
         </div>
         
         <select 
@@ -1727,7 +1803,7 @@ const CalendarView = () => {
       </div>
 
       {/* CALENDAR BODY */}
-      <div className="bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden relative">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden relative">
         {viewMode === 'month' && (
           <>
             <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
@@ -1752,7 +1828,7 @@ const CalendarView = () => {
                     className={`min-h-[160px] p-3 border-r border-b border-slate-50 dark:border-slate-800/50 transition-all hover:bg-slate-50/70 dark:hover:bg-slate-800/30 cursor-pointer group ${!isCurMonth ? 'bg-slate-50/30 dark:bg-slate-900/50 opacity-40' : ''} ${isWeekend ? 'bg-slate-50/20 dark:bg-slate-800/10' : ''}`}
                   >
                     <div className="flex justify-between items-start mb-3">
-                      <span className={`text-[11px] font-black w-8 h-8 flex items-center justify-center rounded-2xl transition-all ${isToday(day) ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-110' : isCurMonth ? 'text-slate-700 dark:text-slate-300' : 'text-slate-300 dark:text-slate-600'}`}>
+                      <span className={`text-[11px] font-black w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-xl md:rounded-2xl transition-all ${isToday(day) ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-110' : isCurMonth ? 'text-slate-700 dark:text-slate-300' : 'text-slate-300 dark:text-slate-600'}`}>
                         {format(day, 'd')}
                       </span>
                       {hasPermission('tarefas', 'incluir') && (
@@ -1761,7 +1837,7 @@ const CalendarView = () => {
                         </div>
                       )}
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="flex flex-wrap gap-1 md:space-y-1.5 md:flex-col">
                       {dayTasks.slice(0, 5).map(task => (
                         <div 
                           key={task.id}
@@ -1775,12 +1851,12 @@ const CalendarView = () => {
                           title={`${task.taskNumber}: ${task.titulo} (${task.status})`}
                         >
                           <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${task.status === TaskStatus.COMPLETED ? 'bg-emerald-300' : task.status === TaskStatus.EXECUTION ? 'bg-blue-300' : 'bg-white/40'}`} />
-                          <span className="truncate">{task.titulo}</span>
+                          <span className="truncate hidden md:inline">{task.titulo}</span>
                         </div>
                       ))}
                       {dayTasks.length > 5 && (
-                        <div className="text-[9px] font-black text-primary bg-primary/10 dark:bg-primary/20 text-center py-2 rounded-xl mt-2 border border-primary/10">
-                          + {dayTasks.length - 5} TAREFAS
+                        <div className="text-[8px] md:text-[9px] font-black text-primary bg-primary/10 dark:bg-primary/20 text-center py-1 md:py-2 rounded-lg md:rounded-xl mt-1 md:mt-2 border border-primary/10 w-full">
+                          + {dayTasks.length - 5} {window.innerWidth < 768 ? '' : 'TAREFAS'}
                         </div>
                       )}
                     </div>
@@ -2030,10 +2106,10 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="p-8 space-y-8 animate-in fade-in duration-700 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-8 animate-in fade-in duration-700 max-w-7xl mx-auto">
       
       {/* HEADER & QUICK ACTIONS */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white dark:bg-slate-900 p-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
         <div>
           <h2 className="text-2xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Olá, {currentUser?.nome.split(' ')[0]} 👋</h2>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Aqui está o resumo das suas operações hoje.</p>
@@ -2166,7 +2242,7 @@ const Dashboard = () => {
         </div>
 
         {/* RANKING DE CLIENTES - Ocupa 12 colunas */}
-        <div className="md:col-span-12 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col">
+        <div className="md:col-span-12 bg-white dark:bg-slate-900 p-6 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 rounded-xl">
@@ -2203,7 +2279,7 @@ const Dashboard = () => {
         </div>
 
         {/* CLIENTES OVERVIEW - Ocupa 6 colunas */}
-        <div className={`${canViewAllUsers ? 'md:col-span-6' : 'md:col-span-12'} bg-primary dark:bg-primary-dark text-white p-6 rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between group`}>
+        <div className={`${canViewAllUsers ? 'md:col-span-6' : 'md:col-span-12'} bg-primary dark:bg-primary-dark text-white p-6 rounded-2xl md:rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between group`}>
           <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 dark:bg-black/10 rounded-full group-hover:scale-150 transition-transform duration-700" />
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-6">
@@ -2241,7 +2317,7 @@ const Dashboard = () => {
 
         {/* USUÁRIOS OVERVIEW - Ocupa 6 colunas */}
         {canViewAllUsers && (
-          <div className="md:col-span-6 bg-slate-800 dark:bg-slate-950 text-white p-6 rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between group">
+          <div className="md:col-span-6 bg-slate-800 dark:bg-slate-950 text-white p-6 rounded-2xl md:rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between group">
             <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full group-hover:scale-150 transition-transform duration-700" />
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-6">
@@ -2356,6 +2432,7 @@ const ClientsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewOnly, setIsViewOnly] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [activeTab, setActiveTab] = useState<'id' | 'end' | 'cont' | 'fin' | 'crm' | 'anexos' | 'interacoes'>('id');
   const [contactPeople, setContactPeople] = useState<ContactPerson[]>([]);
@@ -2372,6 +2449,7 @@ const ClientsPage = () => {
   useEffect(() => {
     if (location.state?.openModal) {
       setEditingClient(null);
+      setIsViewOnly(false);
       setActiveTab('id');
       setIsModalOpen(true);
       // Clear state to prevent reopening on reload
@@ -2476,6 +2554,7 @@ const ClientsPage = () => {
       setAvaliacaoInterna(editingClient.avaliacaoInterna || 0);
       setCustomData(editingClient.customData || {});
     } else {
+      if (!isModalOpen) setIsViewOnly(false);
       setContactPeople([]);
       setTipoPessoa('Jurídica');
       setNomeRazaoSocial('');
@@ -2970,14 +3049,14 @@ const ClientsPage = () => {
             <Icon name="download" /> Exportar
           </button>
           {canInclude && (
-            <button onClick={() => { setEditingClient(null); setActiveTab('id'); setIsModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center justify-center gap-2 transition-all flex-1 md:flex-none">
+            <button onClick={() => { setEditingClient(null); setIsViewOnly(false); setActiveTab('id'); setIsModalOpen(true); }} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center justify-center gap-2 transition-all flex-1 md:flex-none">
               <Icon name="plus" /> Novo Registro
             </button>
           )}
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
           <table className="w-full text-left hidden md:table">
             <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
@@ -3048,8 +3127,9 @@ const ClientsPage = () => {
                           <Icon name="message-square" />
                         </a>
                       )}
-                      {canEdit && <button onClick={() => { setEditingClient(c); setActiveTab('id'); setIsModalOpen(true); }} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all"><Icon name="edit" /></button>}
-                      {canDelete && <button onClick={() => { confirm({ title: 'Excluir Cliente', message: 'Excluir registro definitivamente?', onConfirm: () => deleteClient(c.id) }); }} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all"><Icon name="trash" /></button>}
+                      <button onClick={() => { setEditingClient(c); setIsViewOnly(true); setActiveTab('id'); setIsModalOpen(true); }} className="p-2 text-slate-400 hover:text-primary dark:hover:bg-slate-800/50 rounded-xl transition-all" title="Visualizar"><Icon name="eye" /></button>
+                      {canEdit && <button onClick={() => { setEditingClient(c); setIsViewOnly(false); setActiveTab('id'); setIsModalOpen(true); }} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all" title="Editar"><Icon name="edit" /></button>}
+                      {canDelete && <button onClick={() => { confirm({ title: 'Excluir Cliente', message: 'Excluir registro definitivamente?', onConfirm: () => deleteClient(c.id) }); }} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all" title="Excluir"><Icon name="trash" /></button>}
                     </div>
                   </td>
                 </tr>
@@ -3083,7 +3163,8 @@ const ClientsPage = () => {
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-2 border-t border-slate-50 dark:border-slate-800/50">
-                  {canEdit && <button onClick={() => { setEditingClient(c); setActiveTab('id'); setIsModalOpen(true); }} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all"><Icon name="edit" /></button>}
+                  <button onClick={() => { setEditingClient(c); setIsViewOnly(true); setActiveTab('id'); setIsModalOpen(true); }} className="p-2 text-slate-400 hover:text-primary rounded-xl transition-all"><Icon name="eye" /></button>
+                  {canEdit && <button onClick={() => { setEditingClient(c); setIsViewOnly(false); setActiveTab('id'); setIsModalOpen(true); }} className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition-all"><Icon name="edit" /></button>}
                   {canDelete && <button onClick={() => { confirm({ title: 'Excluir Cliente', message: 'Excluir registro definitivamente?', onConfirm: () => deleteClient(c.id) }); }} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all"><Icon name="trash" /></button>}
                 </div>
               </div>
@@ -3095,12 +3176,15 @@ const ClientsPage = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-[3rem] w-full max-w-6xl max-h-[90vh] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in duration-300">
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[110] flex items-center justify-center p-0 md:p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-t-[2.5rem] md:rounded-[3rem] w-full max-w-6xl h-full md:max-h-[90vh] shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom md:zoom-in duration-300">
             <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/30 dark:bg-slate-800/30">
                <div>
                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingClient ? editingClient.clientCode : 'Novo Cadastro Corporativo'}</span>
-                 <h3 className="text-2xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Ficha do Cliente</h3>
+                 <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
+                    <Icon name={isViewOnly ? 'eye' : (editingClient ? 'edit' : 'user-plus')} className="text-primary" />
+                    {isViewOnly ? 'Visualização de Cliente' : (editingClient ? 'Edição de Cliente' : 'Novo Cliente')}
+                 </h2>
                </div>
                <button onClick={() => setIsModalOpen(false)} className="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
@@ -3121,9 +3205,10 @@ const ClientsPage = () => {
                 }
               }}
               noValidate
-              className="flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900"
+              className="flex-1 flex flex-col h-full overflow-hidden"
             >
-               <div data-tab-id="id" className={activeTab === 'id' ? 'block' : 'hidden'}>
+              <fieldset disabled={isViewOnly} className="flex-1 flex flex-col h-full overflow-hidden border-none p-0 m-0">
+               <div data-tab-id="id" className={`${activeTab === 'id' ? 'block' : 'hidden'} flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900 custom-scrollbar pb-24 md:pb-10`}>
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                        <div className="space-y-1">
@@ -3661,26 +3746,29 @@ const ClientsPage = () => {
                     </section>
                  </div>
                </div>
-            </form>
+            </fieldset>
+          </form>
 
             <div className="p-6 md:p-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-white transition-all uppercase text-[10px] tracking-widest text-center">Cancelar</button>
-                <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                  {currentTabIndex > 0 && (
-                    <button type="button" onClick={handlePrevTab} className="w-full sm:w-auto px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-600 hover:bg-white transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
-                      <Icon name="arrow-left" /> Anterior
-                    </button>
-                  )}
-                  {currentTabIndex < clientTabs.length - 1 ? (
-                    <button key="next" type="button" onClick={handleNextTab} className="w-full sm:w-auto px-14 py-4 rounded-2xl bg-primary text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
-                      Próximo <Icon name="arrow-right" />
-                    </button>
-                  ) : (
-                    <button key="submit" type="submit" form="clientForm" className="w-full sm:w-auto px-14 py-4 rounded-2xl bg-emerald-500 text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
-                      <Icon name="check" /> Confirmar
-                    </button>
-                  )}
-                </div>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-white transition-all uppercase text-[10px] tracking-widest text-center">{isViewOnly ? 'Fechar' : 'Cancelar'}</button>
+                {!isViewOnly && (
+                  <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                    {currentTabIndex > 0 && (
+                      <button type="button" onClick={handlePrevTab} className="w-full sm:w-auto px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-600 hover:bg-white transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
+                        <Icon name="arrow-left" /> Anterior
+                      </button>
+                    )}
+                    {currentTabIndex < clientTabs.length - 1 ? (
+                      <button key="next" type="button" onClick={handleNextTab} className="w-full sm:w-auto px-14 py-4 rounded-2xl bg-primary text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
+                        Próximo <Icon name="arrow-right" />
+                      </button>
+                    ) : (
+                      <button key="submit" type="submit" form="clientForm" className="w-full sm:w-auto px-14 py-4 rounded-2xl bg-emerald-500 text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
+                        <Icon name="check" /> Confirmar
+                      </button>
+                    )}
+                  </div>
+                )}
             </div>
           </div>
         </div>
@@ -4211,7 +4299,7 @@ const TasksPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-6 flex flex-col h-full">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 flex flex-col h-full">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
           <p className="text-slate-500 dark:text-slate-400 font-medium hidden sm:block">Ciclo de vida operacional das tarefas.</p>
@@ -4302,7 +4390,7 @@ const TasksPage = () => {
             return (
               <div 
                 key={status} 
-                className={`flex-shrink-0 w-[85vw] md:w-80 rounded-[2.5rem] p-4 border flex flex-col h-[calc(100vh-200px)] min-h-[500px] snap-center transition-all duration-300 ${isDraggedOver ? 'bg-slate-200/80 dark:bg-slate-800/80 border-primary shadow-inner scale-[1.02]' : 'bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800'}`}
+                className={`flex-shrink-0 w-[85vw] md:w-80 rounded-2xl md:rounded-[2.5rem] p-4 border flex flex-col h-[calc(100vh-250px)] md:h-[calc(100vh-200px)] min-h-[400px] md:min-h-[500px] snap-center transition-all duration-300 ${isDraggedOver ? 'bg-slate-200/80 dark:bg-slate-800/80 border-primary shadow-inner scale-[1.02]' : 'bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800'}`}
                 onDragOver={(e) => handleDragOver(e, status)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, status)}
@@ -4414,8 +4502,8 @@ const TasksPage = () => {
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col animate-in zoom-in duration-300">
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[110] flex items-center justify-center p-0 md:p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-t-[2.5rem] md:rounded-[3rem] w-full max-w-5xl h-full md:max-h-[90vh] overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom md:zoom-in duration-300">
             <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
               <div>
                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingTask ? editingTask.taskNumber : 'Identificador Automático'}</span>
@@ -4443,7 +4531,7 @@ const TasksPage = () => {
                 <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
             </div>
-            <form id="taskForm" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 md:p-12 space-y-12 bg-white dark:bg-slate-900 custom-scrollbar">
+            <form id="taskForm" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 md:p-12 space-y-8 md:space-y-12 bg-white dark:bg-slate-900 custom-scrollbar pb-24 md:pb-12">
               {activeModalTab === 'geral' && (
                 <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-300">
                   <section className="space-y-6">
@@ -4509,7 +4597,7 @@ const TasksPage = () => {
                       </div>
                        <div className="space-y-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Conclusão Efetiva</label>
-                        <input type="date" value={conclusaoReal} onChange={(e) => setConclusaoReal(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold shadow-inner focus:border-primary text-slate-800 dark:text-slate-200" />
+                        <input type="date" value={conclusaoReal} readOnly className="w-full px-6 py-4 rounded-2xl border border-slate-50 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold outline-none cursor-not-allowed" />
                       </div>
                        <div className="space-y-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Esforço Gasto (H:M)</label>
@@ -4529,7 +4617,19 @@ const TasksPage = () => {
                       </div>
                       <div className="space-y-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Status Atual</label>
-                        <select value={currentStatus} onChange={(e) => setCurrentStatus(e.target.value as TaskStatus)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-black text-primary">
+                        <select 
+                          value={currentStatus} 
+                          onChange={(e) => {
+                            const newStatus = e.target.value as TaskStatus;
+                            setCurrentStatus(newStatus);
+                            if (newStatus === TaskStatus.COMPLETED) {
+                              setConclusaoReal(new Date().toISOString().split('T')[0]);
+                            } else if (newStatus !== TaskStatus.COMPLETED && !editingTask?.dataConclusaoReal) {
+                              setConclusaoReal('');
+                            }
+                          }} 
+                          className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-black text-primary"
+                        >
                           {Object.values(TaskStatus).map(v => <option key={v} value={v} className="dark:bg-slate-900">{v}</option>)}
                         </select>
                       </div>
@@ -4886,7 +4986,7 @@ const UsersPage = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {paginatedUsers.map(u => (
-          <div key={u.id} className="bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all text-center space-y-4">
+          <div key={u.id} className="bg-white dark:bg-slate-900 p-8 rounded-2xl md:rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all text-center space-y-4">
              <img src={u.foto || `https://picsum.photos/seed/${u.id}/200`} className="w-24 h-24 rounded-[2.5rem] object-cover border-4 border-slate-50 dark:border-slate-800 shadow-lg mx-auto" />
              <div>
                 <h4 className="text-lg font-black text-slate-800 dark:text-slate-100">{u.nome}</h4>
@@ -4899,8 +4999,8 @@ const UsersPage = () => {
       </div>
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-[3rem] w-full max-w-4xl max-h-[95vh] shadow-2xl p-6 md:p-10 lg:p-14 space-y-6 md:space-y-10 animate-in zoom-in duration-300 overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[110] flex items-center justify-center p-0 md:p-4 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-t-[2.5rem] md:rounded-[3rem] w-full max-w-4xl h-full md:max-h-[95vh] shadow-2xl p-6 md:p-10 lg:p-14 space-y-6 md:space-y-10 animate-in slide-in-from-bottom md:zoom-in duration-300 overflow-hidden flex flex-col">
             <h3 className="text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tighter text-center shrink-0">Acesso ao Sistema</h3>
             <div className="flex justify-center shrink-0">
                 <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
@@ -5032,7 +5132,7 @@ const TemplatesTab = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {paginatedTemplates.map(t => (
-          <div key={t.id} className="bg-slate-50 dark:bg-slate-800/50 p-10 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group relative">
+          <div key={t.id} className="bg-slate-50 dark:bg-slate-800/50 p-6 md:p-10 rounded-2xl md:rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group relative">
             <div className="flex justify-between items-start mb-6">
               <h3 className="font-black text-slate-800 dark:text-slate-100 text-xl">{t.name}</h3>
               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -5074,8 +5174,8 @@ const TemplatesTab = () => {
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in duration-300 max-h-[90vh]">
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[110] flex items-center justify-center p-0 md:p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-t-[2.5rem] md:rounded-[3rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom md:zoom-in duration-300 h-full md:max-h-[90vh]">
             <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30 shrink-0">
                <div>
                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingTemplate ? 'Edição' : 'Novo Cadastro'}</span>
@@ -5486,13 +5586,15 @@ const ConfiguracoesPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-6 md:space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-wrap gap-2 bg-white dark:bg-slate-900 p-2 rounded-3xl border border-slate-200 dark:border-slate-800 w-full md:w-fit shadow-sm overflow-x-auto custom-scrollbar">
-        {tabs.map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-bold text-sm transition-all ${activeTab === tab.id ? 'bg-primary text-white shadow-lg' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
-            <Icon name={tab.icon} />{tab.label}
-          </button>
-        ))}
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-8 animate-in fade-in duration-500">
+      <div className="flex bg-white dark:bg-slate-900 p-1.5 rounded-2xl md:rounded-3xl border border-slate-200 dark:border-slate-800 w-full md:w-fit shadow-sm overflow-x-auto custom-scrollbar scrollbar-hide">
+        <div className="flex gap-1.5 min-w-max">
+          {tabs.map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 px-4 md:px-6 py-2.5 md:py-3 rounded-xl md:rounded-2xl font-bold text-xs md:text-sm transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+              <Icon name={tab.icon} className="text-sm md:text-base" />{tab.label}
+            </button>
+          ))}
+        </div>
       </div>
       
       <div className="w-full max-w-[1550px]">
@@ -5554,33 +5656,33 @@ const ConfiguracoesPage = () => {
         )}
 
         {activeTab === 'setores' && canAccessConfig && (
-          <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-2xl md:rounded-[3rem] shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                <div className="flex items-center gap-4">
-                 <div className="w-16 h-16 rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-2xl shadow-inner shrink-0">
+                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-[2rem] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
                    <Icon name="building" />
                  </div>
                  <div>
-                   <h3 className="text-2xl font-black text-slate-800 tracking-tight">Setores da Organização</h3>
-                   <p className="text-sm text-slate-400 font-medium mt-1">Gerencie os departamentos e suas respectivas lideranças.</p>
+                   <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Setores da Organização</h3>
+                   <p className="text-xs md:text-sm text-slate-400 dark:text-slate-500 font-medium mt-1">Gerencie os departamentos e suas respectivas lideranças.</p>
                  </div>
                </div>
-               <button onClick={() => { setEditingSector(null); setIsSectorModalOpen(true); }} className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center justify-center gap-2 transition-all">
+               <button onClick={() => { setEditingSector(null); setIsSectorModalOpen(true); }} className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-xl md:rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center justify-center gap-2 transition-all">
                  <Icon name="plus" /> Novo Setor
                </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {sectors.slice((currentPageSectors - 1) * itemsPerPage, currentPageSectors * itemsPerPage).map(s => {
                 const manager = users.find(u => u.id === s.responsavelId);
                 return (
-                  <div key={s.id} className="p-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 flex justify-between items-start group hover:bg-white hover:shadow-md transition-all shadow-sm">
+                  <div key={s.id} className="p-6 rounded-2xl md:rounded-[2.5rem] border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-start group hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all shadow-sm">
                     <div className="flex-1 overflow-hidden pr-4">
-                      <h4 className="font-extrabold text-slate-800 uppercase tracking-tighter text-lg truncate">{s.nome}</h4>
+                      <h4 className="font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-tighter text-lg truncate">{s.nome}</h4>
                       <p className="text-[10px] font-black text-primary uppercase tracking-widest mt-1 flex items-center gap-1">
                         <Icon name="user" className="text-[10px]" /> {manager?.nome || 'Não definido'}
                       </p>
-                      <p className="text-sm text-slate-500 mt-3 font-medium line-clamp-2">{s.descricao || 'Sem descrição definida.'}</p>
-                      <p className="text-[9px] text-slate-400 mt-4 font-black uppercase tracking-widest flex items-center gap-1">
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-3 font-medium line-clamp-2">{s.descricao || 'Sem descrição definida.'}</p>
+                      <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-4 font-black uppercase tracking-widest flex items-center gap-1">
                         <Icon name="calendar-alt" className="text-[10px]" /> Desde {new Date(s.dataCriacao).toLocaleDateString()}
                       </p>
                     </div>
@@ -5631,33 +5733,32 @@ const ConfiguracoesPage = () => {
         )}
 
         {activeTab === 'categorias' && canAccessConfig && (
-          <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-2xl md:rounded-[3rem] shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                <div className="flex items-center gap-4">
-                 <div className="w-16 h-16 rounded-[2rem] bg-emerald-50 text-emerald-500 flex items-center justify-center text-2xl shadow-inner shrink-0">
+                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-[2rem] bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
                    <Icon name="tag" />
                  </div>
                  <div>
-                   <h3 className="text-2xl font-black text-slate-800 tracking-tight">Categorias de Clientes</h3>
-                   <p className="text-sm text-slate-400 font-medium mt-1">Gerencie as segmentações para organizar sua base de clientes.</p>
+                   <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Categorias de Clientes</h3>
+                   <p className="text-xs md:text-sm text-slate-400 dark:text-slate-500 font-medium mt-1">Gerencie as segmentações para organizar sua base de clientes.</p>
                  </div>
                </div>
-               <button onClick={() => { setEditingCategory(null); setIsCategoryModalOpen(true); }} className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
+               <button onClick={() => { setEditingCategory(null); setIsCategoryModalOpen(true); }} className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-xl md:rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
                  <Icon name="plus" /> Nova Categoria
                </button>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 md:gap-8">
               {clientCategories.slice((currentPageCategories - 1) * itemsPerPage, currentPageCategories * itemsPerPage).map(cat => (
-                <div key={cat.id} className="p-10 rounded-[3.5rem] border border-slate-100 bg-slate-50 flex justify-between items-start group hover:bg-white hover:shadow-md transition-all shadow-sm">
+                <div key={cat.id} className="p-6 md:p-10 rounded-2xl md:rounded-[3.5rem] border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-start group hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all shadow-sm">
                   <div className="flex-1 overflow-hidden pr-4">
                     <div className="flex items-center gap-4 mb-4">
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: cat.cor || 'var(--primary-color)' }}>
-                        <Icon name="tag" className="text-xl" />
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: cat.cor || 'var(--primary-color)' }}>
+                        <Icon name="tag" className="text-lg md:text-xl" />
                       </div>
-                      <h4 className="font-extrabold text-slate-800 uppercase tracking-tighter text-xl truncate">{cat.nome}</h4>
+                      <h4 className="font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-tighter text-lg md:text-xl truncate">{cat.nome}</h4>
                     </div>
-                    <p className="text-base text-slate-400 mt-4 font-medium italic line-clamp-2 leading-relaxed">{cat.descricao || 'Sem descrição definida.'}</p>
+                    <p className="text-sm md:text-base text-slate-400 dark:text-slate-500 mt-4 font-medium italic line-clamp-2 leading-relaxed">{cat.descricao || 'Sem descrição definida.'}</p>
                   </div>
                   <div className="flex gap-2 relative z-50 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
@@ -5705,31 +5806,31 @@ const ConfiguracoesPage = () => {
         )}
 
         {activeTab === 'customFields' && canAccessConfig && (
-          <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-8 animate-in slide-in-from-bottom-2">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-2xl md:rounded-[3rem] shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                <div className="flex items-center gap-4">
-                 <div className="w-16 h-16 rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-2xl shadow-inner shrink-0">
+                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-[2rem] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
                    <Icon name="list-alt" />
                  </div>
                  <div>
-                   <h3 className="text-2xl font-black text-slate-800 tracking-tight">Campos Personalizados</h3>
-                   <p className="text-sm text-slate-400 font-medium mt-1">Crie campos dinâmicos para o cadastro de clientes.</p>
+                   <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Campos Personalizados</h3>
+                   <p className="text-xs md:text-sm text-slate-400 dark:text-slate-500 font-medium mt-1">Crie campos dinâmicos para o cadastro de clientes.</p>
                  </div>
                </div>
-               <button onClick={() => { setEditingCustomField(null); setIsCustomFieldModalOpen(true); }} className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
+               <button onClick={() => { setEditingCustomField(null); setIsCustomFieldModalOpen(true); }} className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-xl md:rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
                  <Icon name="plus" /> Novo Campo
                </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
               {customFields.slice((currentPageCustomFields - 1) * itemsPerPage, currentPageCustomFields * itemsPerPage).map(field => (
-                <div key={field.id} className="p-10 rounded-[3.5rem] border border-slate-100 bg-slate-50 flex justify-between items-start group hover:bg-white hover:shadow-md transition-all shadow-sm">
+                <div key={field.id} className="p-6 md:p-10 rounded-2xl md:rounded-[3.5rem] border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-start group hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all shadow-sm">
                   <div className="flex-1 overflow-hidden pr-4">
                     <div className="flex items-center gap-4 mb-4">
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-100 text-indigo-600 shadow-lg">
-                        <Icon name={field.type === 'text' ? 'font' : field.type === 'number' ? 'hashtag' : field.type === 'date' ? 'calendar' : field.type === 'boolean' ? 'check-square' : 'list'} className="text-xl" />
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 shadow-lg">
+                        <Icon name={field.type === 'text' ? 'font' : field.type === 'number' ? 'hashtag' : field.type === 'date' ? 'calendar' : field.type === 'boolean' ? 'check-square' : 'list'} className="text-lg md:text-xl" />
                       </div>
-                      <h4 className="font-black text-slate-800 text-xl truncate">{field.name}</h4>
+                      <h4 className="font-black text-slate-800 dark:text-slate-100 text-lg md:text-xl truncate">{field.name}</h4>
                     </div>
                     <div className="flex flex-wrap gap-3 mt-6">
                       <span className="text-xs font-black uppercase tracking-widest px-4 py-2 bg-slate-200 text-slate-600 rounded-xl">
@@ -6266,7 +6367,7 @@ const AuditoriaPage = () => {
             <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input 
               type="text" 
-              placeholder="Buscar por entidade, usuário ou ação..." 
+              placeholder="Buscar..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-medium text-sm text-slate-700 dark:text-slate-200 focus:border-primary dark:focus:border-primary transition-all shadow-sm"
@@ -6290,25 +6391,25 @@ const AuditoriaPage = () => {
       </div>
 
       {isClearModalOpen && (
-        <div className="fixed inset-0 z-[9999] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-8 border-b bg-red-50 border-red-100">
+        <div className="fixed inset-0 z-[110] bg-slate-900/60 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 rounded-t-[2.5rem] md:rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden animate-in slide-in-from-bottom md:zoom-in-95 duration-300">
+            <div className="p-8 border-b bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-900/30">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 flex items-center justify-center shadow-sm">
                   <Icon name="trash" className="text-2xl" />
                 </div>
                 <div>
-                  <h3 className="font-black text-xl text-red-900">Limpar Histórico</h3>
-                  <p className="text-red-600/70 text-xs font-bold uppercase tracking-wider">Ação Irreversível</p>
+                  <h3 className="font-black text-xl text-red-900 dark:text-red-50">Limpar Histórico</h3>
+                  <p className="text-red-600/70 dark:text-red-400/70 text-[10px] font-black uppercase tracking-wider">Ação Irreversível</p>
                 </div>
               </div>
             </div>
-            <div className="p-8 space-y-6">
-              <p className="text-slate-600 font-medium leading-relaxed">
+            <div className="p-8 space-y-6 bg-white dark:bg-slate-900">
+              <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
                 Esta ação irá remover permanentemente todos os registros de auditoria. Por favor, informe o motivo desta ação para fins de conformidade.
               </p>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Motivo da Limpeza</label>
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Motivo da Limpeza</label>
                 <textarea 
                   value={clearReason}
                   onChange={(e) => setClearReason(e.target.value)}
@@ -6316,13 +6417,13 @@ const AuditoriaPage = () => {
                   className="w-full px-5 py-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-medium text-sm text-slate-700 dark:text-slate-200 focus:border-red-500 dark:focus:border-red-500 transition-all min-h-[120px] resize-none"
                   autoFocus
                 />
-                <p className="text-[10px] font-bold text-slate-400 ml-1">Mínimo de 5 caracteres.</p>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1">Mínimo de 5 caracteres.</p>
               </div>
             </div>
-            <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+            <div className="p-8 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-end gap-3">
               <button 
                 onClick={() => { setIsClearModalOpen(false); setClearReason(''); }}
-                className="px-6 py-3 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition-colors"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                 disabled={isClearing}
               >
                 Cancelar
@@ -6330,7 +6431,7 @@ const AuditoriaPage = () => {
               <button 
                 onClick={handleClearLogs}
                 disabled={!clearReason || clearReason.trim().length < 5 || isClearing}
-                className="px-8 py-3 rounded-xl font-black text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-red-200 transition-all flex items-center gap-2"
+                className="w-full sm:w-auto px-8 py-3 rounded-xl font-black text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-red-200 dark:shadow-red-900/40 transition-all flex items-center justify-center gap-2"
               >
                 {isClearing ? (
                   <>
@@ -6346,7 +6447,7 @@ const AuditoriaPage = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse hidden md:table">
             <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
@@ -6941,7 +7042,7 @@ const MailListPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 flex flex-col lg:flex-row gap-6 md:gap-8 animate-in fade-in duration-500 h-auto lg:h-[calc(100vh-100px)] relative">
+    <div className="p-4 md:p-6 lg:p-8 flex flex-col lg:flex-row gap-4 md:gap-8 animate-in fade-in duration-500 h-auto lg:h-[calc(100vh-120px)] relative">
       {/* WhatsApp Queue Overlay */}
       {whatsappQueue.length > 0 && (
         <div className="absolute inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center rounded-[2rem] sm:rounded-[3.5rem] p-4">
@@ -6989,7 +7090,7 @@ const MailListPage = () => {
         </div>
       )}
 
-      <div className="flex-1 bg-white dark:bg-slate-900 p-4 sm:p-6 md:p-12 rounded-[2rem] sm:rounded-[3.5rem] shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col space-y-6 md:space-y-8 overflow-hidden min-h-[600px] lg:min-h-0">
+      <div className="flex-1 bg-white dark:bg-slate-900 p-6 md:p-10 lg:p-12 rounded-2xl md:rounded-[3.5rem] shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col space-y-6 md:space-y-8 overflow-hidden min-h-[600px] lg:min-h-0">
          <div className="flex bg-slate-50 dark:bg-slate-800 p-2 rounded-2xl sm:rounded-3xl border border-slate-100 dark:border-slate-700 shadow-inner shrink-0">
             <button type="button" onClick={() => setType('email')} className={`flex-1 py-3 sm:py-5 rounded-xl sm:rounded-2xl font-black tracking-widest text-xs sm:text-sm transition-all ${type === 'email' ? 'bg-white dark:bg-slate-900 text-primary shadow-xl' : 'text-slate-400 dark:text-slate-500'}`}>MAIL SERVICE</button>
             <button type="button" onClick={() => setType('whatsapp')} className={`flex-1 py-3 sm:py-5 rounded-xl sm:rounded-2xl font-black tracking-widest text-xs sm:text-sm transition-all ${type === 'whatsapp' ? 'bg-white dark:bg-slate-900 text-primary shadow-xl' : 'text-slate-400 dark:text-slate-500'}`}>WHATSAPP API</button>
@@ -7060,7 +7161,7 @@ const MailListPage = () => {
          </form>
       </div>
       
-      <div className="w-full lg:w-96 bg-white dark:bg-slate-900 p-4 sm:p-6 md:p-8 rounded-[2rem] sm:rounded-[3.5rem] border border-slate-200 dark:border-slate-800 flex flex-col shadow-sm overflow-hidden h-[600px] lg:h-auto">
+      <div className="w-full lg:w-96 bg-white dark:bg-slate-900 p-6 md:p-8 rounded-2xl md:rounded-[3.5rem] border border-slate-200 dark:border-slate-800 flex flex-col shadow-sm overflow-hidden h-[600px] lg:h-auto">
         <h4 className="font-black text-slate-800 dark:text-slate-100 mb-6 uppercase tracking-widest text-xs border-b border-slate-50 dark:border-slate-800 pb-4 shrink-0">
           Destinos Válidos <span className="text-slate-400 dark:text-slate-500 font-medium ml-1">({filteredClients.length})</span>
         </h4>
@@ -7179,11 +7280,12 @@ const MainLayout = () => {
   };
   if (!currentUser) return <Navigate to="/login" />;
   return (
-    <div className="flex bg-slate-50 min-h-screen">
+    <div className="flex bg-slate-50 dark:bg-slate-950 min-h-screen">
       <Sidebar />
+      <BottomNavigation />
       <div className="flex-1 lg:ml-64 min-h-screen flex flex-col w-full">
         <Header title={titles[Object.keys(titles).find(k => location.pathname.startsWith(k)) || ''] || <SenseiLogo className="text-xl" />} />
-        <main className="flex-1 pb-24 lg:pb-16 w-full max-w-[100vw] overflow-x-hidden">
+        <main className="flex-1 pb-32 lg:pb-16 w-full max-w-[100vw] overflow-x-hidden">
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/calendario" element={<CalendarView />} />
