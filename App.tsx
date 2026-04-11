@@ -2365,8 +2365,8 @@ const ClientsPage = () => {
 
     if (editingClient) updateClient(client); else addClient(client);
     setEditingClient(client);
-    // keep activeTab as it is to let them continue
     if (toast) toast({ message: 'Cliente salvo com sucesso!', type: 'success' });
+    setIsModalOpen(false);
   };
 
   const addContactPerson = () => {
@@ -3435,6 +3435,7 @@ const getPriorityIcon = (priority: TaskPriority) => {
 const TasksPage = () => {
   const { tasks, addTask, updateTask, deleteTask, users, currentUser, slaSettings, sectors, hasPermission } = useApp();
   const { confirm } = useConfirm();
+  const { success, toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -3667,6 +3668,7 @@ const TasksPage = () => {
     if (editingTask) updateTask(task); else addTask(task);
     setEditingTask(task);
     if (success) success('Tarefa salva!'); else if (toast) toast({ message: 'Tarefa salva!', type: 'success' });
+    setIsModalOpen(false);
   };
 
   const openTaskModal = (t: Task | null) => {
@@ -4377,6 +4379,7 @@ const TasksPage = () => {
 
 const UsersPage = () => {
   const { users, addUser, updateUser, currentUser, hasPermission, roles } = useApp();
+  const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -4451,6 +4454,7 @@ const UsersPage = () => {
     if (editingUser) updateUser(u); else addUser(u);
     setEditingUser(u);
     if (toast) toast({ message: 'Usuário salvo com sucesso!', type: 'success' });
+    setIsModalOpen(false);
   };
 
   const openModal = (u: User | null) => {
@@ -4622,6 +4626,7 @@ const UsersPage = () => {
 const TemplatesTab = () => {
   const { templates, addTemplate, updateTemplate, deleteTemplate, currentUser, hasPermission } = useApp();
   const { confirm } = useConfirm();
+  const { toast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<MailTemplate | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -4650,6 +4655,7 @@ const TemplatesTab = () => {
     else addTemplate(template);
     setEditingTemplate(template);
     if (toast) toast({ message: 'Template salvo com sucesso!', type: 'success' });
+    setIsModalOpen(false);
   };
 
   return (
@@ -4750,6 +4756,7 @@ const TemplatesTab = () => {
 const RolesTab = () => {
   const { roles, addRole, updateRole, deleteRole, hasPermission } = useApp();
   const { confirm } = useConfirm();
+  const { toast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [modalPerms, setModalPerms] = useState<UserPermissions>({
@@ -4803,6 +4810,7 @@ const RolesTab = () => {
     else addRole(role);
     setEditingRole(role);
     if (toast) toast({ message: 'Função salva com sucesso!', type: 'success' });
+    setIsModalOpen(false);
   };
 
   const togglePerm = (modKey: string, permKey: string) => {
@@ -5028,6 +5036,8 @@ const ConfiguracoesPage = () => {
       addSector(novo);
       setEditingSector(novo);
     }
+    success('Setor salvo com sucesso!');
+    setIsSectorModalOpen(false);
   };
 
   const handleSaveSLA = (e: React.FormEvent<HTMLFormElement>) => {
@@ -5057,6 +5067,8 @@ const ConfiguracoesPage = () => {
       addClientCategory(nova);
       setEditingCategory(nova);
     }
+    success('Categoria salva com sucesso!');
+    setIsCategoryModalOpen(false);
   };
 
   const handleSaveCustomField = (e: React.FormEvent<HTMLFormElement>) => {
@@ -5080,6 +5092,8 @@ const ConfiguracoesPage = () => {
       addCustomField(novo);
       setEditingCustomField(novo);
     }
+    success('Campo personalizado salvo!');
+    setIsCustomFieldModalOpen(false);
   };
 
   const handleSaveNotificationPrefs = (e: React.FormEvent<HTMLFormElement>) => {

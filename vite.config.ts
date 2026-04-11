@@ -20,6 +20,9 @@ export default defineConfig(({mode}) => {
       hmr: process.env.DISABLE_HMR !== 'true',
       host: true,
       allowedHosts: true,
+      watch: {
+        ignored: ['**/data.json']
+      }
     },
   };
 });
