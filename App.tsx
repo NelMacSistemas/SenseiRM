@@ -119,13 +119,13 @@ const getDetailedDiff = (oldObj: any, newObj: any, labels: Record<string, string
     }
   });
   return {
-    text: changes.length > 0 ? `AlteraÃ§Ãµes: [${changes.join(' | ')}]` : 'Nenhuma alteraÃ§Ã£o nos campos principais.',
+    text: changes.length > 0 ? `Alterações: [${changes.join(' | ')}]` : 'Nenhuma alteração nos campos principais.',
     diff
   };
 };
 
 const CLIENT_LABELS = {
-  nomeRazaoSocial: 'RazÃ£o Social',
+  nomeRazaoSocial: 'Razão Social',
   nomeFantasia: 'Nome Fantasia',
   documento: 'Documento',
   status: 'Status Base',
@@ -135,7 +135,7 @@ const CLIENT_LABELS = {
   uf: 'UF',
   emailPrincipal: 'E-mail',
   categoria: 'Categoria Comercial',
-  situacao: 'SituaÃ§Ã£o de CrÃ©dito',
+  situacao: 'Situação de Crédito',
   avaliacaoInterna: 'Rating'
 };
 
@@ -149,15 +149,15 @@ const USER_LABELS = {
 };
 
 const TASK_LABELS = {
-  titulo: 'TÃ­tulo',
-  descricao: 'DescriÃ§Ã£o',
+  titulo: 'Título',
+  descricao: 'Descrição',
   tipo: 'Tipo',
   prioridade: 'Prioridade',
   status: 'Status',
-  responsavelId: 'ID ResponsÃ¡vel',
+  responsavelId: 'ID Responsável',
   setorId: 'ID Setor',
   dataVencimento: 'Vencimento',
-  dataInicio: 'InÃ­cio',
+  dataInicio: 'Início',
   tempoGasto: 'Tempo Gasto'
 };
 
@@ -308,9 +308,9 @@ const maskTime = (v: string) => {
 
 const RATING_LABELS: Record<number, string> = {
   1: 'Baixo Potencial / Risco Alto',
-  2: 'Potencial MÃ©dio / Regular',
-  3: 'Bom Cliente / EstÃ¡vel',
-  4: 'Cliente PrioritÃ¡rio / Potencial Alto',
+  2: 'Potencial Médio / Regular',
+  3: 'Bom Cliente / Estável',
+  4: 'Cliente Prioritário / Potencial Alto',
   5: 'Cliente VIP / Master'
 };
 
@@ -466,7 +466,7 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
                   <Icon name={options.isDestructive ? 'exclamation-triangle' : 'question-circle'} className="text-xl" />
                 </div>
                 <h3 className={`font-black text-lg ${options.isDestructive ? 'text-red-900' : 'text-slate-900'}`}>
-                  {options.title || 'ConfirmaÃ§Ã£o'}
+                  {options.title || 'Confirmação'}
                 </h3>
               </div>
             </div>
@@ -614,7 +614,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       id: '1',
       nome: 'Administrador',
       email: 'admin@senseirm.com',
-      senha: '', // Senha nÃ£o Ã© exposta no frontend
+      senha: '', // Senha não é exposta no frontend
       roleId: 'admin',
       status: EntityStatus.ACTIVE,
       tema: 'verde',
@@ -647,7 +647,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [history, setHistory] = useState<MailHistory[]>([]);
   const [templates, setTemplates] = useState<MailTemplate[]>([]);
-  const [slaSettings, setSlaSettings] = useState<SLASettings>({ Baixa: 15, MÃ©dia: 7, Alta: 3, CrÃ­tica: 1 });
+  const [slaSettings, setSlaSettings] = useState<SLASettings>({ Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
   const [emailSettings, setEmailSettings] = useState<EmailSettings>({ provider: 'SMTP', host: '', port: 587, user: '', pass: '', secure: false });
   const [systemSettings, setSystemSettings] = useState<SystemSettings>({ companyName: 'CRM Ecosystem', appLogo: '' });
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([]);
@@ -790,7 +790,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         if (data.systemSettings) setSystemSettings(data.systemSettings);
         if (data.notifications) setNotifications(data.notifications);
       } else if (res.status === 429) {
-        alert('Muitas requisiÃ§Ãµes ao servidor. Por favor, aguarde um momento e recarregue a pÃ¡gina.');
+        alert('Muitas requisições ao servidor. Por favor, aguarde um momento e recarregue a página.');
       } else {
         console.error("Server error:", res.status, res.statusText);
       }
@@ -820,7 +820,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       if (res.status === 401 || res.status === 403) {
         logout();
       } else if (res.status === 429) {
-        alert('Muitas requisiÃ§Ãµes ao servidor. Por favor, aguarde um momento.');
+        alert('Muitas requisições ao servidor. Por favor, aguarde um momento.');
       } else if (!res.ok) {
         console.error("Sync error:", res.status, res.statusText);
       }
@@ -866,7 +866,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const logout = () => {
     console.log('logout function called');
-    if (currentUser) auditService.log(currentUser.id, currentUser.nome, 'LOGOUT', 'AUTH', 'SessÃ£o encerrada.');
+    if (currentUser) auditService.log(currentUser.id, currentUser.nome, 'LOGOUT', 'AUTH', 'Sessão encerrada.');
     setCurrentUser(null);
     localStorage.removeItem('senseirm_current_user');
     localStorage.removeItem('senseirm_token');
@@ -875,7 +875,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const addUser = (u: User) => {
     setUsers(prev => [...prev, u]);
     apiSync('users', 'ADD', u);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'USUARIOS', `UsuÃ¡rio ${u.nome} criado.`, u.id);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'USUARIOS', `Usuário ${u.nome} criado.`, u.id);
   };
 
   const updateUser = (u: User) => {
@@ -887,33 +887,33 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       setCurrentUser(u);
       localStorage.setItem('senseirm_current_user', JSON.stringify(u));
     }
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'USUARIOS', `UsuÃ¡rio ${u.nome} alterado. ${diffResult.text}`, u.id, diffResult.diff);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'USUARIOS', `Usuário ${u.nome} alterado. ${diffResult.text}`, u.id, diffResult.diff);
   };
 
   const deleteUser = (id: string) => {
     const target = users.find(u => u.id === id);
     setUsers(prev => prev.filter(u => u.id !== id));
     apiSync('users', 'DELETE', { id });
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'USUARIOS', `UsuÃ¡rio removido: ${target?.nome} (${target?.email})`, id);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'USUARIOS', `Usuário removido: ${target?.nome} (${target?.email})`, id);
   };
 
   const addRole = (r: Role) => {
     setRoles(prev => [...prev, r]);
     apiSync('roles', 'ADD', r);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'CONFIGURACOES', `FunÃ§Ã£o ${r.name} criada.`, r.id);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'CREATE', 'CONFIGURACOES', `Função ${r.name} criada.`, r.id);
   };
 
   const updateRole = (r: Role) => {
     setRoles(prev => prev.map(item => item.id === r.id ? r : item));
     apiSync('roles', 'UPDATE', r);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIGURACOES', `FunÃ§Ã£o ${r.name} alterada.`, r.id);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIGURACOES', `Função ${r.name} alterada.`, r.id);
   };
 
   const deleteRole = (id: string) => {
     const target = roles.find(r => r.id === id);
     setRoles(prev => prev.filter(r => r.id !== id));
     apiSync('roles', 'DELETE', { id });
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'CONFIGURACOES', `FunÃ§Ã£o removida: ${target?.name}`, id);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'CONFIGURACOES', `Função removida: ${target?.name}`, id);
   };
 
   const addClient = (c: Client) => {
@@ -951,8 +951,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (oldTask && t.responsavelId !== oldTask.responsavelId && t.responsavelId) {
       const newNotification: Notification = {
         id: generateUUID(),
-        title: 'Nova Tarefa AtribuÃ­da',
-        message: `VocÃª foi definido como responsÃ¡vel pela tarefa: ${t.titulo}`,
+        title: 'Nova Tarefa Atribuída',
+        message: `Você foi definido como responsável pela tarefa: ${t.titulo}`,
         timestamp: new Date().toISOString(),
         read: false,
         link: '/tarefas'
@@ -974,7 +974,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const target = tasks.find(t => t.id === id);
     setTasks(prev => prev.filter(t => t.id !== id));
     apiSync('tasks', 'DELETE', { id });
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'TAREFAS', `Tarefa excluÃ­da: ${target?.taskNumber} - ${target?.titulo}`, id);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'TAREFAS', `Tarefa excluída: ${target?.taskNumber} - ${target?.titulo}`, id);
   };
 
   const addSector = (s: Sector) => {
@@ -985,7 +985,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const updateSector = (s: Sector) => {
     const oldSec = sectors.find(item => item.id === s.id);
-    const diffResult = oldSec ? getDetailedDiff(oldSec, s, { nome: 'Nome', descricao: 'DescriÃ§Ã£o', responsavelId: 'Gestor' }) : { text: '', diff: [] };
+    const diffResult = oldSec ? getDetailedDiff(oldSec, s, { nome: 'Nome', descricao: 'Descrição', responsavelId: 'Gestor' }) : { text: '', diff: [] };
     setSectors(prev => prev.map(item => item.id === s.id ? s : item));
     apiSync('sectors', 'UPDATE', s);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'SETORES', `Setor "${s.nome}" atualizado. ${diffResult.text}`, s.id, diffResult.diff);
@@ -1012,7 +1012,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const updateClientCategory = (c: ClientCategory) => {
     setClientCategories(prevCategories => {
       const old = prevCategories.find(item => item.id === c.id);
-      const diffResult = old ? getDetailedDiff(old, c, { nome: 'Nome', descricao: 'DescriÃ§Ã£o', cor: 'Cor' }) : { text: '', diff: [] };
+      const diffResult = old ? getDetailedDiff(old, c, { nome: 'Nome', descricao: 'Descrição', cor: 'Cor' }) : { text: '', diff: [] };
       
       if (old && old.nome !== c.nome) {
         setClients(prevClients => {
@@ -1055,7 +1055,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const updateCustomField = (f: CustomField) => {
     const old = customFields.find(item => item.id === f.id);
-    const diffResult = old ? getDetailedDiff(old, f, { name: 'Nome', type: 'Tipo', required: 'ObrigatÃ³rio' }) : { text: '', diff: [] };
+    const diffResult = old ? getDetailedDiff(old, f, { name: 'Nome', type: 'Tipo', required: 'Obrigatório' }) : { text: '', diff: [] };
     setCustomFields(prev => prev.map(item => item.id === f.id ? f : item));
     apiSync('customFields', 'UPDATE', f);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Campo personalizado "${f.name}" atualizado. ${diffResult.text}`, f.id, diffResult.diff);
@@ -1083,7 +1083,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const updateTemplate = (t: MailTemplate) => {
     const old = templates.find(x => x.id === t.id);
-    const diffResult = old ? getDetailedDiff(old, t, { name: 'Nome', subject: 'Assunto', content: 'ConteÃºdo' }) : { text: '', diff: [] };
+    const diffResult = old ? getDetailedDiff(old, t, { name: 'Nome', subject: 'Assunto', content: 'Conteúdo' }) : { text: '', diff: [] };
     setTemplates(prev => prev.map(x => x.id === t.id ? t : x));
     apiSync('templates', 'UPDATE', t);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'TEMPLATE', `Template "${t.name}" atualizado. ${diffResult.text}`, t.id, diffResult.diff);
@@ -1098,24 +1098,24 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const updateSLASettings = (settings: SLASettings) => {
-    const diffResult = getDetailedDiff(slaSettings, settings, { Baixa: 'SLA Baixa', MÃ©dia: 'SLA MÃ©dia', Alta: 'SLA Alta', CrÃ­tica: 'SLA CrÃ­tica' });
+    const diffResult = getDetailedDiff(slaSettings, settings, { Baixa: 'SLA Baixa', Média: 'SLA Média', Alta: 'SLA Alta', Crítica: 'SLA Crítica' });
     setSlaSettings(settings);
     apiSync('slaSettings', 'SET', settings);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Prazos de SLA redefinidos. ${diffResult.text}`, 'slaSettings', diffResult.diff);
   };
 
   const updateEmailSettings = (settings: EmailSettings) => {
-    const diffResult = getDetailedDiff(emailSettings, settings, { host: 'Host', port: 'Porta', user: 'UsuÃ¡rio', from: 'Remetente' });
+    const diffResult = getDetailedDiff(emailSettings, settings, { host: 'Host', port: 'Porta', user: 'Usuário', from: 'Remetente' });
     setEmailSettings(settings);
     apiSync('emailSettings', 'SET', settings);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `ConfiguraÃ§Ãµes de E-mail atualizadas. ${diffResult.text}`, 'emailSettings', diffResult.diff);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Configurações de E-mail atualizadas. ${diffResult.text}`, 'emailSettings', diffResult.diff);
   };
 
   const updateSystemSettings = (settings: SystemSettings) => {
     const diffResult = getDetailedDiff(systemSettings, settings, { companyName: 'Nome da Empresa', appLogo: 'Logo' });
     setSystemSettings(settings);
     apiSync('systemSettings', 'SET', settings);
-    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `ConfiguraÃ§Ãµes do Sistema atualizadas. ${diffResult.text}`, 'systemSettings', diffResult.diff);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Configurações do Sistema atualizadas. ${diffResult.text}`, 'systemSettings', diffResult.diff);
   };
 
   const hasPermission = useCallback((module: keyof UserPermissions, action: keyof Permission) => {
@@ -1176,18 +1176,18 @@ const Pagination = ({
     <div className="flex items-center justify-between px-4 py-4 border-t border-slate-100 mt-4 shrink-0">
       <div className="flex flex-1 justify-between sm:hidden">
         <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="relative inline-flex items-center px-4 py-2 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-50">Anterior</button>
-        <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-50">PrÃ³xima</button>
+        <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-50">Próxima</button>
       </div>
       <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm text-slate-500 font-medium">PÃ¡gina <span className="font-black text-slate-700">{currentPage}</span> de <span className="font-black text-slate-700">{totalPages}</span></p>
+          <p className="text-sm text-slate-500 font-medium">Página <span className="font-black text-slate-700">{currentPage}</span> de <span className="font-black text-slate-700">{totalPages}</span></p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="relative inline-flex items-center px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-500 hover:bg-slate-50 disabled:opacity-50 transition-all">
             <Icon name="chevron-left" className="h-4 w-4 mr-1" /> Anterior
           </button>
           <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="relative inline-flex items-center px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-500 hover:bg-slate-50 disabled:opacity-50 transition-all">
-            PrÃ³xima <Icon name="chevron-right" className="h-4 w-4 ml-1" />
+            Próxima <Icon name="chevron-right" className="h-4 w-4 ml-1" />
           </button>
         </div>
       </div>
@@ -1342,12 +1342,12 @@ const Sidebar = () => {
 
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: 'chart-line', perm: 'dashboard' },
-    { path: '/calendario', label: 'CalendÃ¡rio', icon: 'calendar', perm: 'calendario' },
+    { path: '/calendario', label: 'Calendário', icon: 'calendar', perm: 'calendario' },
     { path: '/clientes', label: 'Clientes', icon: 'address-book', perm: 'clientes' },
     { path: '/mala-direta', label: 'Mala Direta', icon: 'paper-plane', perm: 'malaDireta' },
     { path: '/tarefas', label: 'Tarefas', icon: 'tasks', perm: 'tarefas' },
-    { path: '/usuarios', label: 'UsuÃ¡rios', icon: 'users', perm: 'usuarios' },
-    { path: '/configuracoes', label: 'ConfiguraÃ§Ãµes', icon: 'cog', perm: 'configuracoes' },
+    { path: '/usuarios', label: 'Usuários', icon: 'users', perm: 'usuarios' },
+    { path: '/configuracoes', label: 'Configurações', icon: 'cog', perm: 'configuracoes' },
     { path: '/auditoria', label: 'Auditoria', icon: 'shield-alt', perm: 'auditoria' },
     { path: '/sobre', label: 'Sobre', icon: 'info-circle', perm: null },
   ];
@@ -1419,7 +1419,7 @@ const BottomNavigation = () => {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   const mainItems = [
-    { path: '/dashboard', label: 'InÃ­cio', icon: 'chart-line', perm: 'dashboard' },
+    { path: '/dashboard', label: 'Início', icon: 'chart-line', perm: 'dashboard' },
     { path: '/calendario', label: 'Agenda', icon: 'calendar', perm: 'calendario' },
     { path: '/clientes', label: 'Clientes', icon: 'address-book', perm: 'clientes' },
     { path: '/tarefas', label: 'Tarefas', icon: 'tasks', perm: 'tarefas' },
@@ -1427,8 +1427,8 @@ const BottomNavigation = () => {
 
   const moreItems = [
     { path: '/mala-direta', label: 'Mala Direta', icon: 'paper-plane', perm: 'malaDireta' },
-    { path: '/usuarios', label: 'UsuÃ¡rios', icon: 'users', perm: 'usuarios' },
-    { path: '/configuracoes', label: 'ConfiguraÃ§Ãµes', icon: 'cog', perm: 'configuracoes' },
+    { path: '/usuarios', label: 'Usuários', icon: 'users', perm: 'usuarios' },
+    { path: '/configuracoes', label: 'Configurações', icon: 'cog', perm: 'configuracoes' },
     { path: '/auditoria', label: 'Auditoria', icon: 'shield-alt', perm: 'auditoria' },
     { path: '/sobre', label: 'Sobre', icon: 'info-circle', perm: null },
   ];
@@ -1520,7 +1520,7 @@ const NotificationsPopover = () => {
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
           <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
-              <h3 className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">NotificaÃ§Ãµes</h3>
+              <h3 className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Notificações</h3>
               {notifications.length > 0 && (
                 <button onClick={clearNotifications} className="text-[10px] text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 uppercase font-bold tracking-widest transition-colors">
                   Limpar
@@ -1531,7 +1531,7 @@ const NotificationsPopover = () => {
               {notifications.length === 0 ? (
                 <div className="p-8 text-center text-slate-400 dark:text-slate-500">
                   <Icon name="bell-slash" className="text-3xl mb-2 opacity-20 mx-auto" />
-                  <p className="text-xs font-bold uppercase tracking-widest">Nenhuma notificaÃ§Ã£o</p>
+                  <p className="text-xs font-bold uppercase tracking-widest">Nenhuma notificação</p>
                 </div>
               ) : (
                 <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
@@ -1711,16 +1711,16 @@ const CalendarView = () => {
              <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
                <Icon name="calendar" />
              </div>
-             <h1 className="text-xl md:text-3xl font-black text-slate-800 dark:text-slate-50 tracking-tight">CalendÃ¡rio de Prazos</h1>
+             <h1 className="text-xl md:text-3xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Calendário de Prazos</h1>
           </div>
-          <p className="text-slate-500 dark:text-slate-400 font-medium ml-1">Central de inteligÃªncia temporal e gestÃ£o de vencimentos</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium ml-1">Central de inteligência temporal e gestão de vencimentos</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
           {/* View Toggles */}
           <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-inner">
             {[
-              { id: 'month', label: 'MÃªs' },
+              { id: 'month', label: 'Mês' },
               { id: 'week', label: 'Semana' },
               { id: 'day', label: 'Lista' }
             ].map(mode => (
@@ -1761,7 +1761,7 @@ const CalendarView = () => {
           onChange={e => setFilters(f => ({ ...f, responsavelId: e.target.value }))}
           className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary transition-all min-w-[150px]"
         >
-          <option value="">Todos ResponsÃ¡veis</option>
+          <option value="">Todos Responsáveis</option>
           {users.map(u => <option key={u.id} value={u.id}>{u.nome}</option>)}
         </select>
 
@@ -1807,7 +1807,7 @@ const CalendarView = () => {
         {viewMode === 'month' && (
           <>
             <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'SÃ¡b'].map(day => (
+              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
                 <div key={day} className="py-5 text-center text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
                   {day}
                 </div>
@@ -1924,7 +1924,7 @@ const CalendarView = () => {
                     <h4 className="text-lg font-black text-slate-800 dark:text-slate-100 truncate">{task.titulo}</h4>
                     <span className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-full text-[9px] font-black uppercase tracking-widest">{task.status}</span>
                   </div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1 font-medium italic">{task.descricao || 'Sem descriÃ§Ã£o.'}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1 font-medium italic">{task.descricao || 'Sem descrição.'}</p>
                 </div>
                 <div className="flex flex-col items-end shrink-0 gap-1">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{task.dataVencimento ? format(parseISO(task.dataVencimento), 'MMMM', { locale: ptBR }) : 'Sem data'}</p>
@@ -1959,7 +1959,7 @@ const CalendarView = () => {
             
             <div className="p-10 -mt-8 bg-white dark:bg-slate-900 rounded-t-[3rem] relative">
               <h3 className="text-3xl font-black text-slate-800 dark:text-slate-100 mb-4 tracking-tighter">{selectedTask.titulo}</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-base mb-10 leading-relaxed font-medium">{selectedTask.descricao || 'Nenhuma descriÃ§Ã£o detalhada fornecida para esta tarefa.'}</p>
+              <p className="text-slate-500 dark:text-slate-400 text-base mb-10 leading-relaxed font-medium">{selectedTask.descricao || 'Nenhuma descrição detalhada fornecida para esta tarefa.'}</p>
               
               <div className="grid grid-cols-2 gap-6 mb-10">
                 <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-inner group hover:bg-white dark:hover:bg-slate-800 transition-all">
@@ -1988,7 +1988,7 @@ const CalendarView = () => {
                   onClick={() => setSelectedTask(null)}
                   className="flex-[2] py-5 bg-primary text-white rounded-[2rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-primary/40 hover:brightness-110 transition-all flex items-center justify-center gap-3 active:scale-95"
                 >
-                  <Icon name="external-link" /> GestÃ£o Completa
+                  <Icon name="external-link" /> Gestão Completa
                 </Link>
               </div>
             </div>
@@ -2020,7 +2020,7 @@ const Dashboard = () => {
     const clientsInactive = clients.filter(c => c.status === EntityStatus.INACTIVE).length;
     const clientsBlocked = clients.filter(c => c.status === EntityStatus.BLOCKED || c.situacao === 'Bloqueado para venda').length;
 
-    // Indicadores de USUÃRIOS
+    // Indicadores de USUàRIOS
     const usersActive = users.filter(u => u.status === EntityStatus.ACTIVE).length;
     const usersInactive = users.filter(u => u.status === EntityStatus.INACTIVE).length;
     const usersAdmin = users.filter(u => u.roleId === 'admin').length;
@@ -2034,9 +2034,9 @@ const Dashboard = () => {
       return new Date(t.dataVencimento) < now;
     }).length;
 
-    // Dados para GrÃ¡ficos
+    // Dados para Gráficos
     const taskStatusData = [
-      { name: 'ConcluÃ­das', value: tasksCompleted, color: '#10b981' },
+      { name: 'Concluídas', value: tasksCompleted, color: '#10b981' },
       { name: 'Em Andamento', value: tasksInProgress - tasksOverdue, color: '#3b82f6' },
       { name: 'Atrasadas', value: tasksOverdue, color: '#ef4444' }
     ].filter(d => d.value > 0);
@@ -2076,7 +2076,7 @@ const Dashboard = () => {
     const confirmPass = formData.get('confirmPass') as string;
 
     if (newPass !== confirmPass) {
-      return toast({ title: 'Erro', message: 'As senhas nÃ£o coincidem.', type: 'error' });
+      return toast({ title: 'Erro', message: 'As senhas não coincidem.', type: 'error' });
     }
 
     if (currentPass !== currentUser?.senha) {
@@ -2087,7 +2087,7 @@ const Dashboard = () => {
     if (!passwordRegex.test(newPass)) {
       return toast({ 
         title: 'Senha Fraca', 
-        message: 'A nova senha deve ter pelo menos 8 caracteres, incluindo uma letra maiÃºscula, uma minÃºscula, um nÃºmero e um caractere especial.', 
+        message: 'A nova senha deve ter pelo menos 8 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial.', 
         type: 'warning' 
       });
     }
@@ -2096,7 +2096,7 @@ const Dashboard = () => {
       const updatedUser = { ...currentUser, senha: newPass };
       await updateSync('users', 'UPDATE', updatedUser);
       
-      auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'AUTH', 'Senha alterada pelo usuÃ¡rio.', currentUser?.id);
+      auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'AUTH', 'Senha alterada pelo usuário.', currentUser?.id);
       
       toast({ title: 'Sucesso', message: 'Senha alterada com sucesso!', type: 'success' });
       setIsPasswordModalOpen(false);
@@ -2111,8 +2111,8 @@ const Dashboard = () => {
       {/* HEADER & QUICK ACTIONS */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white dark:bg-slate-900 p-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
         <div>
-          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-50 tracking-tight">OlÃ¡, {currentUser?.nome.split(' ')[0]} ðŸ‘‹</h2>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Aqui estÃ¡ o resumo das suas operaÃ§Ãµes hoje.</p>
+          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Olá, {currentUser?.nome.split(' ')[0]} ðŸ‘‹</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Aqui está o resumo das suas operações hoje.</p>
         </div>
         
         <div className="flex flex-wrap gap-3 w-full lg:w-auto">
@@ -2158,7 +2158,7 @@ const Dashboard = () => {
                 </div>
                 <span className="text-3xl font-black text-slate-800 dark:text-slate-50">{kpis.tasksCompleted}</span>
               </div>
-              <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">ConcluÃ­das</p>
+              <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Concluídas</p>
               <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">Tarefas finalizadas com sucesso</p>
             </div>
           </Link>
@@ -2173,7 +2173,7 @@ const Dashboard = () => {
                 <span className="text-3xl font-black text-slate-800 dark:text-slate-50">{kpis.tasksInProgress}</span>
               </div>
               <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Em Andamento</p>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">Demandas em execuÃ§Ã£o ativa</p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium">Demandas em execução ativa</p>
             </div>
           </Link>
 
@@ -2187,7 +2187,7 @@ const Dashboard = () => {
                 <span className="text-3xl font-black text-red-600 dark:text-red-400">{kpis.tasksOverdue}</span>
               </div>
               <p className="text-xs font-black text-red-500 dark:text-red-400 uppercase tracking-widest">Atrasadas</p>
-              <p className="text-[10px] text-red-400 dark:text-red-500 mt-1 font-bold">AtenÃ§Ã£o urgente necessÃ¡ria</p>
+              <p className="text-[10px] text-red-400 dark:text-red-500 mt-1 font-bold">Atenção urgente necessária</p>
             </div>
           </Link>
 
@@ -2200,22 +2200,22 @@ const Dashboard = () => {
                   <Icon name="shield" className="w-6 h-6" />
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">SessÃ£o Segura</span>
+                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Sessão Segura</span>
                   <span className="text-[10px] font-bold text-slate-400">Expira em 30m</span>
                 </div>
               </div>
-              <p className="text-xs font-black text-white uppercase tracking-widest">Status de SeguranÃ§a</p>
+              <p className="text-xs font-black text-white uppercase tracking-widest">Status de Segurança</p>
               <div className="flex items-center gap-2 mt-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <p className="text-[10px] text-slate-400 font-medium">ProteÃ§Ã£o de dados ativa</p>
+                <p className="text-[10px] text-slate-400 font-medium">Proteção de dados ativa</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* GRÃFICO DE TAREFAS - Ocupa 4 colunas */}
+        {/* GRàFICO DE TAREFAS - Ocupa 4 colunas */}
         <div className="md:col-span-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col h-[300px]">
-          <h3 className="text-sm font-black text-slate-800 dark:text-slate-50 uppercase tracking-widest mb-4">DistribuiÃ§Ã£o de Tarefas</h3>
+          <h3 className="text-sm font-black text-slate-800 dark:text-slate-50 uppercase tracking-widest mb-4">Distribuição de Tarefas</h3>
           <div className="flex-1">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -2248,9 +2248,9 @@ const Dashboard = () => {
               <div className="p-2 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 rounded-xl">
                 <Icon name="award" className="w-5 h-5" />
               </div>
-              <h3 className="text-sm font-black text-slate-800 dark:text-slate-50 uppercase tracking-widest">Top Clientes (AvaliaÃ§Ã£o)</h3>
+              <h3 className="text-sm font-black text-slate-800 dark:text-slate-50 uppercase tracking-widest">Top Clientes (Avaliação)</h3>
             </div>
-            <span className="text-xs font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg">MÃ©dia: <span className="text-amber-500">{kpis.avgRating}</span> <Icon name="star" className="w-3 h-3 inline pb-0.5" /></span>
+            <span className="text-xs font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg">Média: <span className="text-amber-500">{kpis.avgRating}</span> <Icon name="star" className="w-3 h-3 inline pb-0.5" /></span>
           </div>
           
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-5 gap-4">
@@ -2272,7 +2272,7 @@ const Dashboard = () => {
             ))}
             {kpis.rankedClients.length === 0 && (
               <div className="col-span-full flex items-center justify-center text-slate-400 dark:text-slate-500 italic font-medium text-sm">
-                Nenhuma avaliaÃ§Ã£o registrada para compor o ranking.
+                Nenhuma avaliação registrada para compor o ranking.
               </div>
             )}
           </div>
@@ -2315,7 +2315,7 @@ const Dashboard = () => {
           </Link>
         </div>
 
-        {/* USUÃRIOS OVERVIEW - Ocupa 6 colunas */}
+        {/* USUàRIOS OVERVIEW - Ocupa 6 colunas */}
         {canViewAllUsers && (
           <div className="md:col-span-6 bg-slate-800 dark:bg-slate-950 text-white p-6 rounded-2xl md:rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between group">
             <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full group-hover:scale-150 transition-transform duration-700" />
@@ -2324,7 +2324,7 @@ const Dashboard = () => {
                 <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
                   <Icon name="users" className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-sm font-black uppercase tracking-widest">UsuÃ¡rios do Sistema</h3>
+                <h3 className="text-sm font-black uppercase tracking-widest">Usuários do Sistema</h3>
               </div>
               
               <div className="mb-6">
@@ -2353,7 +2353,7 @@ const Dashboard = () => {
             </div>
             
             <Link to="/usuarios" className="relative z-10 mt-6 w-full py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl text-center text-xs font-bold uppercase tracking-widest transition-colors">
-              Gerenciar UsuÃ¡rios
+              Gerenciar Usuários
             </Link>
           </div>
         )}
@@ -2436,7 +2436,7 @@ const ClientsPage = () => {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [activeTab, setActiveTab] = useState<'id' | 'end' | 'cont' | 'fin' | 'crm' | 'anexos' | 'interacoes'>('id');
   const [contactPeople, setContactPeople] = useState<ContactPerson[]>([]);
-  const [tipoPessoa, setTipoPessoa] = useState<'FÃ­sica' | 'JurÃ­dica'>('JurÃ­dica');
+  const [tipoPessoa, setTipoPessoa] = useState<'Física' | 'Jurídica'>('Jurídica');
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [filterStatus, setFilterStatus] = useState<EntityStatus | 'all'>('all');
@@ -2466,7 +2466,7 @@ const ClientsPage = () => {
   const [inscricaoEstadual, setInscricaoEstadual] = useState('');
   const [status, setStatus] = useState<EntityStatus>(EntityStatus.ACTIVE);
   const [chavePix, setChavePix] = useState('');
-  const [tipoChavePix, setTipoChavePix] = useState<'CPF/CNPJ' | 'E-mail' | 'Telefone' | 'AleatÃ³ria'>('CPF/CNPJ');
+  const [tipoChavePix, setTipoChavePix] = useState<'CPF/CNPJ' | 'E-mail' | 'Telefone' | 'Aleatória'>('CPF/CNPJ');
 
   // Aditional Controlled States for Clients (Fixing multi-tab data loss)
   const [inscricaoMunicipal, setInscricaoMunicipal] = useState('');
@@ -2514,7 +2514,7 @@ const ClientsPage = () => {
   useEffect(() => {
     if (editingClient) {
       setContactPeople(editingClient.pessoasContato || []);
-      setTipoPessoa(editingClient.tipoPessoa || 'JurÃ­dica');
+      setTipoPessoa(editingClient.tipoPessoa || 'Jurídica');
       setNomeRazaoSocial(editingClient.nomeRazaoSocial || '');
       setNomeFantasia(editingClient.nomeFantasia || '');
       setDocumento(editingClient.documento || '');
@@ -2556,7 +2556,7 @@ const ClientsPage = () => {
     } else {
       if (!isModalOpen) setIsViewOnly(false);
       setContactPeople([]);
-      setTipoPessoa('JurÃ­dica');
+      setTipoPessoa('Jurídica');
       setNomeRazaoSocial('');
       setNomeFantasia('');
       setDocumento('');
@@ -2597,12 +2597,12 @@ const ClientsPage = () => {
   }, [editingClient, isModalOpen]);
 
   const handleDocumentoBlur = async () => {
-    if (tipoPessoa !== 'JurÃ­dica') return;
+    if (tipoPessoa !== 'Jurídica') return;
     const cleanCnpj = documento.replace(/\D/g, '');
     if (cleanCnpj.length === 14) {
       setLoadingCnpj(true);
       try {
-        // Try publica.cnpj.ws first for InscriÃ§Ã£o Estadual
+        // Try publica.cnpj.ws first for Inscrição Estadual
         const resPublica = await fetch(`https://publica.cnpj.ws/cnpj/${cleanCnpj}`);
         if (resPublica.ok) {
           const data = await resPublica.json();
@@ -2676,7 +2676,7 @@ const ClientsPage = () => {
     if (!isDocumentoValid || !isChavePixValid) {
       setActiveTab(!isDocumentoValid ? 'id' : 'fin');
       toast({ 
-        title: 'Erro de ValidaÃ§Ã£o', 
+        title: 'Erro de Validação', 
         message: !isDocumentoValid ? 'Por favor, corrija o documento (CPF/CNPJ) do cliente.' : 'Por favor, corrija a Chave PIX informada.', 
         type: 'error' 
       });
@@ -2690,7 +2690,7 @@ const ClientsPage = () => {
       if (duplicate) {
         toast({ 
           title: 'Cliente Duplicado', 
-          message: `JÃ¡ existe um cliente cadastrado com este documento (${formatDocumento(cleanDoc)}): ${duplicate.nomeRazaoSocial}`, 
+          message: `Já existe um cliente cadastrado com este documento (${formatDocumento(cleanDoc)}): ${duplicate.nomeRazaoSocial}`, 
           type: 'warning' 
         });
         setActiveTab('id');
@@ -2709,7 +2709,7 @@ const ClientsPage = () => {
       nomeRazaoSocial: nomeRazaoSocial,
       nomeFantasia: nomeFantasia,
       documento: documento,
-      inscricaoEstadual: tipoPessoa === 'JurÃ­dica' ? inscricaoEstadual : '',
+      inscricaoEstadual: tipoPessoa === 'Jurídica' ? inscricaoEstadual : '',
       inscricaoMunicipal: inscricaoMunicipal,
       dataCadastro: editingClient?.dataCadastro || new Date().toISOString(),
       status: status,
@@ -2795,13 +2795,13 @@ const ClientsPage = () => {
   };
 
   const clientTabs = [
-    { id: 'id', label: 'IdentificaÃ§Ã£o', icon: 'id-card' },
-    { id: 'end', label: 'EndereÃ§o', icon: 'map-marker-alt' },
+    { id: 'id', label: 'Identificação', icon: 'id-card' },
+    { id: 'end', label: 'Endereço', icon: 'map-marker-alt' },
     { id: 'cont', label: 'Contatos', icon: 'phone' },
     { id: 'fin', label: 'Financeiro', icon: 'wallet' },
     { id: 'crm', label: 'CRM & Gov', icon: 'shield-alt' },
     { id: 'anexos', label: 'Anexos', icon: 'paperclip' },
-    { id: 'interacoes', label: 'InteraÃ§Ãµes', icon: 'history' }
+    { id: 'interacoes', label: 'Interações', icon: 'history' }
   ] as const;
 
   const currentTabIndex = clientTabs.findIndex(t => t.id === activeTab);
@@ -2866,7 +2866,7 @@ const ClientsPage = () => {
           const val = values[index];
           if (!val) return;
 
-          if (header === 'Nome/RazÃ£o Social') clientData.nomeRazaoSocial = val;
+          if (header === 'Nome/Razão Social') clientData.nomeRazaoSocial = val;
           if (header === 'Documento') clientData.documento = val;
           if (header === 'Cidade') clientData.cidade = val;
           if (header === 'UF') clientData.uf = val;
@@ -2884,7 +2884,7 @@ const ClientsPage = () => {
         }
       });
       
-      toast({ title: 'ImportaÃ§Ã£o ConcluÃ­da', message: `${importedCount} novos clientes importados.`, type: 'success' });
+      toast({ title: 'Importação Concluída', message: `${importedCount} novos clientes importados.`, type: 'success' });
       // Reset input
       e.target.value = '';
     };
@@ -2892,7 +2892,7 @@ const ClientsPage = () => {
   };
 
   const exportToCSV = () => {
-    const headers = ['CÃ³digo', 'Nome/RazÃ£o Social', 'Documento', 'Cidade', 'UF', 'Status', 'Categoria'];
+    const headers = ['Código', 'Nome/Razão Social', 'Documento', 'Cidade', 'UF', 'Status', 'Categoria'];
     const csvContent = [
       headers.join(','),
       ...filteredClients.map(c => [
@@ -2957,7 +2957,7 @@ const ClientsPage = () => {
     <div className="p-4 md:p-8 space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-           <p className="text-slate-500 dark:text-slate-400 font-medium">GestÃ£o avanÃ§ada da carteira de clientes e parceiros.</p>
+           <p className="text-slate-500 dark:text-slate-400 font-medium">Gestão avançada da carteira de clientes e parceiros.</p>
         </div>
         <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
           {selectedClients.length > 0 && (
@@ -2967,7 +2967,7 @@ const ClientsPage = () => {
               <button 
                 onClick={() => {
                   confirm({
-                    title: 'Confirmar ExclusÃ£o',
+                    title: 'Confirmar Exclusão',
                     message: `Deseja excluir ${selectedClients.length} clientes selecionados?`,
                     confirmLabel: 'Excluir',
                     cancelLabel: 'Cancelar',
@@ -3025,7 +3025,7 @@ const ClientsPage = () => {
               onChange={(e) => setFilterSituacao(e.target.value)}
               className="px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-slate-600 dark:text-slate-300 outline-none focus:border-primary"
             >
-              <option value="all">Todas SituaÃ§Ãµes</option>
+              <option value="all">Todas Situações</option>
               <option value="Ativo">Ativo</option>
               <option value="Inadimplente">Inadimplente</option>
               <option value="Bloqueado para venda">Bloqueado</option>
@@ -3075,12 +3075,12 @@ const ClientsPage = () => {
                     }}
                   />
                 </th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">CÃ³d.</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Nome / RazÃ£o Social</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cód.</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Nome / Razão Social</th>
                 <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Documento</th>
                 <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cidade/UF</th>
                 <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">AÃ§Ãµes</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -3108,7 +3108,7 @@ const ClientsPage = () => {
                      </div>
                   </td>
                   <td className="px-6 py-5 text-slate-600 dark:text-slate-400 font-medium">{maskDocumentoPrivacy(c.documento)}</td>
-                  <td className="px-6 py-5 text-slate-500 dark:text-slate-400 text-sm font-medium">{c.cidade ? `${c.cidade}/${c.uf}` : 'NÃ£o inf.'}</td>
+                  <td className="px-6 py-5 text-slate-500 dark:text-slate-400 text-sm font-medium">{c.cidade ? `${c.cidade}/${c.uf}` : 'Não inf.'}</td>
                   <td className="px-6 py-5">
                     <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase border ${c.status === EntityStatus.ACTIVE ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/50' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border-red-100 dark:border-red-800/50'}`}>
                       {c.status}
@@ -3159,7 +3159,7 @@ const ClientsPage = () => {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cidade/UF</span>
-                    <span className="text-slate-500 dark:text-slate-400 font-medium">{c.cidade ? `${c.cidade}/${c.uf}` : 'NÃ£o inf.'}</span>
+                    <span className="text-slate-500 dark:text-slate-400 font-medium">{c.cidade ? `${c.cidade}/${c.uf}` : 'Não inf.'}</span>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2 pt-2 border-t border-slate-50 dark:border-slate-800/50">
@@ -3183,7 +3183,7 @@ const ClientsPage = () => {
                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingClient ? editingClient.clientCode : 'Novo Cadastro Corporativo'}</span>
                  <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
                     <Icon name={isViewOnly ? 'eye' : (editingClient ? 'edit' : 'user-plus')} className="text-primary" />
-                    {isViewOnly ? 'VisualizaÃ§Ã£o de Cliente' : (editingClient ? 'EdiÃ§Ã£o de Cliente' : 'Novo Cliente')}
+                    {isViewOnly ? 'Visualização de Cliente' : (editingClient ? 'Edição de Cliente' : 'Novo Cliente')}
                  </h2>
                </div>
                <button onClick={() => setIsModalOpen(false)} className="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors"><Icon name="times" className="text-2xl" /></button>
@@ -3214,18 +3214,18 @@ const ClientsPage = () => {
                        <div className="space-y-1">
                          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Tipo de Pessoa</label>
                          <select value={tipoPessoa} onChange={(e: any) => setTipoPessoa(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200">
-                            <option value="JurÃ­dica">Pessoa JurÃ­dica (PJ)</option>
-                            <option value="FÃ­sica">Pessoa FÃ­sica (PF)</option>
+                            <option value="Jurídica">Pessoa Jurídica (PJ)</option>
+                            <option value="Física">Pessoa Física (PF)</option>
                          </select>
                        </div>
                        <div className="md:col-span-2 space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Nome / RazÃ£o Social</label>
+                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Nome / Razão Social</label>
                          <input 
                             name="nomeRazaoSocial" 
                             required 
                             value={nomeRazaoSocial} 
                             onChange={(e) => setNomeRazaoSocial(capitalizeWords(e.target.value))}
-                            placeholder="Ex: RazÃ£o Social da Empresa" 
+                            placeholder="Ex: Razão Social da Empresa" 
                             className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary shadow-inner text-slate-800 dark:text-slate-200" 
                          />
                        </div>
@@ -3242,7 +3242,7 @@ const ClientsPage = () => {
                        </div>
                        <div className="space-y-1">
                          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex justify-between items-center">
-                           {tipoPessoa === 'JurÃ­dica' ? 'CNPJ' : 'CPF'}
+                           {tipoPessoa === 'Jurídica' ? 'CNPJ' : 'CPF'}
                            {loadingCnpj && <Icon name="spinner" className="animate-spin text-primary" />}
                          </label>
                          <input 
@@ -3251,26 +3251,26 @@ const ClientsPage = () => {
                             value={documento} 
                             onChange={(e) => {
                                const val = e.target.value;
-                               const masked = tipoPessoa === 'JurÃ­dica' ? maskCNPJ(val) : maskCPF(val);
+                               const masked = tipoPessoa === 'Jurídica' ? maskCNPJ(val) : maskCPF(val);
                                setDocumento(masked);
                                const raw = val.replace(/\D/g, "");
                                if (raw.length > 0) {
-                                 setIsDocumentoValid(tipoPessoa === 'JurÃ­dica' ? validateCNPJ(masked) : validateCPF(masked));
+                                 setIsDocumentoValid(tipoPessoa === 'Jurídica' ? validateCNPJ(masked) : validateCPF(masked));
                                } else {
                                  setIsDocumentoValid(true);
                                }
                              }}
                             onBlur={handleDocumentoBlur}
-                            placeholder={tipoPessoa === 'JurÃ­dica' ? '00.000.000/0000-00' : '000.000.000-00'} 
+                            placeholder={tipoPessoa === 'Jurídica' ? '00.000.000/0000-00' : '000.000.000-00'} 
                             className={`w-full px-6 py-4 rounded-2xl border font-bold outline-none focus:border-primary dark:focus:border-primary transition-colors text-slate-800 dark:text-slate-200 ${!isDocumentoValid && documento.length > 0 ? 'border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-400' : 'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50'}`} 
                          />
                          {!isDocumentoValid && documento.length > 0 && (
-                           <span className="text-[9px] font-bold text-red-500 uppercase tracking-tighter ml-2 animate-pulse">Documento InvÃ¡lido</span>
+                           <span className="text-[9px] font-bold text-red-500 uppercase tracking-tighter ml-2 animate-pulse">Documento Inválido</span>
                          )}
                        </div>
-                       {tipoPessoa === 'JurÃ­dica' && (
+                       {tipoPessoa === 'Jurídica' && (
                          <div className="space-y-1">
-                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">InscriÃ§Ã£o Estadual</label>
+                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Inscrição Estadual</label>
                             <input 
                               value={inscricaoEstadual} 
                               onChange={(e) => setInscricaoEstadual(maskIE(e.target.value))}
@@ -3319,7 +3319,7 @@ const ClientsPage = () => {
                          />
                        </div>
                        <div className="space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">NÃºmero</label>
+                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Número</label>
                          <input value={numero} onChange={(e) => setNumero(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary shadow-inner text-slate-800 dark:text-slate-200" />
                        </div>
                     </div>
@@ -3367,7 +3367,7 @@ const ClientsPage = () => {
                              <PhoneInput value={telefonePrincipal} onChange={(val) => setTelefonePrincipal(val)} required className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                           </div>
                           <div className="space-y-1">
-                             <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">WhatsApp / SecundÃ¡rio</label>
+                             <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">WhatsApp / Secundário</label>
                              <PhoneInput value={telefoneSecundario} onChange={(val) => setTelefoneSecundario(val)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                           </div>
                           <div className="space-y-1">
@@ -3435,16 +3435,16 @@ const ClientsPage = () => {
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                        <div className="space-y-4">
-                          <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] border-b border-slate-100 dark:border-slate-800 pb-2">DomicÃ­lio BancÃ¡rio</h5>
+                          <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] border-b border-slate-100 dark:border-slate-800 pb-2">Domicílio Bancário</h5>
                           <div className="space-y-4">
-                             <input value={banco} onChange={(e) => setBanco(e.target.value)} placeholder="InstituiÃ§Ã£o (Banco)" className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                             <input value={banco} onChange={(e) => setBanco(e.target.value)} placeholder="Instituição (Banco)" className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                              <div className="grid grid-cols-2 gap-4">
-                                <input value={agencia} onChange={(e) => setAgencia(e.target.value)} placeholder="AgÃªncia" className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                                <input value={agencia} onChange={(e) => setAgencia(e.target.value)} placeholder="Agência" className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                                 <input value={conta} onChange={(e) => setConta(e.target.value)} placeholder="Conta" className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                              </div>
                              <select value={tipoConta} onChange={(e) => setTipoConta(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200">
                                 <option value="Corrente">Conta Corrente</option>
-                                <option value="PoupanÃ§a">Conta PoupanÃ§a</option>
+                                <option value="Poupança">Conta Poupança</option>
                              </select>
                           </div>
                        </div>
@@ -3465,7 +3465,7 @@ const ClientsPage = () => {
                                    <option value="CPF/CNPJ">CPF/CNPJ</option>
                                    <option value="E-mail">E-mail</option>
                                    <option value="Telefone">Telefone</option>
-                                   <option value="AleatÃ³ria">Chave AleatÃ³ria</option>
+                                   <option value="Aleatória">Chave Aleatória</option>
                                 </select>
                              </div>
                              <div className="space-y-1">
@@ -3497,13 +3497,13 @@ const ClientsPage = () => {
                                   className={`w-full px-6 py-4 rounded-2xl border ${!isChavePixValid ? 'border-red-500 bg-red-50' : 'border-slate-100 bg-slate-50'} font-bold outline-none focus:border-primary shadow-inner transition-colors`}
                                 />
                                 {!isChavePixValid && (
-                                  <p className="text-[10px] font-bold text-red-500 ml-2 animate-in fade-in slide-in-from-top-1">Documento invÃ¡lido</p>
+                                  <p className="text-[10px] font-bold text-red-500 ml-2 animate-in fade-in slide-in-from-top-1">Documento inválido</p>
                                 )}
                              </div>
                           </div>
                           <div className="p-6 rounded-[2rem] bg-emerald-50 border border-emerald-100 flex gap-4 items-center">
                              <div className="bg-emerald-500 text-white p-3 rounded-xl"><Icon name="info-circle" /></div>
-                             <p className="text-[10px] font-bold text-emerald-800 leading-relaxed uppercase tracking-tight">Utilize estas informaÃ§Ãµes preferencialmente para emissÃ£o de notas fiscais e conciliaÃ§Ã£o bancÃ¡ria automatizada.</p>
+                             <p className="text-[10px] font-bold text-emerald-800 leading-relaxed uppercase tracking-tight">Utilize estas informações preferencialmente para emissão de notas fiscais e conciliação bancária automatizada.</p>
                           </div>
                        </div>
                     </div>
@@ -3523,34 +3523,34 @@ const ClientsPage = () => {
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Origem do Lead</label>
                           <select value={origem} onChange={(e) => setOrigem(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
                              <option value="Site">Site Institucional</option>
-                             <option value="IndicaÃ§Ã£o">IndicaÃ§Ã£o Direta</option>
-                             <option value="ProspecÃ§Ã£o">ProspecÃ§Ã£o Ativa</option>
+                             <option value="Indicação">Indicação Direta</option>
+                             <option value="Prospecção">Prospecção Ativa</option>
                              <option value="Eventos">Eventos / Feiras</option>
                              <option value="Outros">Outros Canais</option>
                           </select>
                        </div>
                        <div className="space-y-1">
-                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">AvaliaÃ§Ã£o Interna (Rating)</label>
+                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Avaliação Interna (Rating)</label>
                           <select 
                             value={avaliacaoInterna} 
                             onChange={(e) => setAvaliacaoInterna(Number(e.target.value))}
                             className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary"
                           >
-                             <option value="0">0 - NÃ£o Avaliado</option>
+                             <option value="0">0 - Não Avaliado</option>
                              <option value="1">1 - Baixo Potencial / Risco Alto</option>
-                             <option value="2">2 - Potencial MÃ©dio / Regular</option>
-                             <option value="3">3 - Bom Cliente / EstÃ¡vel</option>
-                             <option value="4">4 - Cliente PrioritÃ¡rio / Potencial Alto</option>
+                             <option value="2">2 - Potencial Médio / Regular</option>
+                             <option value="3">3 - Bom Cliente / Estável</option>
+                             <option value="4">4 - Cliente Prioritário / Potencial Alto</option>
                              <option value="5">5 - Cliente VIP / Master</option>
                           </select>
                        </div>
                     </section>
 
                     <section className="space-y-6">
-                       <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Status & GovernanÃ§a de Vendas</h4>
+                       <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Status & Governança de Vendas</h4>
                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                           <div className="space-y-1">
-                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">SituaÃ§Ã£o de CrÃ©dito</label>
+                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Situação de Crédito</label>
                              <select value={situacao} onChange={(e) => setSituacao(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
                                 <option value="Ativo">Liberado / Ativo</option>
                                 <option value="Inadimplente">Inadimplente</option>
@@ -3562,7 +3562,7 @@ const ClientsPage = () => {
                              <input value={motivoBloqueio} onChange={(e) => setMotivoBloqueio(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" />
                           </div>
                           <div className="space-y-1">
-                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Data Ãšltima Venda</label>
+                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Data àšltima Venda</label>
                              <input 
                                type="date" 
                                value={dataUltimaVenda}
@@ -3575,8 +3575,8 @@ const ClientsPage = () => {
                     </section>
 
                     <section className="space-y-1">
-                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ObservaÃ§Ãµes Gerais</label>
-                       <textarea value={observacoes} onChange={(e) => setObservacoes(e.target.value)} rows={4} placeholder="Notas internas sobre o relacionamento, histÃ³rico e peculiaridades..." className="w-full px-7 py-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 outline-none resize-none font-medium focus:border-primary shadow-inner" />
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Observações Gerais</label>
+                       <textarea value={observacoes} onChange={(e) => setObservacoes(e.target.value)} rows={4} placeholder="Notas internas sobre o relacionamento, histórico e peculiaridades..." className="w-full px-7 py-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 outline-none resize-none font-medium focus:border-primary shadow-inner" />
                     </section>
 
                     {customFields.length > 0 && (
@@ -3645,25 +3645,25 @@ const ClientsPage = () => {
                <div data-tab-id="interacoes" className={activeTab === 'interacoes' ? 'block' : 'hidden'}>
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
                     <section className="space-y-6">
-                       <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Registrar InteraÃ§Ã£o</h4>
+                       <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Registrar Interação</h4>
                        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
                           <div className="flex flex-col md:flex-row gap-4">
                              <div className="w-full md:w-1/3">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo de InteraÃ§Ã£o</label>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo de Interação</label>
                                 <select 
                                   value={newInteractionType} 
                                   onChange={(e) => setNewInteractionType(e.target.value as any)} 
                                   className="w-full mt-1 px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold outline-none focus:border-primary"
                                 >
-                                   <option value="NOTE">AnotaÃ§Ã£o Interna</option>
-                                   <option value="CALL">LigaÃ§Ã£o TelefÃ´nica</option>
+                                   <option value="NOTE">Anotação Interna</option>
+                                   <option value="CALL">Ligação Telefà´nica</option>
                                    <option value="WHATSAPP">WhatsApp</option>
                                    <option value="EMAIL">E-mail</option>
-                                   <option value="MEETING">ReuniÃ£o</option>
+                                   <option value="MEETING">Reunião</option>
                                 </select>
                              </div>
                              <div className="w-full md:w-2/3">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">DescriÃ§Ã£o</label>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
                                 <div className="flex flex-col sm:flex-row gap-2 mt-1">
                                    <input 
                                      value={newInteractionDesc} 
@@ -3674,7 +3674,7 @@ const ClientsPage = () => {
                                          addInteraction();
                                        }
                                      }}
-                                     placeholder="Detalhes da interaÃ§Ã£o..." 
+                                     placeholder="Detalhes da interação..." 
                                      className="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-white font-medium outline-none focus:border-primary" 
                                    />
                                    <button 
@@ -3692,10 +3692,10 @@ const ClientsPage = () => {
                     </section>
 
                     <section className="space-y-6">
-                       <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Timeline de InteraÃ§Ãµes</h4>
+                       <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Timeline de Interações</h4>
                        <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
                           {interactions.length === 0 ? (
-                            <div className="text-center py-10 text-slate-400 font-medium italic">Nenhuma interaÃ§Ã£o registrada.</div>
+                            <div className="text-center py-10 text-slate-400 font-medium italic">Nenhuma interação registrada.</div>
                           ) : (
                             interactions.map((interaction, idx) => {
                               const user = users.find(u => u.id === interaction.userId);
@@ -3727,7 +3727,7 @@ const ClientsPage = () => {
                                       <div className="flex justify-between items-start mb-1">
                                          <div className="flex items-center gap-2">
                                             <img src={user?.foto || 'https://picsum.photos/seed/default/40'} className="w-5 h-5 rounded-full" />
-                                            <span className="text-xs font-bold text-slate-700">{user?.nome || 'UsuÃ¡rio'}</span>
+                                            <span className="text-xs font-bold text-slate-700">{user?.nome || 'Usuário'}</span>
                                          </div>
                                          <span className="text-[10px] font-bold text-slate-400">{new Date(interaction.date).toLocaleString('pt-BR')}</span>
                                       </div>
@@ -3760,7 +3760,7 @@ const ClientsPage = () => {
                     )}
                     {currentTabIndex < clientTabs.length - 1 ? (
                       <button key="next" type="button" onClick={handleNextTab} className="w-full sm:w-auto px-14 py-4 rounded-2xl bg-primary text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
-                        PrÃ³ximo <Icon name="arrow-right" />
+                        Próximo <Icon name="arrow-right" />
                       </button>
                     ) : (
                       <button key="submit" type="submit" form="clientForm" className="w-full sm:w-auto px-14 py-4 rounded-2xl bg-emerald-500 text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
@@ -3950,17 +3950,17 @@ const TasksPage = () => {
   const getChangeDetails = (oldT: Task, newT: Partial<Task>) => {
     const changes: string[] = [];
     const labels: Record<string, string> = {
-      titulo: 'TÃ­tulo',
-      descricao: 'DescriÃ§Ã£o',
+      titulo: 'Título',
+      descricao: 'Descrição',
       tipo: 'Tipo',
       solicitanteId: 'Solicitante',
-      responsavelId: 'ResponsÃ¡vel',
+      responsavelId: 'Responsável',
       setorId: 'Setor',
       interessados: 'Interessados',
       prioridade: 'Prioridade',
       status: 'Status',
-      dataInicio: 'Data de InÃ­cio',
-      dataConclusaoReal: 'ConclusÃ£o Efetiva',
+      dataInicio: 'Data de Início',
+      dataConclusaoReal: 'Conclusão Efetiva',
       tempoGasto: 'Tempo Gasto'
     };
 
@@ -3993,7 +3993,7 @@ const TasksPage = () => {
       if (!ost) {
         changes.push(`Subtarefa adicionada: "${nst.title}"`);
       } else if (ost.completed !== nst.completed) {
-        changes.push(`Subtarefa "${nst.title}": ${ost.completed ? 'ConcluÃ­da â†’ Pendente' : 'Pendente â†’ ConcluÃ­da'}`);
+        changes.push(`Subtarefa "${nst.title}": ${ost.completed ? 'Concluída â†’ Pendente' : 'Pendente â†’ Concluída'}`);
       }
     });
 
@@ -4007,7 +4007,7 @@ const TasksPage = () => {
     const oldCommentsCnt = (oldT.comments || []).length;
     const newCommentsCnt = (newT.comments || []).length;
     if (newCommentsCnt > oldCommentsCnt) {
-      changes.push(`${newCommentsCnt - oldCommentsCnt} novo(s) comentÃ¡rio(s) adicionado(s)`);
+      changes.push(`${newCommentsCnt - oldCommentsCnt} novo(s) comentário(s) adicionado(s)`);
     }
 
     return changes;
@@ -4061,14 +4061,14 @@ const TasksPage = () => {
     if (editingTask) {
       const details = getChangeDetails(editingTask, newTaskPartial);
       if (details.length > 0) {
-        const justificativa = (needsLogEntry && actionRef.current?.value) ? actionRef.current.value : 'Ajuste de parÃ¢metros tÃ©cnicos.';
+        const justificativa = (needsLogEntry && actionRef.current?.value) ? actionRef.current.value : 'Ajuste de parà¢metros técnicos.';
         
         logs.push({
           id: generateUUID(),
           timestamp: new Date().toISOString(),
           fromStatus: editingTask.status,
           toStatus: currentStatus,
-          action: `AtualizaÃ§Ã£o de tarefa`,
+          action: `Atualização de tarefa`,
           changes: details,
           justification: justificativa,
           userId: currentUser?.id || 'sys',
@@ -4081,9 +4081,9 @@ const TasksPage = () => {
         timestamp: new Date().toISOString(),
         fromStatus: currentStatus,
         toStatus: currentStatus,
-        action: `CriaÃ§Ã£o da tarefa`,
-        changes: ['Tarefa inicializada com os dados bÃ¡sicos.'],
-        justification: 'CriaÃ§Ã£o inicial',
+        action: `Criação da tarefa`,
+        changes: ['Tarefa inicializada com os dados básicos.'],
+        justification: 'Criação inicial',
         userId: currentUser?.id || 'sys',
         userName: currentUser?.nome || 'Sistema'
       });
@@ -4168,7 +4168,7 @@ const TasksPage = () => {
         toStatus: status,
         action: `Movido via Kanban`,
         changes: [`Status: "${task.status}" â†’ "${status}"`],
-        justification: 'MovimentaÃ§Ã£o rÃ¡pida pelo quadro Kanban',
+        justification: 'Movimentação rápida pelo quadro Kanban',
         userId: currentUser?.id || 'sys',
         userName: currentUser?.nome || 'Sistema'
       });
@@ -4208,7 +4208,7 @@ const TasksPage = () => {
               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t.taskNumber}</span>
             </div>
             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-               <button onClick={() => openHistoryModal(t)} className="p-1 text-amber-400 hover:text-amber-500 transition-colors" title="Ver HistÃ³rico"><Icon name="history" className="w-4 h-4" /></button>
+               <button onClick={() => openHistoryModal(t)} className="p-1 text-amber-400 hover:text-amber-500 transition-colors" title="Ver Histórico"><Icon name="history" className="w-4 h-4" /></button>
                {canEdit && <button onClick={() => openTaskModal(t)} className="p-1 text-slate-400 hover:text-blue-500 transition-colors" title="Editar"><Icon name="edit" className="w-4 h-4" /></button>}
             </div>
           </div>
@@ -4251,7 +4251,7 @@ const TasksPage = () => {
              <h4 className="text-lg font-extrabold text-slate-800 leading-tight mt-1">{t.titulo}</h4>
           </div>
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-             <button onClick={() => openHistoryModal(t)} className="p-2 text-amber-500 hover:bg-amber-50 rounded-xl" title="Ver HistÃ³rico"><Icon name="history" /></button>
+             <button onClick={() => openHistoryModal(t)} className="p-2 text-amber-500 hover:bg-amber-50 rounded-xl" title="Ver Histórico"><Icon name="history" /></button>
              {canEdit && <button onClick={() => openTaskModal(t)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl" title="Editar"><Icon name="edit" /></button>}
              {canDelete && <button onClick={() => { confirm({ title: 'Excluir Tarefa', message: 'Remover?', onConfirm: () => deleteTask(t.id) }); }} className="p-2 text-red-500 hover:bg-red-50 rounded-xl" title="Excluir"><Icon name="trash" /></button>}
           </div>
@@ -4276,7 +4276,7 @@ const TasksPage = () => {
   };
 
   const exportToCSV = () => {
-    const headers = ['NÃºmero', 'TÃ­tulo', 'Tipo', 'Status', 'Prioridade', 'Data InÃ­cio', 'Data Vencimento', 'ResponsÃ¡vel'];
+    const headers = ['Número', 'Título', 'Tipo', 'Status', 'Prioridade', 'Data Início', 'Data Vencimento', 'Responsável'];
     const csvContent = [
       headers.join(','),
       ...filteredTasks.map(t => [
@@ -4408,7 +4408,7 @@ const TasksPage = () => {
                   {statusTasks.map(t => renderTaskCard(t, true))}
                   {statusTasks.length === 0 && (
                     <div className={`border-2 border-dashed rounded-[2rem] h-24 flex items-center justify-center text-xs font-medium transition-colors ${isDraggedOver ? 'border-primary text-primary bg-primary/5' : 'border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500'}`}>
-                      Arraste tarefas para cÃ¡
+                      Arraste tarefas para cá
                     </div>
                   )}
                   {status === TaskStatus.OPEN && canInclude && (
@@ -4432,7 +4432,7 @@ const TasksPage = () => {
             <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
               <div>
                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">{historyTask.taskNumber}</span>
-                <h3 className="text-2xl font-black text-slate-800 tracking-tight">Timeline de AÃ§Ãµes</h3>
+                <h3 className="text-2xl font-black text-slate-800 tracking-tight">Timeline de Ações</h3>
               </div>
               <button onClick={() => setIsHistoryModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
@@ -4461,7 +4461,7 @@ const TasksPage = () => {
                           
                           {log.changes && log.changes.length > 0 && (
                             <div className="mb-3 space-y-1">
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">AlteraÃ§Ãµes:</p>
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Alterações:</p>
                               <ul className="list-disc list-inside text-xs text-slate-600 space-y-1 ml-1">
                                 {log.changes.map((change, i) => (
                                   <li key={i}>{change}</li>
@@ -4490,7 +4490,7 @@ const TasksPage = () => {
               ) : (
                 <div className="text-center py-20 text-slate-400 italic">
                    <Icon name="info-circle" className="text-4xl mb-4 opacity-20" />
-                   <p>Nenhuma aÃ§Ã£o ou justificativa registrada para esta tarefa ainda.</p>
+                   <p>Nenhuma ação ou justificativa registrada para esta tarefa ainda.</p>
                 </div>
               )}
             </div>
@@ -4506,7 +4506,7 @@ const TasksPage = () => {
           <div className="bg-white dark:bg-slate-900 rounded-t-[2.5rem] md:rounded-[3rem] w-full max-w-5xl h-full md:max-h-[90vh] overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom md:zoom-in duration-300">
             <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
               <div>
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingTask ? editingTask.taskNumber : 'Identificador AutomÃ¡tico'}</span>
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingTask ? editingTask.taskNumber : 'Identificador Automático'}</span>
                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Gerenciamento de Atividade</h3>
               </div>
             <div className="flex items-center gap-3">
@@ -4515,7 +4515,7 @@ const TasksPage = () => {
                         { id: 'geral', label: 'Geral', icon: 'info-circle' },
                         { id: 'checklist', label: 'Checklist', icon: 'check-square' },
                         { id: 'anexos', label: 'Anexos', icon: 'paperclip' },
-                        { id: 'historico', label: 'HistÃ³rico', icon: 'history' }
+                        { id: 'historico', label: 'Histórico', icon: 'history' }
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -4535,10 +4535,10 @@ const TasksPage = () => {
               {activeModalTab === 'geral' && (
                 <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-300">
                   <section className="space-y-6">
-                    <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">1. IdentificaÃ§Ã£o da Tarefa</h4>
+                    <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">1. Identificação da Tarefa</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">TÃ­tulo</label>
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Título</label>
                         <input value={titulo} onChange={(e) => setTitulo(e.target.value)} required className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-primary outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
                       </div>
                       <div className="space-y-1">
@@ -4548,7 +4548,7 @@ const TasksPage = () => {
                         </select>
                       </div>
                       <div className="md:col-span-2 space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">DescriÃ§Ã£o Detalhada</label>
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Descrição Detalhada</label>
                         <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={3} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-medium resize-none shadow-inner text-slate-800 dark:text-slate-200" />
                       </div>
                     </div>
@@ -4565,7 +4565,7 @@ const TasksPage = () => {
                         </select>
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">ResponsÃ¡vel (Owner)</label>
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Responsável (Owner)</label>
                         <select value={responsavelId} onChange={(e) => setResponsavelId(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-primary">
                           {users.map(u => <option key={u.id} value={u.id} className="dark:bg-slate-900">{u.nome}</option>)}
                         </select>
@@ -4585,10 +4585,10 @@ const TasksPage = () => {
                   </section>
 
                   <section className="space-y-6">
-                    <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">3. EsforÃ§o e Prazos</h4>
+                    <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">3. Esforço e Prazos</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Data de InÃ­cio</label>
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Data de Início</label>
                         <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-primary outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
                       </div>
                       <div className="space-y-1">
@@ -4596,18 +4596,18 @@ const TasksPage = () => {
                         <input type="date" value={calculatedDeadline} readOnly className="w-full px-6 py-4 rounded-2xl border border-slate-50 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold outline-none cursor-not-allowed" />
                       </div>
                        <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">ConclusÃ£o Efetiva</label>
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Conclusão Efetiva</label>
                         <input type="date" value={conclusaoReal} readOnly className="w-full px-6 py-4 rounded-2xl border border-slate-50 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold outline-none cursor-not-allowed" />
                       </div>
                        <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">EsforÃ§o Gasto (H:M)</label>
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Esforço Gasto (H:M)</label>
                         <input name="tempoGasto" placeholder="Ex: 08:30" value={tempoGasto} onChange={(e) => setTempoGasto(maskTime(e.target.value))} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
                       </div>
                     </div>
                   </section>
 
                   <section className="space-y-6">
-                    <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">4. GovernanÃ§a e Status</h4>
+                    <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">4. Governança e Status</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                        <div className="space-y-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Prioridade (Config. SLA)</label>
@@ -4698,14 +4698,14 @@ const TasksPage = () => {
                   </section>
 
                   <section className="space-y-6">
-                    <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">ComentÃ¡rios</h4>
+                    <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Comentários</h4>
                     <div className="space-y-4">
                       <div className="flex gap-2">
                         <input 
                           type="text" 
                           value={newCommentText} 
                           onChange={(e) => setNewCommentText(e.target.value)} 
-                          placeholder="Escreva um comentÃ¡rio..." 
+                          placeholder="Escreva um comentário..." 
                           className="flex-1 px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
@@ -4736,14 +4736,14 @@ const TasksPage = () => {
                           return (
                             <div key={c.id} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2">
                               <div className="flex justify-between items-center">
-                                <span className="text-xs font-black text-slate-700 dark:text-slate-300">{commentUser?.nome || 'UsuÃ¡rio Desconhecido'}</span>
+                                <span className="text-xs font-black text-slate-700 dark:text-slate-300">{commentUser?.nome || 'Usuário Desconhecido'}</span>
                                 <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">{new Date(c.createdAt).toLocaleString('pt-BR')}</span>
                               </div>
                               <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">{c.text}</p>
                             </div>
                           );
                         })}
-                        {comments.length === 0 && <p className="text-xs text-slate-400 dark:text-slate-500 italic">Nenhum comentÃ¡rio ainda.</p>}
+                        {comments.length === 0 && <p className="text-xs text-slate-400 dark:text-slate-500 italic">Nenhum comentário ainda.</p>}
                       </div>
                     </div>
                   </section>
@@ -4753,7 +4753,7 @@ const TasksPage = () => {
               {activeModalTab === 'anexos' && (
                 <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-300">
                   <section className="space-y-6">
-                    <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">GestÃ£o de Arquivos</h4>
+                    <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Gestão de Arquivos</h4>
                     <AttachmentsManager 
                       attachments={attachments} 
                       onUpdate={setAttachments} 
@@ -4766,7 +4766,7 @@ const TasksPage = () => {
               {activeModalTab === 'historico' && (
                 <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-300">
                   <section className="space-y-6">
-                    <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Timeline de AÃ§Ãµes e Auditoria</h4>
+                    <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Timeline de Ações e Auditoria</h4>
                     <div className="relative border-l-2 border-slate-100 dark:border-slate-800 ml-4 space-y-12">
                       {editingTask?.logs && editingTask.logs.length > 0 ? (
                         editingTask.logs.map((log, idx) => (
@@ -4784,7 +4784,7 @@ const TasksPage = () => {
                               <p className="text-slate-800 dark:text-slate-200 font-bold text-sm mb-2">{log.action}</p>
                               {log.changes && log.changes.length > 0 && (
                                 <div className="mb-3 space-y-1">
-                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">AlteraÃ§Ãµes:</p>
+                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Alterações:</p>
                                   <ul className="list-disc list-inside text-xs text-slate-600 dark:text-slate-400 space-y-1 ml-1">
                                     {log.changes.map((change, i) => (
                                       <li key={i}>{change}</li>
@@ -4817,8 +4817,8 @@ const TasksPage = () => {
 
               {showLogInput && (
                 <div className="bg-amber-50 dark:bg-amber-900/20 p-8 rounded-[3rem] border-2 border-amber-200 dark:border-amber-800/50 space-y-4 animate-in slide-in-from-top-4">
-                    <h5 className="text-[11px] font-black text-amber-800 dark:text-amber-400 uppercase tracking-widest flex items-center gap-2"><Icon name="edit-alt" /> Justificativa / AÃ§Ã£o Realizada (ObrigatÃ³rio para Log)</h5>
-                    <textarea ref={actionRef} required placeholder="Descreva o motivo das alteraÃ§Ãµes nos campos gatilho..." className="w-full px-7 py-5 rounded-[2rem] border border-amber-300 dark:border-amber-800 focus:border-amber-500 outline-none h-32 font-medium bg-white dark:bg-slate-900 shadow-inner text-slate-800 dark:text-slate-200" />
+                    <h5 className="text-[11px] font-black text-amber-800 dark:text-amber-400 uppercase tracking-widest flex items-center gap-2"><Icon name="edit-alt" /> Justificativa / Ação Realizada (Obrigatório para Log)</h5>
+                    <textarea ref={actionRef} required placeholder="Descreva o motivo das alterações nos campos gatilho..." className="w-full px-7 py-5 rounded-[2rem] border border-amber-300 dark:border-amber-800 focus:border-amber-500 outline-none h-32 font-medium bg-white dark:bg-slate-900 shadow-inner text-slate-800 dark:text-slate-200" />
                 </div>
               )}
             </form>
@@ -4911,7 +4911,7 @@ const UsersPage = () => {
     }
     if (editingUser) updateUser(u); else addUser(u);
     setEditingUser(u);
-    if (toast) toast({ message: 'UsuÃ¡rio salvo com sucesso!', type: 'success' });
+    if (toast) toast({ message: 'Usuário salvo com sucesso!', type: 'success' });
     setIsModalOpen(false);
   };
 
@@ -4930,11 +4930,11 @@ const UsersPage = () => {
       ...filteredUsers.map(u => [
         `"${u.nome}"`,
         `"${u.email}"`,
-        `"${roles.find(r => r.id === u.roleId)?.name || 'UsuÃ¡rio'}"`,
+        `"${roles.find(r => r.id === u.roleId)?.name || 'Usuário'}"`,
         u.status,
         `"${u.telefone || ''}"`,
         `"${u.celular || ''}"`,
-        u.possuiWhatsapp ? 'Sim' : 'NÃ£o'
+        u.possuiWhatsapp ? 'Sim' : 'Não'
       ].join(','))
     ].join('\n');
 
@@ -4962,14 +4962,14 @@ const UsersPage = () => {
   return (
     <div className="p-4 md:p-8 space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <p className="text-slate-500 font-medium">GestÃ£o de UsuÃ¡rios e Acessos ao Sistema.</p>
+        <p className="text-slate-500 font-medium">Gestão de Usuários e Acessos ao Sistema.</p>
         <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
           {canViewAllUsers && (
             <div className="relative flex-1 md:flex-none">
               <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
                 type="text" 
-                placeholder="Buscar usuÃ¡rios..." 
+                placeholder="Buscar usuários..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-12 pr-6 py-3 rounded-2xl border border-slate-200 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-medium w-full md:w-64"
@@ -4981,7 +4981,7 @@ const UsersPage = () => {
               <Icon name="download" /> Exportar
             </button>
           )}
-          {canInclude && <button onClick={() => openModal(null)} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 flex-1 md:flex-none"><Icon name="plus" /> Novo UsuÃ¡rio</button>}
+          {canInclude && <button onClick={() => openModal(null)} className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 flex-1 md:flex-none"><Icon name="plus" /> Novo Usuário</button>}
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -4990,12 +4990,12 @@ const UsersPage = () => {
              <img src={u.foto || `https://picsum.photos/seed/${u.id}/200`} className="w-24 h-24 rounded-[2.5rem] object-cover border-4 border-slate-50 dark:border-slate-800 shadow-lg mx-auto" />
              <div>
                 <h4 className="text-lg font-black text-slate-800 dark:text-slate-100">{u.nome}</h4>
-                <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">{roles.find(r => r.id === u.roleId)?.name || 'UsuÃ¡rio'}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">{roles.find(r => r.id === u.roleId)?.name || 'Usuário'}</p>
              </div>
              <button onClick={() => openModal(u)} className="w-full px-6 py-2 bg-slate-900 dark:bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase hover:bg-primary transition-all">{canManageUsers ? 'Gerenciar' : 'Ver Perfil'}</button>
           </div>
         ))}
-        {paginatedUsers.length === 0 && <div className="col-span-full p-10 text-center text-slate-300 dark:text-slate-700 italic font-bold">Nenhum usuÃ¡rio encontrado.</div>}
+        {paginatedUsers.length === 0 && <div className="col-span-full p-10 text-center text-slate-300 dark:text-slate-700 italic font-bold">Nenhum usuário encontrado.</div>}
       </div>
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       {isModalOpen && (
@@ -5013,10 +5013,10 @@ const UsersPage = () => {
             </div>
             <form id="userForm" onSubmit={handleSubmit} className="space-y-6 md:space-y-10 overflow-y-auto pr-2 md:pr-4 flex-1 custom-scrollbar">
               <section className="space-y-4 md:space-y-6">
-                <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">IdentificaÃ§Ã£o</h4>
+                <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Identificação</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Nome ExibiÃ§Ã£o</label>
+                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Nome Exibição</label>
                     <input name="nome" readOnly={!canManageUsers} defaultValue={editingUser?.nome} required className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 outline-none font-bold shadow-inner text-sm md:text-base" />
                   </div>
                   <div className="space-y-1">
@@ -5059,7 +5059,7 @@ const UsersPage = () => {
                 <section className="space-y-4 md:space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">FunÃ§Ã£o (Role)</label>
+                      <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Função (Role)</label>
                       <select name="roleId" value={modalRoleId} onChange={(e) => setModalRoleId(e.target.value)} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 outline-none font-bold text-sm md:text-base">
                         {roles.map(r => (
                           <option key={r.id} value={r.id}>{r.name}</option>
@@ -5153,7 +5153,7 @@ const TemplatesTab = () => {
               <p className="text-base font-bold text-slate-700 dark:text-slate-300 truncate">{t.subject || '-'}</p>
             </div>
             <div className="mt-6 space-y-3">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ConteÃºdo</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Conteúdo</p>
               <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-4 whitespace-pre-wrap leading-relaxed">{t.content.replace(/<[^>]*>?/gm, '')}</p>
             </div>
           </div>
@@ -5178,7 +5178,7 @@ const TemplatesTab = () => {
           <div className="bg-white dark:bg-slate-900 rounded-t-[2.5rem] md:rounded-[3rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom md:zoom-in duration-300 h-full md:max-h-[90vh]">
             <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30 shrink-0">
                <div>
-                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingTemplate ? 'EdiÃ§Ã£o' : 'Novo Cadastro'}</span>
+                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingTemplate ? 'Edição' : 'Novo Cadastro'}</span>
                  <h3 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Template de Mensagem</h3>
                </div>
                <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
@@ -5194,9 +5194,9 @@ const TemplatesTab = () => {
                 <input name="subject" defaultValue={editingTemplate?.subject} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary text-sm md:text-base" placeholder="Assunto do e-mail" />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ConteÃºdo</label>
-                <textarea name="content" required rows={8} defaultValue={editingTemplate?.content} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 font-medium outline-none focus:border-primary resize-none text-sm md:text-base" placeholder="ConteÃºdo da mensagem. Use {nome} para o nome do cliente." />
-                <p className="text-xs text-slate-400 mt-2 ml-1">VariÃ¡veis disponÃ­veis: <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{nome}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{empresa}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{email}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{telefone}'}</code></p>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Conteúdo</label>
+                <textarea name="content" required rows={8} defaultValue={editingTemplate?.content} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 font-medium outline-none focus:border-primary resize-none text-sm md:text-base" placeholder="Conteúdo da mensagem. Use {nome} para o nome do cliente." />
+                <p className="text-xs text-slate-400 mt-2 ml-1">Variáveis disponíveis: <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{nome}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{empresa}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{email}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{telefone}'}</code></p>
               </div>
 
               <div className="pt-4 md:pt-6 flex flex-col sm:flex-row justify-end gap-3 md:gap-4 shrink-0">
@@ -5353,12 +5353,12 @@ const RolesTab = () => {
                 {canInclude && (
                   <button 
                     onClick={() => {
-                      const clone = { ...r, id: generateUUID(), name: ${r.name} (CÃ³pia) };
+                      const clone = { ...r, id: generateUUID(), name: `${r.name} (Cópia)` };
                       addRole(clone);
-                      if (toast) toast({ message: 'FunÃ§Ã£o clonada!', type: 'success' });
+                      if (toast) toast({ message: 'Função clonada!', type: 'success' });
                     }} 
                     className="text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/30 p-3 rounded-2xl transition-colors bg-white/50 shadow-sm"
-                    title="Clonar FunÃ§Ã£o"
+                    title="Clonar Função"
                   >
                     <Icon name="copy" />
                   </button>
@@ -5408,7 +5408,7 @@ const RolesTab = () => {
                   <table className="w-full text-left border-collapse min-w-[600px]">
                     <thead className="bg-slate-100/50 dark:bg-slate-800/50">
                       <tr>
-                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800">MÃ³dulo</th>
+                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800">Módulo</th>
                         {types.map(t => (
                           <th key={t.key} className="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-800">{t.label}</th>
                         ))}
@@ -5485,15 +5485,15 @@ const ConfiguracoesPage = () => {
 
   const tabs = [
     ...(canAccessConfig ? [{ id: 'sistema', label: 'Sistema', icon: 'settings' }] : []),
-    ...(canAccessConfig ? [{ id: 'roles', label: 'FunÃ§Ãµes (RBAC)', icon: 'users-cog' }] : []),
+    ...(canAccessConfig ? [{ id: 'roles', label: 'Funções (RBAC)', icon: 'users-cog' }] : []),
     ...(canAccessConfig ? [{ id: 'setores', label: 'Setores', icon: 'building' }] : []),
     ...(canAccessConfig ? [{ id: 'categorias', label: 'Categorias', icon: 'tag' }] : []),
     ...(canAccessConfig ? [{ id: 'customFields', label: 'Campos Personalizados', icon: 'list-alt' }] : []),
     ...(canAccessConfig ? [{ id: 'sla', label: 'Regras de SLA', icon: 'clock' }] : []),
     ...(canAccessConfig ? [{ id: 'email', label: 'E-mail', icon: 'email' }] : []),
     ...(canAccessMalaDireta ? [{ id: 'templates', label: 'Templates', icon: 'file-alt' }] : []),
-    { id: 'aparencia', label: 'AparÃªncia', icon: 'palette' },
-    { id: 'notificacoes', label: 'NotificaÃ§Ãµes', icon: 'bell' }
+    { id: 'aparencia', label: 'Aparência', icon: 'palette' },
+    { id: 'notificacoes', label: 'Notificações', icon: 'bell' }
   ];
 
   const handleSaveSector = (e: React.FormEvent<HTMLFormElement>) => {
@@ -5523,7 +5523,7 @@ const ConfiguracoesPage = () => {
       newSla[key] = Number(formData.get(key));
     });
     updateSLASettings(newSla);
-    success('ParametrizaÃ§Ã£o de SLA atualizada com sucesso!');
+    success('Parametrização de SLA atualizada com sucesso!');
   };
 
   const handleSaveCategory = (e: React.FormEvent<HTMLFormElement>) => {
@@ -5582,7 +5582,7 @@ const ConfiguracoesPage = () => {
       ...currentUser,
       notificationPreferences: { email, system }
     });
-    success('PreferÃªncias de notificaÃ§Ã£o atualizadas com sucesso!');
+    success('Preferências de notificação atualizadas com sucesso!');
   };
 
   const { emailSettings, updateEmailSettings } = useApp();
@@ -5599,7 +5599,7 @@ const ConfiguracoesPage = () => {
     const secure = data.get('secure') === 'on';
 
     updateEmailSettings({ provider, host, port, user, pass, secure });
-    success('ConfiguraÃ§Ãµes de E-mail atualizadas com sucesso!');
+    success('Configurações de E-mail atualizadas com sucesso!');
   };
 
   return (
@@ -5622,7 +5622,7 @@ const ConfiguracoesPage = () => {
                   <Icon name="settings" />
                 </div>
                 <div>
-                  <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-50 tracking-tight">ConfiguraÃ§Ãµes do Sistema</h3>
+                  <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Configurações do Sistema</h3>
                   <p className="text-xs md:text-sm text-slate-400 dark:text-slate-500 font-medium mt-1">Personalize o nome, slogan e logo do sistema.</p>
                 </div>
               </div>
@@ -5642,7 +5642,7 @@ const ConfiguracoesPage = () => {
                   companyName: data.get('companyName') as string,
                   appLogo: logoBase64
                 });
-                success('ConfiguraÃ§Ãµes do sistema atualizadas!');
+                success('Configurações do sistema atualizadas!');
               }} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                  <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 dark:border-slate-800">
                     <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Nome do Sistema</label>
@@ -5662,7 +5662,7 @@ const ConfiguracoesPage = () => {
                     </div>
                  </div>
                  <button type="submit" className="md:col-span-2 py-4 md:py-5 bg-primary text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-base md:text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1 flex items-center justify-center gap-2 md:gap-3">
-                   <Icon name="save" /> Salvar ConfiguraÃ§Ãµes do Sistema
+                   <Icon name="save" /> Salvar Configurações do Sistema
                  </button>
               </form>
            </div>
@@ -5680,8 +5680,8 @@ const ConfiguracoesPage = () => {
                    <Icon name="building" />
                  </div>
                  <div>
-                   <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Setores da OrganizaÃ§Ã£o</h3>
-                   <p className="text-xs md:text-sm text-slate-400 dark:text-slate-500 font-medium mt-1">Gerencie os departamentos e suas respectivas lideranÃ§as.</p>
+                   <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Setores da Organização</h3>
+                   <p className="text-xs md:text-sm text-slate-400 dark:text-slate-500 font-medium mt-1">Gerencie os departamentos e suas respectivas lideranças.</p>
                  </div>
                </div>
                <button onClick={() => { setEditingSector(null); setIsSectorModalOpen(true); }} className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-xl md:rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 flex items-center justify-center gap-2 transition-all">
@@ -5696,9 +5696,9 @@ const ConfiguracoesPage = () => {
                     <div className="flex-1 overflow-hidden pr-4">
                       <h4 className="font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-tighter text-lg truncate">{s.nome}</h4>
                       <p className="text-[10px] font-black text-primary uppercase tracking-widest mt-1 flex items-center gap-1">
-                        <Icon name="user" className="text-[10px]" /> {manager?.nome || 'NÃ£o definido'}
+                        <Icon name="user" className="text-[10px]" /> {manager?.nome || 'Não definido'}
                       </p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-3 font-medium line-clamp-2">{s.descricao || 'Sem descriÃ§Ã£o definida.'}</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-3 font-medium line-clamp-2">{s.descricao || 'Sem descrição definida.'}</p>
                       <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-4 font-black uppercase tracking-widest flex items-center gap-1">
                         <Icon name="calendar-alt" className="text-[10px]" /> Desde {new Date(s.dataCriacao).toLocaleDateString()}
                       </p>
@@ -5758,7 +5758,7 @@ const ConfiguracoesPage = () => {
                  </div>
                  <div>
                    <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Categorias de Clientes</h3>
-                   <p className="text-xs md:text-sm text-slate-400 dark:text-slate-500 font-medium mt-1">Gerencie as segmentaÃ§Ãµes para organizar sua base de clientes.</p>
+                   <p className="text-xs md:text-sm text-slate-400 dark:text-slate-500 font-medium mt-1">Gerencie as segmentações para organizar sua base de clientes.</p>
                  </div>
                </div>
                <button onClick={() => { setEditingCategory(null); setIsCategoryModalOpen(true); }} className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-xl md:rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
@@ -5775,7 +5775,7 @@ const ConfiguracoesPage = () => {
                       </div>
                       <h4 className="font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-tighter text-lg md:text-xl truncate">{cat.nome}</h4>
                     </div>
-                    <p className="text-sm md:text-base text-slate-400 dark:text-slate-500 mt-4 font-medium italic line-clamp-2 leading-relaxed">{cat.descricao || 'Sem descriÃ§Ã£o definida.'}</p>
+                    <p className="text-sm md:text-base text-slate-400 dark:text-slate-500 mt-4 font-medium italic line-clamp-2 leading-relaxed">{cat.descricao || 'Sem descrição definida.'}</p>
                   </div>
                   <div className="flex gap-2 relative z-50 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
@@ -5831,7 +5831,7 @@ const ConfiguracoesPage = () => {
                  </div>
                  <div>
                    <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Campos Personalizados</h3>
-                   <p className="text-xs md:text-sm text-slate-400 dark:text-slate-500 font-medium mt-1">Crie campos dinÃ¢micos para o cadastro de clientes.</p>
+                   <p className="text-xs md:text-sm text-slate-400 dark:text-slate-500 font-medium mt-1">Crie campos dinà¢micos para o cadastro de clientes.</p>
                  </div>
                </div>
                <button onClick={() => { setEditingCustomField(null); setIsCustomFieldModalOpen(true); }} className="w-full sm:w-auto bg-primary text-white px-6 py-3 rounded-xl md:rounded-2xl font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2">
@@ -5851,11 +5851,11 @@ const ConfiguracoesPage = () => {
                     </div>
                     <div className="flex flex-wrap gap-3 mt-6">
                       <span className="text-xs font-black uppercase tracking-widest px-4 py-2 bg-slate-200 text-slate-600 rounded-xl">
-                        {field.type === 'text' ? 'Texto' : field.type === 'number' ? 'NÃºmero' : field.type === 'date' ? 'Data' : field.type === 'boolean' ? 'Sim/NÃ£o' : 'SeleÃ§Ã£o'}
+                        {field.type === 'text' ? 'Texto' : field.type === 'number' ? 'Número' : field.type === 'date' ? 'Data' : field.type === 'boolean' ? 'Sim/Não' : 'Seleção'}
                       </span>
                       {field.required && (
                         <span className="text-xs font-black uppercase tracking-widest px-4 py-2 bg-red-100 text-red-600 rounded-xl">
-                          ObrigatÃ³rio
+                          Obrigatório
                         </span>
                       )}
                     </div>
@@ -5890,17 +5890,17 @@ const ConfiguracoesPage = () => {
                   <Icon name="clock" />
                 </div>
                 <div>
-                  <h3 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">ParametrizaÃ§Ã£o de SLA</h3>
-                  <p className="text-xs md:text-sm text-slate-400 font-medium mt-1">Defina o prazo de entrega (em dias) para cada nÃ­vel de criticidade.</p>
+                  <h3 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Parametrização de SLA</h3>
+                  <p className="text-xs md:text-sm text-slate-400 font-medium mt-1">Defina o prazo de entrega (em dias) para cada nível de criticidade.</p>
                 </div>
               </div>
               <form onSubmit={handleSaveSLA} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                  {Object.keys(slaSettings).map(p => {
                    const colors: Record<string, string> = {
                      'Baixa': 'text-emerald-500 bg-emerald-50',
-                     'MÃ©dia': 'text-amber-500 bg-amber-50',
+                     'Média': 'text-amber-500 bg-amber-50',
                      'Alta': 'text-orange-500 bg-orange-50',
-                     'CrÃ­tica': 'text-red-500 bg-red-50'
+                     'Crítica': 'text-red-500 bg-red-50'
                    };
                    const colorClass = colors[p] || 'text-slate-500 bg-slate-50';
                    const bgClass = colorClass.split(' ')[1];
@@ -5923,7 +5923,7 @@ const ConfiguracoesPage = () => {
                    );
                  })}
                  <button type="submit" className="md:col-span-2 py-4 md:py-5 bg-primary text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-base md:text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1 flex items-center justify-center gap-2 md:gap-3">
-                   <Icon name="save" /> Efetivar ConfiguraÃ§Ãµes de SLA
+                   <Icon name="save" /> Efetivar Configurações de SLA
                  </button>
               </form>
            </div>
@@ -5936,7 +5936,7 @@ const ConfiguracoesPage = () => {
                   <Icon name="envelope" />
                 </div>
                 <div>
-                  <h3 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">ConfiguraÃ§Ãµes de E-mail</h3>
+                  <h3 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Configurações de E-mail</h3>
                   <p className="text-xs md:text-sm text-slate-400 font-medium mt-1">Defina as credenciais do servidor SMTP para envio de mala direta.</p>
                 </div>
               </div>
@@ -6000,7 +6000,7 @@ const ConfiguracoesPage = () => {
                     <input name="port" type="number" required defaultValue={emailSettings.port} placeholder="587" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
                  </div>
                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">UsuÃ¡rio</label>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Usuário</label>
                     <input name="user" required defaultValue={emailSettings.user} placeholder="seu-email@exemplo.com" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
                  </div>
                  <div className="space-y-1">
@@ -6009,7 +6009,7 @@ const ConfiguracoesPage = () => {
                  </div>
                  <div className="space-y-1 md:col-span-2 flex items-center gap-3 bg-slate-50 p-4 md:p-6 rounded-xl md:rounded-2xl border border-slate-100">
                     <input name="secure" type="checkbox" id="secure" defaultChecked={emailSettings.secure} className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary" />
-                    <label htmlFor="secure" className="text-xs md:text-sm font-bold text-slate-700">Usar conexÃ£o segura (SSL/TLS)</label>
+                    <label htmlFor="secure" className="text-xs md:text-sm font-bold text-slate-700">Usar conexão segura (SSL/TLS)</label>
                  </div>
                  {(selectedProvider === 'GMail' || selectedProvider === 'Office365') && (
                    <div className="md:col-span-2 bg-amber-50 border border-amber-200 p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] flex flex-col sm:flex-row gap-4 items-start shadow-sm">
@@ -6017,15 +6017,15 @@ const ConfiguracoesPage = () => {
                        <Icon name="exclamation-triangle" />
                      </div>
                      <div>
-                       <h4 className="font-black text-amber-800 text-xs md:text-sm mb-1">AtenÃ§Ã£o: Senha de Aplicativo NecessÃ¡ria</h4>
+                       <h4 className="font-black text-amber-800 text-xs md:text-sm mb-1">Atenção: Senha de Aplicativo Necessária</h4>
                        <p className="text-[10px] md:text-xs text-amber-700 font-medium leading-relaxed">
-                         Para provedores como {selectedProvider}, vocÃª nÃ£o pode usar a senha normal da sua conta se a AutenticaÃ§Ã£o em Duas Etapas (2FA) estiver ativada. VocÃª precisarÃ¡ gerar uma <strong>Senha de Aplicativo</strong> nas configuraÃ§Ãµes de seguranÃ§a da sua conta e inseri-la no campo "Senha" acima.
+                         Para provedores como {selectedProvider}, você não pode usar a senha normal da sua conta se a Autenticação em Duas Etapas (2FA) estiver ativada. Você precisará gerar uma <strong>Senha de Aplicativo</strong> nas configurações de segurança da sua conta e inseri-la no campo "Senha" acima.
                        </p>
                      </div>
                    </div>
                  )}
                  <button type="submit" className="md:col-span-2 py-4 md:py-5 bg-primary text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-base md:text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1 flex items-center justify-center gap-2 md:gap-3">
-                   <Icon name="save" /> Salvar ConfiguraÃ§Ãµes de E-mail
+                   <Icon name="save" /> Salvar Configurações de E-mail
                  </button>
               </form>
            </div>
@@ -6067,8 +6067,8 @@ const ConfiguracoesPage = () => {
                 <Icon name="bell" />
               </div>
               <div>
-                <h3 className="text-2xl font-black text-slate-800 tracking-tight">PreferÃªncias de NotificaÃ§Ã£o</h3>
-                <p className="text-sm text-slate-400 font-medium mt-1">Escolha como deseja ser notificado sobre novas tarefas e atualizaÃ§Ãµes.</p>
+                <h3 className="text-2xl font-black text-slate-800 tracking-tight">Preferências de Notificação</h3>
+                <p className="text-sm text-slate-400 font-medium mt-1">Escolha como deseja ser notificado sobre novas tarefas e atualizações.</p>
               </div>
             </div>
             
@@ -6082,8 +6082,8 @@ const ConfiguracoesPage = () => {
                     className="w-6 h-6 rounded text-primary focus:ring-primary" 
                   />
                   <div>
-                    <div className="font-bold text-slate-800">NotificaÃ§Ãµes no Sistema</div>
-                    <div className="text-sm text-slate-500 font-medium">Receber alertas dentro da plataforma (Ã­cone de sino).</div>
+                    <div className="font-bold text-slate-800">Notificações no Sistema</div>
+                    <div className="text-sm text-slate-500 font-medium">Receber alertas dentro da plataforma (ícone de sino).</div>
                   </div>
                 </label>
                 
@@ -6095,14 +6095,14 @@ const ConfiguracoesPage = () => {
                     className="w-6 h-6 rounded text-primary focus:ring-primary" 
                   />
                   <div>
-                    <div className="font-bold text-slate-800">NotificaÃ§Ãµes por E-mail</div>
-                    <div className="text-sm text-slate-500 font-medium">Receber um e-mail quando uma tarefa for atribuÃ­da a vocÃª.</div>
+                    <div className="font-bold text-slate-800">Notificações por E-mail</div>
+                    <div className="text-sm text-slate-500 font-medium">Receber um e-mail quando uma tarefa for atribuída a você.</div>
                   </div>
                 </label>
               </div>
               
               <button type="submit" className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-sm uppercase shadow-xl hover:brightness-110 transition-all flex items-center gap-2">
-                <Icon name="save" /> Salvar PreferÃªncias
+                <Icon name="save" /> Salvar Preferências
               </button>
             </form>
           </div>
@@ -6122,7 +6122,7 @@ const ConfiguracoesPage = () => {
                 <input name="nome" required defaultValue={editingSector?.nome} placeholder="Ex: Engenharia, Comercial..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ResponsÃ¡vel pelo Setor</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Responsável pelo Setor</label>
                 <select name="responsavelId" defaultValue={editingSector?.responsavelId} required className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary text-sm md:text-base">
                   <option value="">Selecione um gestor...</option>
                   {users.filter(u => u.status === EntityStatus.ACTIVE).map(u => (
@@ -6131,7 +6131,7 @@ const ConfiguracoesPage = () => {
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">DescriÃ§Ã£o</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
                 <textarea name="descricao" rows={3} defaultValue={editingSector?.descricao} placeholder="Breve resumo da responsabilidade da equipe..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium resize-none focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
               <div className="flex flex-col md:flex-row justify-end gap-3 pt-4 md:pt-6">
@@ -6156,11 +6156,11 @@ const ConfiguracoesPage = () => {
                 <input name="nome" required defaultValue={editingCategory?.nome} placeholder="Ex: VIP, Atacadista..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cor de IdentificaÃ§Ã£o</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cor de Identificação</label>
                 <input name="cor" type="color" defaultValue={editingCategory?.cor || '#10b981'} className="w-full h-12 p-1 rounded-xl border border-slate-100 bg-slate-50 cursor-pointer" />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">DescriÃ§Ã£o</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
                 <textarea name="descricao" rows={3} defaultValue={editingCategory?.descricao} placeholder="Defina o perfil desta categoria..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium resize-none focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
               <div className="flex flex-col md:flex-row justify-end gap-3 pt-4 md:pt-6">
@@ -6181,30 +6181,30 @@ const ConfiguracoesPage = () => {
             <form onSubmit={handleSaveCustomField} className="space-y-4 md:space-y-6">
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Campo</label>
-                <input name="name" required defaultValue={editingCustomField?.name} placeholder="Ex: Data de AniversÃ¡rio" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
+                <input name="name" required defaultValue={editingCustomField?.name} placeholder="Ex: Data de Aniversário" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo</label>
                   <select name="type" required defaultValue={editingCustomField?.type || 'text'} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base">
                     <option value="text">Texto Curto</option>
-                    <option value="number">NÃºmero</option>
+                    <option value="number">Número</option>
                     <option value="date">Data</option>
-                    <option value="boolean">Sim/NÃ£o (Checkbox)</option>
-                    <option value="select">Lista de SeleÃ§Ã£o</option>
+                    <option value="boolean">Sim/Não (Checkbox)</option>
+                    <option value="select">Lista de Seleção</option>
                   </select>
                 </div>
                 <div className="space-y-1 flex flex-col justify-center">
                   <label className="flex items-center gap-3 mt-2 md:mt-6 cursor-pointer">
                     <input type="checkbox" name="required" defaultChecked={editingCustomField?.required} className="w-5 h-5 rounded text-primary focus:ring-primary" />
-                    <span className="font-bold text-slate-700 text-sm md:text-base">Campo ObrigatÃ³rio</span>
+                    <span className="font-bold text-slate-700 text-sm md:text-base">Campo Obrigatório</span>
                   </label>
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">OpÃ§Ãµes (Apenas para Lista de SeleÃ§Ã£o)</label>
-                <input name="options" defaultValue={editingCustomField?.options?.join(', ')} placeholder="OpÃ§Ã£o 1, OpÃ§Ã£o 2, OpÃ§Ã£o 3..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium focus:border-primary shadow-inner text-sm md:text-base" />
-                <p className="text-xs text-slate-400 ml-2 mt-1">Separe as opÃ§Ãµes por vÃ­rgula.</p>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Opções (Apenas para Lista de Seleção)</label>
+                <input name="options" defaultValue={editingCustomField?.options?.join(', ')} placeholder="Opção 1, Opção 2, Opção 3..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium focus:border-primary shadow-inner text-sm md:text-base" />
+                <p className="text-xs text-slate-400 ml-2 mt-1">Separe as opções por vírgula.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -6213,13 +6213,13 @@ const ConfiguracoesPage = () => {
                   <input name="placeholder" defaultValue={editingCustomField?.placeholder} placeholder="Ex: DD/MM/AAAA" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tamanho MÃ¡ximo</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tamanho Máximo</label>
                   <input type="number" name="maxLength" defaultValue={editingCustomField?.maxLength} placeholder="Ex: 50" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ExpressÃ£o Regular (Regex) para ValidaÃ§Ã£o</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Expressão Regular (Regex) para Validação</label>
                 <input name="regex" defaultValue={editingCustomField?.regex} placeholder="Ex: ^[0-9]*$" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium focus:border-primary shadow-inner text-sm md:text-base" />
                 <p className="text-xs text-slate-400 ml-2 mt-1">Opcional: Use regex para validar o formato do campo.</p>
               </div>
@@ -6242,8 +6242,8 @@ const ConfiguracoesPage = () => {
               <AlertTriangle size={32} className="text-red-500 md:w-10 md:h-10" />
             </div>
             <div className="text-center space-y-2">
-              <h3 className="text-xl md:text-2xl font-black text-slate-800">Confirmar ExclusÃ£o</h3>
-              <p className="text-slate-500 font-medium text-sm md:text-base">VocÃª tem certeza que deseja remover {deleteConfirm.type === 'sector' ? 'o setor' : 'a categoria'} <span className="font-bold text-slate-800">"{deleteConfirm.name}"</span>? Esta aÃ§Ã£o nÃ£o pode ser desfeita.</p>
+              <h3 className="text-xl md:text-2xl font-black text-slate-800">Confirmar Exclusão</h3>
+              <p className="text-slate-500 font-medium text-sm md:text-base">Você tem certeza que deseja remover {deleteConfirm.type === 'sector' ? 'o setor' : 'a categoria'} <span className="font-bold text-slate-800">"{deleteConfirm.name}"</span>? Esta ação não pode ser desfeita.</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
               <button 
@@ -6293,7 +6293,7 @@ const AuditoriaPage = () => {
       // window.location.reload() is removed to prevent race conditions.
       // The real-time update via Socket.IO will trigger loadData() automatically.
     } else {
-      alert('Erro ao limpar logs. Verifique as permissÃµes.');
+      alert('Erro ao limpar logs. Verifique as permissões.');
       setIsClearing(false);
     }
   };
@@ -6329,19 +6329,19 @@ const AuditoriaPage = () => {
 
   const getModuleLabel = (module: string) => {
     const map: Record<string, string> = {
-      'AUTH': 'AutenticaÃ§Ã£o',
-      'USUARIOS': 'UsuÃ¡rios',
+      'AUTH': 'Autenticação',
+      'USUARIOS': 'Usuários',
       'CLIENTES': 'Clientes',
       'TAREFAS': 'Operacional / Tarefas',
       'SETORES': 'Estrutura / Setores',
       'COMUNICACAO': 'Mala Direta',
-      'CONFIG': 'ConfiguraÃ§Ãµes'
+      'CONFIG': 'Configurações'
     };
     return map[module] || module;
   };
 
   const exportToCSV = () => {
-    const headers = ['HorÃ¡rio', 'Autor', 'IP', 'MÃ³dulo', 'OperaÃ§Ã£o', 'Detalhes', 'Entidade ID'];
+    const headers = ['Horário', 'Autor', 'IP', 'Módulo', 'Operação', 'Detalhes', 'Entidade ID'];
     const csvContent = [
       headers.join(','),
       ...filteredLogs.map(log => [
@@ -6377,7 +6377,7 @@ const AuditoriaPage = () => {
     <div className="p-4 md:p-8 space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-           <p className="text-slate-500 font-medium">Log completo de seguranÃ§a e rastreabilidade de dados.</p>
+           <p className="text-slate-500 font-medium">Log completo de segurança e rastreabilidade de dados.</p>
         </div>
         <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
           <div className="relative flex-1 md:w-80">
@@ -6401,7 +6401,7 @@ const AuditoriaPage = () => {
               className="text-red-600 bg-red-50 px-5 py-3 rounded-2xl text-xs font-black uppercase border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm whitespace-nowrap flex-1 md:flex-none justify-center flex items-center"
             >
               <Icon name="trash" className="inline-block mr-2 -mt-1" />
-              Limpar HistÃ³rico
+              Limpar Histórico
             </button>
           )}
         </div>
@@ -6416,25 +6416,25 @@ const AuditoriaPage = () => {
                   <Icon name="trash" className="text-2xl" />
                 </div>
                 <div>
-                  <h3 className="font-black text-xl text-red-900 dark:text-red-50">Limpar HistÃ³rico</h3>
-                  <p className="text-red-600/70 dark:text-red-400/70 text-[10px] font-black uppercase tracking-wider">AÃ§Ã£o IrreversÃ­vel</p>
+                  <h3 className="font-black text-xl text-red-900 dark:text-red-50">Limpar Histórico</h3>
+                  <p className="text-red-600/70 dark:text-red-400/70 text-[10px] font-black uppercase tracking-wider">Ação Irreversível</p>
                 </div>
               </div>
             </div>
             <div className="p-8 space-y-6 bg-white dark:bg-slate-900">
               <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
-                Esta aÃ§Ã£o irÃ¡ remover permanentemente todos os registros de auditoria. Por favor, informe o motivo desta aÃ§Ã£o para fins de conformidade.
+                Esta ação irá remover permanentemente todos os registros de auditoria. Por favor, informe o motivo desta ação para fins de conformidade.
               </p>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Motivo da Limpeza</label>
                 <textarea 
                   value={clearReason}
                   onChange={(e) => setClearReason(e.target.value)}
-                  placeholder="Ex: ManutenÃ§Ã£o periÃ³dica, Limpeza de logs antigos..."
+                  placeholder="Ex: Manutenção periódica, Limpeza de logs antigos..."
                   className="w-full px-5 py-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-medium text-sm text-slate-700 dark:text-slate-200 focus:border-red-500 dark:focus:border-red-500 transition-all min-h-[120px] resize-none"
                   autoFocus
                 />
-                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1">MÃ­nimo de 5 caracteres.</p>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1">Mínimo de 5 caracteres.</p>
               </div>
             </div>
             <div className="p-8 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-end gap-3">
@@ -6469,12 +6469,12 @@ const AuditoriaPage = () => {
           <table className="w-full text-left border-collapse hidden md:table">
             <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
               <tr>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-32">HorÃ¡rio</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-32">Horário</th>
                 <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-48">Autor</th>
                 <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-32">IP</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-40">MÃ³dulo</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-32">OperaÃ§Ã£o</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalhes & ComparaÃ§Ã£o</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-40">Módulo</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-32">Operação</th>
+                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalhes & Comparação</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -6510,14 +6510,14 @@ const AuditoriaPage = () => {
                   <td className="px-6 py-5 align-top">
                      <div className="space-y-3">
                        <p className="text-xs font-medium text-slate-600 leading-relaxed">
-                         {log.details.split('AlteraÃ§Ãµes:')[0]}
+                         {log.details.split('Alterações:')[0]}
                        </p>
                        
                        {log.diff && log.diff.length > 0 && (
                          <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden mt-2">
                            <div className="bg-slate-100 px-4 py-2 border-b border-slate-200">
                              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                               <Icon name="file-text" className="text-slate-400" /> ComparaÃ§Ã£o de AlteraÃ§Ãµes
+                               <Icon name="file-text" className="text-slate-400" /> Comparação de Alterações
                              </span>
                            </div>
                            <div className="p-4 space-y-3">
@@ -6551,7 +6551,7 @@ const AuditoriaPage = () => {
                          <Icon name="search" className="text-3xl text-slate-300" />
                        </div>
                        <p className="font-bold text-slate-500 text-lg">Nenhum registro encontrado</p>
-                       <p className="text-sm text-slate-400 mt-1">NÃ£o hÃ¡ logs de auditoria que correspondam Ã  sua busca.</p>
+                       <p className="text-sm text-slate-400 mt-1">Não há logs de auditoria que correspondam à sua busca.</p>
                      </div>
                    </td>
                  </tr>
@@ -6585,7 +6585,7 @@ const AuditoriaPage = () => {
                 <div>
                   <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-100 px-2 py-1 rounded-lg inline-block mb-2">{getModuleLabel(log.module)}</span>
                   <p className="text-xs font-medium text-slate-600 leading-relaxed">
-                    {log.details.split('AlteraÃ§Ãµes:')[0]}
+                    {log.details.split('Alterações:')[0]}
                   </p>
                 </div>
 
@@ -6593,7 +6593,7 @@ const AuditoriaPage = () => {
                   <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden mt-2">
                     <div className="bg-slate-100 px-3 py-2 border-b border-slate-200">
                       <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                        <Icon name="file-text" className="text-slate-400 w-3 h-3" /> ComparaÃ§Ã£o
+                        <Icon name="file-text" className="text-slate-400 w-3 h-3" /> Comparação
                       </span>
                     </div>
                     <div className="p-3 space-y-3">
@@ -6624,7 +6624,7 @@ const AuditoriaPage = () => {
                      <Icon name="search" className="text-3xl text-slate-300" />
                    </div>
                    <p className="font-bold text-slate-500 text-lg">Nenhum registro encontrado</p>
-                   <p className="text-sm text-slate-400 mt-1">NÃ£o hÃ¡ logs de auditoria que correspondam Ã  sua busca.</p>
+                   <p className="text-sm text-slate-400 mt-1">Não há logs de auditoria que correspondam à sua busca.</p>
                  </div>
                </div>
             )}
@@ -6661,15 +6661,15 @@ const SobrePage = () => {
           </div>
           
           <div className="max-w-2xl mx-auto space-y-4">
-            <p className="text-slate-400 text-xs sm:text-sm font-black uppercase tracking-[0.3em]">Framework de GestÃ£o Inteligente</p>
+            <p className="text-slate-400 text-xs sm:text-sm font-black uppercase tracking-[0.3em]">Framework de Gestão Inteligente</p>
             <div className="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent w-full" />
             <p className="text-lg sm:text-xl text-slate-300 font-medium leading-relaxed italic serif">
-              "Transformando dados em relacionamentos, e tarefas em resultados extraordinÃ¡rios."
+              "Transformando dados em relacionamentos, e tarefas em resultados extraordinários."
             </p>
           </div>
 
           <div className="flex flex-wrap justify-center gap-3 pt-4">
-            <span className="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-black text-white uppercase tracking-widest">VersÃ£o 1.2.0</span>
+            <span className="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-black text-white uppercase tracking-widest">Versão 1.2.0</span>
             <span className="px-6 py-2 bg-primary/20 backdrop-blur-md border border-primary/20 rounded-full text-[10px] font-black text-primary uppercase tracking-widest">Standard Edition</span>
             <span className="px-6 py-2 bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 rounded-full text-[10px] font-black text-emerald-500 uppercase tracking-widest">Status: Operacional</span>
           </div>
@@ -6682,7 +6682,7 @@ const SobrePage = () => {
         {/* Quick Stats - Horizontal Row */}
         <div className="md:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { label: 'UsuÃ¡rios Ativos', value: users.length, icon: 'users', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+            { label: 'Usuários Ativos', value: users.length, icon: 'users', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
             { label: 'Carteira de Clientes', value: clients.length, icon: 'user-tie', color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
             { label: 'Fluxo de Tarefas', value: tasks.length, icon: 'tasks', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
             { label: 'Registros de Auditoria', value: history.length, icon: 'shield-check', color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20' },
@@ -6707,19 +6707,19 @@ const SobrePage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">InovaÃ§Ãµes da VersÃ£o 1.2.0</h3>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Inovações da Versão 1.2.0</h3>
             </div>
             <Icon name="chevron-right" className="text-slate-300" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { title: 'GestÃ£o AvanÃ§ada', desc: 'Filtros dinÃ¢micos e busca fonÃ©tica inteligente.', icon: 'search' },
-              { title: 'WhatsApp 2.0', desc: 'ComunicaÃ§Ã£o instantÃ¢nea integrada ao fluxo.', icon: 'message-circle' },
-              { title: 'ImportaÃ§Ã£o CSV', desc: 'MigraÃ§Ã£o de dados com mapeamento automÃ¡tico.', icon: 'upload' },
-              { title: 'Campos CustomizÃ¡veis', desc: 'Adapte o sistema Ã  sua realidade de negÃ³cio.', icon: 'settings' },
-              { title: 'Auditoria 360', desc: 'Rastreamento completo de todas as operaÃ§Ãµes.', icon: 'shield' },
-              { title: 'High Performance', desc: 'Resposta ultra-rÃ¡pida com novo motor de cache.', icon: 'zap' },
+              { title: 'Gestão Avançada', desc: 'Filtros dinà¢micos e busca fonética inteligente.', icon: 'search' },
+              { title: 'WhatsApp 2.0', desc: 'Comunicação instantà¢nea integrada ao fluxo.', icon: 'message-circle' },
+              { title: 'Importação CSV', desc: 'Migração de dados com mapeamento automático.', icon: 'upload' },
+              { title: 'Campos Customizáveis', desc: 'Adapte o sistema à sua realidade de negócio.', icon: 'settings' },
+              { title: 'Auditoria 360', desc: 'Rastreamento completo de todas as operações.', icon: 'shield' },
+              { title: 'High Performance', desc: 'Resposta ultra-rápida com novo motor de cache.', icon: 'zap' },
             ].map((f, i) => (
               <div key={i} className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-transparent hover:border-primary/20 transition-all group">
                 <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-center text-primary mb-3 shadow-sm group-hover:scale-110 transition-transform">
@@ -6756,7 +6756,7 @@ const SobrePage = () => {
             </div>
             <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
               <p className="text-[9px] text-slate-400 font-medium leading-relaxed">
-                Arquitetura moderna e resiliente, otimizada para alta performance e seguranÃ§a de dados.
+                Arquitetura moderna e resiliente, otimizada para alta performance e segurança de dados.
               </p>
             </div>
           </div>
@@ -6778,7 +6778,7 @@ const SobrePage = () => {
                 </div>
               </div>
               <p className="text-sm font-medium leading-relaxed italic opacity-80 max-w-md">
-                "Transformando ideias em soluÃ§Ãµes tecnolÃ³gicas inovadoras desde 2023. Nossa missÃ£o Ã© simplificar a complexidade atravÃ©s do design e da engenharia."
+                "Transformando ideias em soluções tecnológicas inovadoras desde 2023. Nossa missão é simplificar a complexidade através do design e da engenharia."
               </p>
             </div>
 
@@ -6958,9 +6958,9 @@ const MailListPage = () => {
 
   const handleSend = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!canSend) return error('RestriÃ§Ã£o de acesso.');
+    if (!canSend) return error('Restrição de acesso.');
     if (selectedClients.length === 0) return warning('Selecione destinos.');
-    if (!message.trim() || message === '<p><br></p>') return warning('A mensagem nÃ£o pode estar vazia.');
+    if (!message.trim() || message === '<p><br></p>') return warning('A mensagem não pode estar vazia.');
     
     const formData = new FormData(e.currentTarget);
     const assunto = (formData.get('assunto') as string) || '';
@@ -6979,7 +6979,7 @@ const MailListPage = () => {
       setCustomFields(data.customFields || []);
       setHistory(data.history || []);
       setTemplates(data.templates || []);
-      setSlaSettings(data.slaSettings || { Baixa: 15, MÃ©dia: 7, Alta: 3, CrÃ­tica: 1 });
+      setSlaSettings(data.slaSettings || { Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
       setEmailSettings(data.emailSettings || { provider: 'SMTP', host: '', port: 587, user: '', pass: '', secure: false });
       setSystemSettings({
         companyName: (data.systemSettings as any)?.companyName || (data.systemSettings as any)?.appSlogan || 'CRM Ecosystem',
@@ -7010,7 +7010,7 @@ const MailListPage = () => {
         const data = await res.json();
         if (res.ok) {
           addMailHistory(entry);
-          success(`E-mails enviados com sucesso para ${data.sentCount} destinatÃ¡rios!`);
+          success(`E-mails enviados com sucesso para ${data.sentCount} destinatários!`);
           setSelectedClients([]);
           setMessage('');
           (e.target as HTMLFormElement).reset();
@@ -7018,7 +7018,7 @@ const MailListPage = () => {
           error(data.error || 'Erro ao enviar e-mails.');
         }
       } catch (err) {
-        error('Erro de conexÃ£o ao enviar e-mails.');
+        error('Erro de conexão ao enviar e-mails.');
       } finally {
         setIsSending(false);
       }
@@ -7076,7 +7076,7 @@ const MailListPage = () => {
             
             {whatsappIndex < whatsappQueue.length ? (
               <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-100 text-left">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">PrÃ³ximo DestinatÃ¡rio:</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Próximo Destinatário:</p>
                 <p className="font-bold text-slate-700 text-sm sm:text-base">{clients.find(c => c.id === whatsappQueue[whatsappIndex])?.nomeRazaoSocial}</p>
                 <p className="text-xs text-slate-500">{clients.find(c => c.id === whatsappQueue[whatsappIndex])?.telefoneSecundario || clients.find(c => c.id === whatsappQueue[whatsappIndex])?.telefonePrincipal}</p>
               </div>
@@ -7114,7 +7114,7 @@ const MailListPage = () => {
          </div>
          
          <div className="flex gap-2 shrink-0 flex-wrap">
-           <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center mr-2 w-full sm:w-auto mb-2 sm:mb-0">VariÃ¡veis DinÃ¢micas:</span>
+           <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center mr-2 w-full sm:w-auto mb-2 sm:mb-0">Variáveis Dinà¢micas:</span>
            {['{nome}', '{empresa}', '{email}', '{telefone}'].map(tag => (
              <button type="button" key={tag} onClick={() => setMessage(prev => prev + tag)} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-mono font-bold transition-colors">
                {tag}
@@ -7128,7 +7128,7 @@ const MailListPage = () => {
                  onChange={(e) => applyTemplate(e.target.value)} 
                  className="flex-1 px-5 sm:px-7 py-4 sm:py-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-700 outline-none font-bold focus:border-primary dark:focus:border-primary shadow-inner bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 text-sm sm:text-base"
                >
-                 <option value="">Carregar Template RÃ¡pido...</option>
+                 <option value="">Carregar Template Rápido...</option>
                  {templates.map(t => (
                    <option key={t.id} value={t.id}>{t.name}</option>
                  ))}
@@ -7141,7 +7141,7 @@ const MailListPage = () => {
                 onChange={(e) => setSubject(e.target.value)}
                 required 
                 className="w-full px-5 sm:px-7 py-4 sm:py-5 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-700 outline-none font-bold focus:border-primary dark:focus:border-primary shadow-inner shrink-0 text-sm sm:text-base bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100" 
-                placeholder="Assunto da ComunicaÃ§Ã£o" 
+                placeholder="Assunto da Comunicação" 
               />
             )}
             
@@ -7180,7 +7180,7 @@ const MailListPage = () => {
       
       <div className="w-full lg:w-96 bg-white dark:bg-slate-900 p-6 md:p-8 rounded-2xl md:rounded-[3.5rem] border border-slate-200 dark:border-slate-800 flex flex-col shadow-sm overflow-hidden h-[600px] lg:h-auto">
         <h4 className="font-black text-slate-800 dark:text-slate-100 mb-6 uppercase tracking-widest text-xs border-b border-slate-50 dark:border-slate-800 pb-4 shrink-0">
-          Destinos VÃ¡lidos <span className="text-slate-400 dark:text-slate-500 font-medium ml-1">({filteredClients.length})</span>
+          Destinos Válidos <span className="text-slate-400 dark:text-slate-500 font-medium ml-1">({filteredClients.length})</span>
         </h4>
         
         {/* Search and Filters */}
@@ -7204,9 +7204,9 @@ const MailListPage = () => {
             >
               <option value="all">Todos Ratings</option>
               <option value="1">1 - Baixo Potencial</option>
-              <option value="2">2 - Potencial MÃ©dio</option>
+              <option value="2">2 - Potencial Médio</option>
               <option value="3">3 - Bom Cliente</option>
-              <option value="4">4 - PrioritÃ¡rio</option>
+              <option value="4">4 - Prioritário</option>
               <option value="5">5 - Cliente VIP</option>
             </select>
           </div>
@@ -7233,7 +7233,7 @@ const MailListPage = () => {
           {paginatedClients.length === 0 ? (
             <div className="text-center py-10 opacity-30">
               <Icon name="search" className="text-3xl mb-2 mx-auto" />
-              <p className="text-[10px] font-black uppercase tracking-widest">Nenhum cliente vÃ¡lido encontrado</p>
+              <p className="text-[10px] font-black uppercase tracking-widest">Nenhum cliente válido encontrado</p>
             </div>
           ) : (
             paginatedClients.map(c => (
@@ -7286,13 +7286,13 @@ const MainLayout = () => {
   const location = useLocation();
   const titles: Record<string, string> = {
     '/dashboard': 'Indicadores de Performance',
-    '/calendario': 'CalendÃ¡rio de Prazos',
+    '/calendario': 'Calendário de Prazos',
     '/clientes': 'Gerenciamento de Clientes',
-    '/mala-direta': 'ComunicaÃ§Ã£o EstratÃ©gica',
+    '/mala-direta': 'Comunicação Estratégica',
     '/tarefas': 'Gerenciamento Operacional',
-    '/usuarios': 'UsuÃ¡rios do Sistema',
-    '/configuracoes': 'DefiniÃ§Ãµes do Sistema',
-    '/auditoria': 'SeguranÃ§a de Dados',
+    '/usuarios': 'Usuários do Sistema',
+    '/configuracoes': 'Definições do Sistema',
+    '/auditoria': 'Segurança de Dados',
     '/sobre': `Sobre o SenseiRM`
   };
   if (!currentUser) return <Navigate to="/login" />;
