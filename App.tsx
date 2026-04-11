@@ -4672,31 +4672,31 @@ const TemplatesTab = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {paginatedTemplates.map(t => (
-          <div key={t.id} className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group relative">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg">{t.name}</h3>
+          <div key={t.id} className="bg-slate-50 dark:bg-slate-800/50 p-10 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group relative">
+            <div className="flex justify-between items-start mb-6">
+              <h3 className="font-black text-slate-800 dark:text-slate-100 text-xl">{t.name}</h3>
               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 {canEdit && (
-                  <button onClick={() => { setEditingTemplate(t); setIsModalOpen(true); }} className="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-2 rounded-xl transition-colors">
+                  <button onClick={() => { setEditingTemplate(t); setIsModalOpen(true); }} className="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-3 rounded-2xl transition-colors bg-white/50 shadow-sm border border-blue-50">
                     <Icon name="edit" />
                   </button>
                 )}
                 {canDelete && (
-                  <button onClick={() => confirm({ title: 'Excluir Template', message: 'Deseja excluir este template?', onConfirm: () => deleteTemplate(t.id) })} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-2 rounded-xl transition-colors">
+                  <button onClick={() => confirm({ title: 'Excluir Template', message: 'Deseja excluir este template?', onConfirm: () => deleteTemplate(t.id) })} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-3 rounded-2xl transition-colors bg-white/50 shadow-sm border border-red-50">
                     <Icon name="trash" />
                   </button>
                 )}
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Assunto (E-mail)</p>
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{t.subject || '-'}</p>
+              <p className="text-base font-bold text-slate-700 dark:text-slate-300 truncate">{t.subject || '-'}</p>
             </div>
-            <div className="mt-4 space-y-2">
+            <div className="mt-6 space-y-3">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Conteúdo</p>
-              <p className="text-sm text-slate-600 line-clamp-3 whitespace-pre-wrap">{t.content.replace(/<[^>]*>?/gm, '')}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-4 whitespace-pre-wrap leading-relaxed">{t.content.replace(/<[^>]*>?/gm, '')}</p>
             </div>
           </div>
         ))}
@@ -4876,30 +4876,30 @@ const RolesTab = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         {roles.map(r => (
-          <div key={r.id} className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group relative">
-            <div className="flex justify-between items-start mb-4">
+          <div key={r.id} className="bg-slate-50 dark:bg-slate-800/50 p-10 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group relative">
+            <div className="flex justify-between items-start mb-6">
               <div>
-                <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg">{r.name}</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">{r.description}</p>
+                <h3 className="font-black text-slate-800 dark:text-slate-100 text-xl">{r.name}</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-2">{r.description}</p>
               </div>
               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 {canEdit && r.id !== 'admin' && (
-                  <button onClick={() => openModal(r)} className="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-2 rounded-xl transition-colors">
+                  <button onClick={() => openModal(r)} className="text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-3 rounded-2xl transition-colors bg-white/50 shadow-sm">
                     <Icon name="edit" />
                   </button>
                 )}
                 {canDelete && r.id !== 'admin' && r.id !== 'user' && (
-                  <button onClick={() => confirm({ title: 'Excluir Função', message: 'Deseja excluir esta função?', onConfirm: () => deleteRole(r.id) })} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-2 rounded-xl transition-colors">
+                  <button onClick={() => confirm({ title: 'Excluir Função', message: 'Deseja excluir esta função?', onConfirm: () => deleteRole(r.id) })} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-3 rounded-2xl transition-colors bg-white/50 shadow-sm">
                     <Icon name="trash" />
                   </button>
                 )}
               </div>
             </div>
-            <div className="flex flex-wrap gap-2 mt-4">
+            <div className="flex flex-wrap gap-2 mt-6">
               {modules.filter(m => r.permissions[m.key as keyof UserPermissions]?.acesso).map(m => (
-                <span key={m.key} className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest">{m.label}</span>
+                <span key={m.key} className="bg-white/80 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-100 dark:border-slate-600 shadow-sm">{m.label}</span>
               ))}
             </div>
           </div>
@@ -5137,7 +5137,7 @@ const ConfiguracoesPage = () => {
         ))}
       </div>
       
-      <div className="max-w-5xl">
+      <div className="w-full max-w-[1550px]">
         {activeTab === 'sistema' && canAccessConfig && (
            <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
@@ -5289,17 +5289,17 @@ const ConfiguracoesPage = () => {
                </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-8">
               {clientCategories.slice((currentPageCategories - 1) * itemsPerPage, currentPageCategories * itemsPerPage).map(cat => (
-                <div key={cat.id} className="p-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 flex justify-between items-start group hover:bg-white hover:shadow-md transition-all shadow-sm">
+                <div key={cat.id} className="p-10 rounded-[3.5rem] border border-slate-100 bg-slate-50 flex justify-between items-start group hover:bg-white hover:shadow-md transition-all shadow-sm">
                   <div className="flex-1 overflow-hidden pr-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: cat.cor || 'var(--primary-color)' }}>
-                        <Icon name="tag" className="text-sm" />
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: cat.cor || 'var(--primary-color)' }}>
+                        <Icon name="tag" className="text-xl" />
                       </div>
-                      <h4 className="font-extrabold text-slate-800 uppercase tracking-tighter text-lg truncate">{cat.nome}</h4>
+                      <h4 className="font-extrabold text-slate-800 uppercase tracking-tighter text-xl truncate">{cat.nome}</h4>
                     </div>
-                    <p className="text-sm text-slate-400 mt-2 font-medium italic line-clamp-2">{cat.descricao || 'Sem descrição definida.'}</p>
+                    <p className="text-base text-slate-400 mt-4 font-medium italic line-clamp-2 leading-relaxed">{cat.descricao || 'Sem descrição definida.'}</p>
                   </div>
                   <div className="flex gap-2 relative z-50 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
@@ -5310,10 +5310,10 @@ const ConfiguracoesPage = () => {
                         setEditingCategory(cat); 
                         setIsCategoryModalOpen(true); 
                       }} 
-                      className="p-3 text-blue-600 hover:bg-blue-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-blue-50" 
+                      className="p-4 text-blue-600 hover:bg-blue-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-blue-50" 
                       title="Editar"
                     >
-                      <Edit size={18} className="pointer-events-none" />
+                      <Edit size={20} className="pointer-events-none" />
                     </button>
                     <button 
                       type="button"
@@ -5322,10 +5322,10 @@ const ConfiguracoesPage = () => {
                         e.stopPropagation(); 
                         setDeleteConfirm({ id: cat.id, type: 'category', name: cat.nome });
                       }} 
-                      className="p-3 text-red-600 hover:bg-red-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-red-50" 
+                      className="p-4 text-red-600 hover:bg-red-100 rounded-2xl transition-all cursor-pointer shadow-sm bg-white border border-red-50" 
                       title="Excluir"
                     >
-                      <Trash2 size={18} className="pointer-events-none" />
+                      <Trash2 size={20} className="pointer-events-none" />
                     </button>
                   </div>
                 </div>
@@ -5363,30 +5363,30 @@ const ConfiguracoesPage = () => {
                </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {customFields.slice((currentPageCustomFields - 1) * itemsPerPage, currentPageCustomFields * itemsPerPage).map(field => (
-                <div key={field.id} className="p-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 flex justify-between items-start group hover:bg-white hover:shadow-md transition-all shadow-sm">
+                <div key={field.id} className="p-10 rounded-[3.5rem] border border-slate-100 bg-slate-50 flex justify-between items-start group hover:bg-white hover:shadow-md transition-all shadow-sm">
                   <div className="flex-1 overflow-hidden pr-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-indigo-100 text-indigo-600 shadow-sm">
-                        <Icon name={field.type === 'text' ? 'font' : field.type === 'number' ? 'hashtag' : field.type === 'date' ? 'calendar' : field.type === 'boolean' ? 'check-square' : 'list'} className="text-sm" />
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-100 text-indigo-600 shadow-lg">
+                        <Icon name={field.type === 'text' ? 'font' : field.type === 'number' ? 'hashtag' : field.type === 'date' ? 'calendar' : field.type === 'boolean' ? 'check-square' : 'list'} className="text-xl" />
                       </div>
-                      <h4 className="font-black text-slate-800 truncate">{field.name}</h4>
+                      <h4 className="font-black text-slate-800 text-xl truncate">{field.name}</h4>
                     </div>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-slate-200 text-slate-600 rounded-lg">
+                    <div className="flex flex-wrap gap-3 mt-6">
+                      <span className="text-xs font-black uppercase tracking-widest px-4 py-2 bg-slate-200 text-slate-600 rounded-xl">
                         {field.type === 'text' ? 'Texto' : field.type === 'number' ? 'Número' : field.type === 'date' ? 'Data' : field.type === 'boolean' ? 'Sim/Não' : 'Seleção'}
                       </span>
                       {field.required && (
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 bg-red-100 text-red-600 rounded-lg">
+                        <span className="text-xs font-black uppercase tracking-widest px-4 py-2 bg-red-100 text-red-600 rounded-xl">
                           Obrigatório
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => { setEditingCustomField(field); setIsCustomFieldModalOpen(true); }} className="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary flex items-center justify-center transition-colors shadow-sm"><Icon name="edit" /></button>
-                    <button onClick={() => setDeleteConfirm({ id: field.id, type: 'customField', name: field.name })} className="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-500 flex items-center justify-center transition-colors shadow-sm"><Icon name="trash" /></button>
+                    <button onClick={() => { setEditingCustomField(field); setIsCustomFieldModalOpen(true); }} className="w-12 h-12 rounded-2xl bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary flex items-center justify-center transition-colors shadow-sm"><Icon name="edit" /></button>
+                    <button onClick={() => setDeleteConfirm({ id: field.id, type: 'customField', name: field.name })} className="w-12 h-12 rounded-2xl bg-white border border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-500 flex items-center justify-center transition-colors shadow-sm"><Icon name="trash" /></button>
                   </div>
                 </div>
               ))}
@@ -5571,13 +5571,13 @@ const ConfiguracoesPage = () => {
                   <p className="text-xs md:text-sm text-slate-400 font-medium mt-1">Personalize a identidade do framework para seu perfil.</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6 relative z-10">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-10 relative z-10">
                  {THEMES.map(t => (
-                   <button key={t.id} onClick={() => updateUser({ ...currentUser!, tema: t.id })} className={`p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] border-2 transition-all flex flex-col items-center gap-3 md:gap-4 relative group ${currentUser?.tema === t.id ? 'border-primary bg-white/10 shadow-lg shadow-primary/20' : 'border-white/5 bg-white/5 hover:border-white/20 hover:bg-white/10'}`}>
-                     <div className="w-12 h-12 md:w-16 md:h-16 rounded-full shadow-2xl transition-transform group-hover:scale-110 flex items-center justify-center" style={{ backgroundColor: t.color, boxShadow: `0 0 30px ${t.color}66` }}>
-                       {currentUser?.tema === t.id && <Icon name="check" className="text-white text-lg md:text-xl drop-shadow-md" />}
+                   <button key={t.id} onClick={() => updateUser({ ...currentUser!, tema: t.id })} className={`p-6 md:p-10 rounded-[2.5rem] md:rounded-[3.5rem] border-2 transition-all flex flex-col items-center gap-4 md:gap-6 relative group ${currentUser?.tema === t.id ? 'border-primary bg-white/10 shadow-lg shadow-primary/20 scale-105' : 'border-white/5 bg-white/5 hover:border-white/20 hover:bg-white/10'}`}>
+                     <div className="w-16 h-16 md:w-24 md:h-24 rounded-full shadow-2xl transition-transform group-hover:scale-110 flex items-center justify-center" style={{ backgroundColor: t.color, boxShadow: `0 0 40px ${t.color}88` }}>
+                       {currentUser?.tema === t.id && <Icon name="check" className="text-white text-2xl md:text-3xl drop-shadow-md" />}
                      </div>
-                     <span className="text-[9px] md:text-[10px] font-black uppercase text-white tracking-widest text-center">{t.name}</span>
+                     <span className="text-[10px] md:text-xs font-black uppercase text-white tracking-[0.2em] text-center">{t.name}</span>
                    </button>
                  ))}
               </div>
