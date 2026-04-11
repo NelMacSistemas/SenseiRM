@@ -1536,11 +1536,20 @@ import {
 } from 'recharts';
 
 const CalendarView = () => {
-  const { tasks, users, updateSync, hasPermission } = useApp();
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const { tasks, users, sectors, updateSync, hasPermission, addTask } = useApp();
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
+  
+  // Filters State
+  const [filters, setFilters] = useState({
+    responsavelId: '',
+    setorId: '',
+    prioridade: '',
+    status: ''
+  });
 
-  const monthStart = startOfMonth(currentMonth);
+  const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(monthStart);
   const startDate = startOfWeek(monthStart);
   const endDate = endOfWeek(monthEnd);
@@ -1550,122 +1559,362 @@ const CalendarView = () => {
     end: endDate,
   });
 
-  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const weekDays = eachDayOfInterval({
+    start: startOfWeek(currentDate),
+    end: endOfWeek(currentDate)
+  });
 
-  const getTasksForDay = (day: Date) => {
-    return tasks.filter(t => t.dataVencimento && isSameDay(parseISO(t.dataVencimento), day));
+  const next = () => {
+    if (viewMode === 'month') setCurrentDate(addMonths(currentDate, 1));
+    else if (viewMode === 'week') setCurrentDate(addDays(currentDate, 7));
+    else setCurrentDate(addDays(currentDate, 1));
   };
 
-  const getPriorityColor = (priority: TaskPriority) => {
+  const prev = () => {
+    if (viewMode === 'month') setCurrentDate(subMonths(currentDate, 1));
+    else if (viewMode === 'week') setCurrentDate(subDays(currentDate, 7));
+    else setCurrentDate(subDays(currentDate, 1));
+  };
+
+  const goToToday = () => setCurrentDate(new Date());
+
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(t => {
+      if (filters.responsavelId && t.responsavelId !== filters.responsavelId) return false;
+      if (filters.setorId && t.setorId !== filters.setorId) return false;
+      if (filters.prioridade && t.prioridade !== filters.prioridade) return false;
+      if (filters.status && t.status !== filters.status) return false;
+      return true;
+    });
+  }, [tasks, filters]);
+
+  const getTasksForDay = (day: Date) => {
+    return filteredTasks.filter(t => t.dataVencimento && isSameDay(parseISO(t.dataVencimento), day));
+  };
+
+  const getPriorityClasses = (priority: TaskPriority) => {
     switch (priority) {
-      case TaskPriority.CRITICAL: return 'bg-red-500';
-      case TaskPriority.HIGH: return 'bg-orange-500';
-      case TaskPriority.MEDIUM: return 'bg-blue-500';
-      default: return 'bg-slate-400';
+      case TaskPriority.CRITICAL: return 'bg-gradient-to-br from-red-500 to-rose-600 shadow-red-200 dark:shadow-red-900/20';
+      case TaskPriority.HIGH: return 'bg-gradient-to-br from-orange-500 to-amber-600 shadow-orange-200 dark:shadow-orange-900/20';
+      case TaskPriority.MEDIUM: return 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-200 dark:shadow-blue-900/20';
+      default: return 'bg-gradient-to-br from-slate-400 to-slate-500 shadow-slate-200 dark:shadow-slate-900/20';
+    }
+  };
+
+  const navigate = useNavigate();
+  const handleQuickCreate = (day: Date) => {
+    if (!hasPermission('tarefas', 'incluir')) return;
+    navigate('/tarefas', { state: { openModal: true, initialDate: day.toISOString().split('T')[0] } });
+  };
+
+  const handleTaskDragStart = (e: React.DragEvent, taskId: string) => {
+    e.dataTransfer.setData('taskId', taskId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDayDrop = (e: React.DragEvent, day: Date) => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData('taskId');
+    if (taskId && hasPermission('tarefas', 'editar')) {
+      const task = tasks.find(t => t.id === taskId);
+      if (task) {
+        const newDate = day.toISOString().split('T')[0];
+        const updatedTask = { ...task, dataVencimento: newDate };
+        updateTask(updatedTask);
+        if (success) success(`Prazo de "${task.titulo}" alterado para ${format(day, 'dd/MM/yyyy')}`);
+      }
     }
   };
 
   return (
-    <div className="p-4 md:p-8 space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="p-4 md:p-8 space-y-6 animate-in fade-in duration-700">
+      {/* HEADER SECTION */}
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Calendário de Prazos</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium">Visualize e gerencie os vencimentos das tarefas</p>
+          <div className="flex items-center gap-3 mb-1">
+             <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
+               <Icon name="calendar" />
+             </div>
+             <h1 className="text-3xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Calendário de Prazos</h1>
+          </div>
+          <p className="text-slate-500 dark:text-slate-400 font-medium ml-1">Central de inteligência temporal e gestão de vencimentos</p>
         </div>
-        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
-          <button onClick={prevMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all text-slate-600 dark:text-slate-400">
-            <Icon name="chevron-left" />
-          </button>
-          <span className="px-4 font-black text-slate-700 dark:text-slate-200 min-w-[180px] text-center uppercase tracking-wider text-sm">
-            {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
-          </span>
-          <button onClick={nextMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all text-slate-600 dark:text-slate-400">
-            <Icon name="chevron-right" />
-          </button>
+
+        <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
+          {/* View Toggles */}
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-inner">
+            {[
+              { id: 'month', label: 'Mês' },
+              { id: 'week', label: 'Semana' },
+              { id: 'day', label: 'Lista' }
+            ].map(mode => (
+              <button
+                key={mode.id}
+                onClick={() => setViewMode(mode.id as any)}
+                className={`px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${viewMode === mode.id ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              >
+                {mode.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-1.5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 ml-auto xl:ml-0">
+            <button onClick={prev} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all text-slate-600 dark:text-slate-400">
+              <Icon name="chevron-left" />
+            </button>
+            <button onClick={goToToday} className="px-4 py-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 transition-all border border-slate-100 dark:border-slate-700">Hoje</button>
+            <span className="px-4 font-black text-slate-700 dark:text-slate-200 min-w-[160px] text-center uppercase tracking-widest text-xs">
+              {format(currentDate, viewMode === 'day' ? 'dd MMMM yyyy' : 'MMMM yyyy', { locale: ptBR })}
+            </span>
+            <button onClick={next} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all text-slate-600 dark:text-slate-400">
+              <Icon name="chevron-right" />
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
-        <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-          {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-            <div key={day} className="py-4 text-center text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
-              {day}
-            </div>
-          ))}
+      {/* FILTERS BAR */}
+      <div className="flex flex-wrap items-center gap-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md p-4 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
+        <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 mr-2">
+          <Icon name="filter" className="w-4 h-4" />
+          <span className="text-[10px] font-black uppercase tracking-widest">Filtros:</span>
         </div>
-        <div className="grid grid-cols-7">
-          {calendarDays.map((day, i) => {
-            const dayTasks = getTasksForDay(day);
-            const isCurrentMonth = isSameMonth(day, monthStart);
-            
-            return (
-              <div 
-                key={day.toString()} 
-                className={`min-h-[140px] p-2 border-r border-b border-slate-50 dark:border-slate-800/50 transition-all hover:bg-slate-50/50 dark:hover:bg-slate-800/20 ${!isCurrentMonth ? 'bg-slate-50/30 dark:bg-slate-900/50' : ''}`}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <span className={`text-[11px] font-black w-7 h-7 flex items-center justify-center rounded-full transition-all ${isToday(day) ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-110' : isCurrentMonth ? 'text-slate-700 dark:text-slate-300' : 'text-slate-300 dark:text-slate-600'}`}>
-                    {format(day, 'd')}
-                  </span>
+        
+        <select 
+          value={filters.responsavelId}
+          onChange={e => setFilters(f => ({ ...f, responsavelId: e.target.value }))}
+          className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary transition-all min-w-[150px]"
+        >
+          <option value="">Todos Responsáveis</option>
+          {users.map(u => <option key={u.id} value={u.id}>{u.nome}</option>)}
+        </select>
+
+        <select 
+          value={filters.setorId}
+          onChange={e => setFilters(f => ({ ...f, setorId: e.target.value }))}
+          className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary transition-all min-w-[150px]"
+        >
+          <option value="">Todos Setores</option>
+          {sectors.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
+        </select>
+
+        <select 
+          value={filters.prioridade}
+          onChange={e => setFilters(f => ({ ...f, prioridade: e.target.value }))}
+          className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary transition-all"
+        >
+          <option value="">Prioridades</option>
+          {Object.values(TaskPriority).map(p => <option key={p} value={p}>{p}</option>)}
+        </select>
+
+        <select 
+          value={filters.status}
+          onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}
+          className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary transition-all"
+        >
+          <option value="">Status</option>
+          {Object.values(TaskStatus).map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+
+        {(filters.responsavelId || filters.setorId || filters.prioridade || filters.status) && (
+          <button 
+            onClick={() => setFilters({ responsavelId: '', setorId: '', prioridade: '', status: '' })}
+            className="text-[10px] font-black uppercase text-red-500 hover:text-red-600 transition-colors ml-auto mr-4"
+          >
+            Limpar Filtros
+          </button>
+        )}
+      </div>
+
+      {/* CALENDAR BODY */}
+      <div className="bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden relative">
+        {viewMode === 'month' && (
+          <>
+            <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
+                <div key={day} className="py-5 text-center text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                  {day}
                 </div>
-                <div className="space-y-1">
-                  {dayTasks.slice(0, 4).map(task => (
-                    <div 
-                      key={task.id}
-                      onClick={() => setSelectedTask(task)}
-                      className={`px-2 py-1.5 rounded-lg text-[10px] font-bold text-white truncate cursor-pointer hover:brightness-110 transition-all shadow-sm ${getPriorityColor(task.prioridade)}`}
-                      title={task.titulo}
-                    >
-                      {task.titulo}
+              ))}
+            </div>
+            <div className="grid grid-cols-7">
+              {calendarDays.map((day, i) => {
+                const dayTasks = getTasksForDay(day);
+                const isCurMonth = isSameMonth(day, monthStart);
+                const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+                
+                return (
+                  <div 
+                    key={day.toString()} 
+                    onClick={() => handleQuickCreate(day)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleDayDrop(e, day)}
+                    className={`min-h-[160px] p-3 border-r border-b border-slate-50 dark:border-slate-800/50 transition-all hover:bg-slate-50/70 dark:hover:bg-slate-800/30 cursor-pointer group ${!isCurMonth ? 'bg-slate-50/30 dark:bg-slate-900/50 opacity-40' : ''} ${isWeekend ? 'bg-slate-50/20 dark:bg-slate-800/10' : ''}`}
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <span className={`text-[11px] font-black w-8 h-8 flex items-center justify-center rounded-2xl transition-all ${isToday(day) ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-110' : isCurMonth ? 'text-slate-700 dark:text-slate-300' : 'text-slate-300 dark:text-slate-600'}`}>
+                        {format(day, 'd')}
+                      </span>
+                      {hasPermission('tarefas', 'incluir') && (
+                        <div className="p-1 text-slate-200 group-hover:text-primary transition-colors">
+                          <Plus size={14} />
+                        </div>
+                      )}
                     </div>
-                  ))}
-                  {dayTasks.length > 4 && (
-                    <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 text-center py-1 bg-slate-50 dark:bg-slate-800 rounded-lg mt-1">
-                      + {dayTasks.length - 4} tarefas
+                    <div className="space-y-1.5">
+                      {dayTasks.slice(0, 5).map(task => (
+                        <div 
+                          key={task.id}
+                          draggable
+                          onDragStart={(e) => handleTaskDragStart(e, task.id)}
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            navigate('/tarefas', { state: { taskId: task.id } });
+                          }}
+                          className={`px-3 py-2 rounded-xl text-[10px] font-black text-white truncate cursor-pointer hover:scale-[1.02] active:scale-95 transition-all shadow-md flex items-center gap-1.5 ${getPriorityClasses(task.prioridade)}`}
+                          title={`${task.taskNumber}: ${task.titulo} (${task.status})`}
+                        >
+                          <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${task.status === TaskStatus.COMPLETED ? 'bg-emerald-300' : task.status === TaskStatus.EXECUTION ? 'bg-blue-300' : 'bg-white/40'}`} />
+                          <span className="truncate">{task.titulo}</span>
+                        </div>
+                      ))}
+                      {dayTasks.length > 5 && (
+                        <div className="text-[9px] font-black text-primary bg-primary/10 dark:bg-primary/20 text-center py-2 rounded-xl mt-2 border border-primary/10">
+                          + {dayTasks.length - 5} TAREFAS
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {viewMode === 'week' && (
+          <div className="grid grid-cols-7 h-[600px]">
+            {weekDays.map(day => {
+               const dayTasks = getTasksForDay(day);
+               const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+               return (
+                 <div key={day.toString()} onClick={() => handleQuickCreate(day)} className={`flex flex-col border-r border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-all cursor-pointer ${isWeekend ? 'bg-slate-50/20 dark:bg-slate-800/10' : ''}`}>
+                    <div className="p-6 text-center border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30">
+                      <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">{format(day, 'EEE', { locale: ptBR })}</p>
+                      <p className={`text-2xl font-black ${isToday(day) ? 'text-primary' : 'text-slate-800 dark:text-slate-100'}`}>{format(day, 'd')}</p>
+                    </div>
+                    <div className="flex-1 p-4 space-y-3 overflow-y-auto custom-scrollbar">
+                      {dayTasks.map(task => (
+                        <div 
+                          key={task.id} 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            navigate('/tarefas', { state: { taskId: task.id } });
+                          }}
+                          className={`p-4 rounded-[1.5rem] text-white shadow-lg hover:brightness-110 transition-all cursor-pointer ${getPriorityClasses(task.prioridade)}`}
+                        >
+                          <p className="text-xs font-black leading-tight mb-2">{task.titulo}</p>
+                          <div className="flex items-center gap-2 mt-auto pt-2 border-t border-white/20">
+                            <Icon name="clock" className="w-3 h-3 text-white/70" />
+                            <span className="text-[9px] font-bold text-white/80 uppercase">{task.status}</span>
+                          </div>
+                        </div>
+                      ))}
+                      {dayTasks.length === 0 && (
+                        <div className="h-full flex flex-col items-center justify-center opacity-20 pointer-events-none">
+                          <Icon name="calendar" className="text-4xl mb-2 text-slate-300" />
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Vazio</p>
+                        </div>
+                      )}
+                    </div>
+                 </div>
+               );
+            })}
+          </div>
+        )}
+
+        {viewMode === 'day' && (
+          <div className="p-8 space-y-4 max-h-[700px] overflow-y-auto custom-scrollbar">
+            {filteredTasks.sort((a,b) => (a.dataVencimento || '').localeCompare(b.dataVencimento || '')).map(task => (
+              <div 
+                key={task.id} 
+                onClick={() => navigate('/tarefas', { state: { taskId: task.id } })}
+                className="flex items-center gap-6 p-6 rounded-[2rem] bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:shadow-xl transition-all group cursor-pointer"
+              >
+                <div className={`w-14 h-14 rounded-2xl shrink-0 flex items-center justify-center text-white shadow-xl ${getPriorityClasses(task.prioridade)}`}>
+                  <p className="text-lg font-black">{task.dataVencimento ? format(parseISO(task.dataVencimento), 'd') : '?'}</p>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h4 className="text-lg font-black text-slate-800 dark:text-slate-100 truncate">{task.titulo}</h4>
+                    <span className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-full text-[9px] font-black uppercase tracking-widest">{task.status}</span>
+                  </div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1 font-medium italic">{task.descricao || 'Sem descrição.'}</p>
+                </div>
+                <div className="flex flex-col items-end shrink-0 gap-1">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{task.dataVencimento ? format(parseISO(task.dataVencimento), 'MMMM', { locale: ptBR }) : 'Sem data'}</p>
+                  <Icon name="chevron-right" className="text-slate-300 group-hover:text-primary transition-colors" />
                 </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+            {filteredTasks.length === 0 && (
+               <div className="p-20 text-center space-y-4">
+                 <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto">
+                   <Icon name="calendar" className="text-3xl text-slate-200" />
+                 </div>
+                 <p className="text-slate-400 font-bold italic">Nenhuma tarefa encontrada para os filtros selecionados.</p>
+               </div>
+            )}
+          </div>
+        )}
       </div>
       
-      {/* Task Details Modal */}
+      {/* Task Details Modal - Optimized with Premium UI */}
       {selectedTask && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setSelectedTask(null)}>
-          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
-            <div className="p-8">
-              <div className="flex justify-between items-start mb-6">
-                <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider text-white shadow-lg ${getPriorityColor(selectedTask.prioridade)}`}>
-                  {selectedTask.prioridade}
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xl z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setSelectedTask(null)}>
+          <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[3.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+            <div className={`h-32 p-10 flex justify-between items-start ${getPriorityClasses(selectedTask.prioridade)}`}>
+              <div className="px-5 py-2 rounded-2xl bg-white/20 backdrop-blur-md border border-white/20 text-[10px] font-black uppercase tracking-[0.2em] text-white">
+                Prioridade {selectedTask.prioridade}
+              </div>
+              <button onClick={() => setSelectedTask(null)} className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white hover:bg-white/30 transition-all border border-white/20 shadow-sm">
+                <Icon name="x" />
+              </button>
+            </div>
+            
+            <div className="p-10 -mt-8 bg-white dark:bg-slate-900 rounded-t-[3rem] relative">
+              <h3 className="text-3xl font-black text-slate-800 dark:text-slate-100 mb-4 tracking-tighter">{selectedTask.titulo}</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-base mb-10 leading-relaxed font-medium">{selectedTask.descricao || 'Nenhuma descrição detalhada fornecida para esta tarefa.'}</p>
+              
+              <div className="grid grid-cols-2 gap-6 mb-10">
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-inner group hover:bg-white dark:hover:bg-slate-800 transition-all">
+                  <span className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-2 tracking-widest flex items-center gap-2">
+                    <Icon name="activity" className="w-3 h-3" /> Status Atual
+                  </span>
+                  <span className="text-base font-black text-slate-800 dark:text-slate-100">{selectedTask.status}</span>
                 </div>
-                <button onClick={() => setSelectedTask(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all text-slate-400">
-                  <Icon name="x" />
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-inner group hover:bg-white dark:hover:bg-slate-800 transition-all">
+                  <span className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-2 tracking-widest flex items-center gap-2">
+                    <Icon name="calendar" className="w-3 h-3" /> Prazo de Entrega
+                  </span>
+                  <span className="text-base font-black text-slate-800 dark:text-slate-100">{selectedTask.dataVencimento ? format(parseISO(selectedTask.dataVencimento), 'dd/MM/yyyy') : 'N/A'}</span>
+                </div>
+              </div>
+              
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setSelectedTask(null)}
+                  className="flex-1 py-5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                >
+                  Voltar
                 </button>
+                <Link 
+                  to="/tarefas" 
+                  onClick={() => setSelectedTask(null)}
+                  className="flex-[2] py-5 bg-primary text-white rounded-[2rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-primary/40 hover:brightness-110 transition-all flex items-center justify-center gap-3 active:scale-95"
+                >
+                  <Icon name="external-link" /> Gestão Completa
+                </Link>
               </div>
-              <h3 className="text-2xl font-black text-slate-800 dark:text-slate-50 mb-3 tracking-tight">{selectedTask.titulo}</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mb-8 leading-relaxed line-clamp-4">{selectedTask.descricao}</p>
-              
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-3xl border border-slate-100 dark:border-slate-700/50">
-                  <span className="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Status</span>
-                  <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{selectedTask.status}</span>
-                </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-3xl border border-slate-100 dark:border-slate-700/50">
-                  <span className="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Vencimento</span>
-                  <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{selectedTask.dataVencimento ? new Date(selectedTask.dataVencimento).toLocaleDateString() : 'N/A'}</span>
-                </div>
-              </div>
-              
-              <Link 
-                to="/tarefas" 
-                onClick={() => setSelectedTask(null)}
-                className="w-full py-5 bg-primary text-white rounded-[2rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/30 hover:brightness-110 transition-all flex items-center justify-center gap-3"
-              >
-                <Icon name="external-link" /> Ver Detalhes
-              </Link>
             </div>
           </div>
         </div>
@@ -2141,6 +2390,29 @@ const ClientsPage = () => {
   const [chavePix, setChavePix] = useState('');
   const [tipoChavePix, setTipoChavePix] = useState<'CPF/CNPJ' | 'E-mail' | 'Telefone' | 'Aleatória'>('CPF/CNPJ');
 
+  // Aditional Controlled States for Clients (Fixing multi-tab data loss)
+  const [inscricaoMunicipal, setInscricaoMunicipal] = useState('');
+  const [numero, setNumero] = useState('');
+  const [complemento, setComplemento] = useState('');
+  const [pais, setPais] = useState('Brasil');
+  const [telefonePrincipal, setTelefonePrincipal] = useState('');
+  const [telefoneSecundario, setTelefoneSecundario] = useState('');
+  const [emailPrincipal, setEmailPrincipal] = useState('');
+  const [emailFinanceiro, setEmailFinanceiro] = useState('');
+  const [site, setSite] = useState('');
+  const [banco, setBanco] = useState('');
+  const [agencia, setAgencia] = useState('');
+  const [conta, setConta] = useState('');
+  const [tipoConta, setTipoConta] = useState('Corrente');
+  const [categoria, setCategoria] = useState('');
+  const [origem, setOrigem] = useState('Site');
+  const [observacoes, setObservacoes] = useState('');
+  const [situacao, setSituacao] = useState('Ativo');
+  const [motivoBloqueio, setMotivoBloqueio] = useState('');
+  const [dataUltimaVenda, setDataUltimaVenda] = useState('');
+  const [avaliacaoInterna, setAvaliacaoInterna] = useState(0);
+  const [customData, setCustomData] = useState<Record<string, any>>({});
+
   // Address lookup states
   const [cep, setCep] = useState('');
   const [logradouro, setLogradouro] = useState('');
@@ -2180,6 +2452,29 @@ const ClientsPage = () => {
       setUf(editingClient.uf || '');
       setAttachments(editingClient.attachments || []);
       setInteractions(editingClient.interactions || []);
+
+      // Initialization for additional controlled states
+      setInscricaoMunicipal(editingClient.inscricaoMunicipal || '');
+      setNumero(editingClient.numero || '');
+      setComplemento(editingClient.complemento || '');
+      setPais(editingClient.pais || 'Brasil');
+      setTelefonePrincipal(editingClient.telefonePrincipal || '');
+      setTelefoneSecundario(editingClient.telefoneSecundario || '');
+      setEmailPrincipal(editingClient.emailPrincipal || '');
+      setEmailFinanceiro(editingClient.emailFinanceiro || '');
+      setSite(editingClient.site || '');
+      setBanco(editingClient.banco || '');
+      setAgencia(editingClient.agencia || '');
+      setConta(editingClient.conta || '');
+      setTipoConta(editingClient.tipoConta || 'Corrente');
+      setCategoria(editingClient.categoria || '');
+      setOrigem(editingClient.origem || 'Site');
+      setObservacoes(editingClient.observacoes || '');
+      setSituacao(editingClient.situacao || 'Ativo');
+      setMotivoBloqueio(editingClient.motivoBloqueio || '');
+      setDataUltimaVenda(editingClient.dataUltimaVenda || '');
+      setAvaliacaoInterna(editingClient.avaliacaoInterna || 0);
+      setCustomData(editingClient.customData || {});
     } else {
       setContactPeople([]);
       setTipoPessoa('Jurídica');
@@ -2196,6 +2491,29 @@ const ClientsPage = () => {
       setUf('');
       setAttachments([]);
       setInteractions([]);
+
+      // Reset for additional controlled states
+      setInscricaoMunicipal('');
+      setNumero('');
+      setComplemento('');
+      setPais('Brasil');
+      setTelefonePrincipal('');
+      setTelefoneSecundario('');
+      setEmailPrincipal('');
+      setEmailFinanceiro('');
+      setSite('');
+      setBanco('');
+      setAgencia('');
+      setConta('');
+      setTipoConta('Corrente');
+      setCategoria('');
+      setOrigem('Site');
+      setObservacoes('');
+      setSituacao('Ativo');
+      setMotivoBloqueio('');
+      setDataUltimaVenda('');
+      setAvaliacaoInterna(0);
+      setCustomData({});
     }
   }, [editingClient, isModalOpen]);
 
@@ -2313,54 +2631,46 @@ const ClientsPage = () => {
       nomeFantasia: nomeFantasia,
       documento: documento,
       inscricaoEstadual: tipoPessoa === 'Jurídica' ? inscricaoEstadual : '',
-      inscricaoMunicipal: data.inscricaoMunicipal,
+      inscricaoMunicipal: inscricaoMunicipal,
       dataCadastro: editingClient?.dataCadastro || new Date().toISOString(),
       status: status,
       
       cep: cep,
       logradouro: logradouro,
-      numero: data.numero,
-      complemento: data.complemento,
+      numero: numero,
+      complemento: complemento,
       bairro: bairro,
       cidade: cidade,
       uf: uf,
-      pais: data.pais || 'Brasil',
+      pais: pais || 'Brasil',
 
-      telefonePrincipal: data.telefonePrincipal,
-      telefoneSecundario: data.telefoneSecundario,
-      emailPrincipal: data.emailPrincipal,
-      emailFinanceiro: data.emailFinanceiro,
-      site: data.site,
+      telefonePrincipal: telefonePrincipal,
+      telefoneSecundario: telefoneSecundario,
+      emailPrincipal: emailPrincipal,
+      emailFinanceiro: emailFinanceiro,
+      site: site,
 
       pessoasContato: contactPeople,
 
-      banco: data.banco,
-      agencia: data.agencia,
-      conta: data.conta,
-      tipoConta: data.tipoConta,
+      banco: banco,
+      agencia: agencia,
+      conta: conta,
+      tipoConta: tipoConta,
       chavePix: chavePix,
       tipoChavePix: tipoChavePix,
 
-      categoria: data.categoria,
-      origem: data.origem,
-      observacoes: data.observacoes,
+      categoria: categoria,
+      origem: origem,
+      observacoes: observacoes,
 
-      situacao: data.situacao || 'Ativo',
-      motivoBloqueio: data.motivoBloqueio,
-      dataUltimaVenda: data.dataUltimaVenda,
-      avaliacaoInterna: Number(data.avaliacaoInterna) || 0,
+      situacao: situacao || 'Ativo',
+      motivoBloqueio: motivoBloqueio,
+      dataUltimaVenda: dataUltimaVenda,
+      avaliacaoInterna: Number(avaliacaoInterna) || 0,
       attachments: attachments,
       interactions: interactions,
       
-      customData: customFields.reduce((acc, field) => {
-        const key = `custom_${field.id}`;
-        if (field.type === 'boolean') {
-          acc[field.id] = data[key] === 'on';
-        } else {
-          acc[field.id] = data[key];
-        }
-        return acc;
-      }, {} as Record<string, any>)
+      customData: customData
     } as Client;
 
     if (editingClient) updateClient(client); else addClient(client);
@@ -2877,7 +3187,6 @@ const ClientsPage = () => {
                          <div className="space-y-1">
                             <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Inscrição Estadual</label>
                             <input 
-                              name="inscricaoEstadual" 
                               value={inscricaoEstadual} 
                               onChange={(e) => setInscricaoEstadual(maskIE(e.target.value))}
                               className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" 
@@ -2887,7 +3196,6 @@ const ClientsPage = () => {
                        <div className="space-y-1">
                          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Status Base</label>
                          <select 
-                            name="status" 
                             value={status} 
                             onChange={(e: any) => setStatus(e.target.value)}
                             className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200"
@@ -2909,7 +3217,6 @@ const ClientsPage = () => {
                            CEP {loadingCep && <Icon name="spinner" className="animate-spin text-primary" />}
                          </label>
                          <input 
-                           name="cep" 
                            value={cep} 
                            onChange={(e) => setCep(maskCEP(e.target.value))}
                            onBlur={handleCepBlur}
@@ -2920,7 +3227,6 @@ const ClientsPage = () => {
                        <div className="md:col-span-2 space-y-1">
                          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Logradouro</label>
                          <input 
-                           name="logradouro" 
                            value={logradouro} 
                            onChange={(e) => setLogradouro(e.target.value)}
                            placeholder="Rua, Av, Travessa..." 
@@ -2929,18 +3235,17 @@ const ClientsPage = () => {
                        </div>
                        <div className="space-y-1">
                          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Número</label>
-                         <input name="numero" defaultValue={editingClient?.numero} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary shadow-inner text-slate-800 dark:text-slate-200" />
+                         <input value={numero} onChange={(e) => setNumero(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary shadow-inner text-slate-800 dark:text-slate-200" />
                        </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                        <div className="space-y-1">
                          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Complemento</label>
-                         <input name="complemento" defaultValue={editingClient?.complemento} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                         <input value={complemento} onChange={(e) => setComplemento(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                        </div>
                        <div className="space-y-1">
                          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Bairro</label>
                          <input 
-                           name="bairro" 
                            value={bairro} 
                            onChange={(e) => setBairro(e.target.value)}
                            className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" 
@@ -2949,7 +3254,6 @@ const ClientsPage = () => {
                        <div className="space-y-1">
                          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Cidade</label>
                          <input 
-                           name="cidade" 
                            value={cidade} 
                            onChange={(e) => setCidade(e.target.value)}
                            className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" 
@@ -2958,7 +3262,6 @@ const ClientsPage = () => {
                        <div className="space-y-1">
                          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">UF</label>
                          <input 
-                           name="uf" 
                            value={uf} 
                            onChange={(e) => setUf(e.target.value.toUpperCase())}
                            maxLength={2} 
@@ -2976,20 +3279,20 @@ const ClientsPage = () => {
                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                           <div className="space-y-1">
                              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Telefone Principal</label>
-                             <PhoneInput name="telefonePrincipal" required defaultValue={editingClient?.telefonePrincipal} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                             <PhoneInput value={telefonePrincipal} onChange={(val) => setTelefonePrincipal(val)} required className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                           </div>
                           <div className="space-y-1">
                              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">WhatsApp / Secundário</label>
-                             <PhoneInput name="telefoneSecundario" defaultValue={editingClient?.telefoneSecundario} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                             <PhoneInput value={telefoneSecundario} onChange={(val) => setTelefoneSecundario(val)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                           </div>
                           <div className="space-y-1">
                              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Site / URL</label>
                              <input 
-                               name="site" 
-                               defaultValue={editingClient?.site} 
+                               value={site} 
+                               onChange={(e) => setSite(e.target.value)}
                                onBlur={(e) => {
                                  if (e.target.value && !e.target.value.startsWith('http')) {
-                                   e.target.value = `https://${e.target.value}`;
+                                   setSite(`https://${e.target.value}`);
                                  }
                                }}
                                placeholder="https://..." 
@@ -2998,11 +3301,11 @@ const ClientsPage = () => {
                           </div>
                           <div className="space-y-1">
                              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">E-mail Principal</label>
-                             <input name="emailPrincipal" required type="email" defaultValue={editingClient?.emailPrincipal} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                             <input required type="email" value={emailPrincipal} onChange={(e) => setEmailPrincipal(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                           </div>
                           <div className="space-y-1">
                              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">E-mail Financeiro</label>
-                             <input name="emailFinanceiro" type="email" defaultValue={editingClient?.emailFinanceiro} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                             <input type="email" value={emailFinanceiro} onChange={(e) => setEmailFinanceiro(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                           </div>
                        </div>
                     </section>
@@ -3049,12 +3352,12 @@ const ClientsPage = () => {
                        <div className="space-y-4">
                           <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] border-b border-slate-100 dark:border-slate-800 pb-2">Domicílio Bancário</h5>
                           <div className="space-y-4">
-                             <input name="banco" defaultValue={editingClient?.banco} placeholder="Instituição (Banco)" className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                             <input value={banco} onChange={(e) => setBanco(e.target.value)} placeholder="Instituição (Banco)" className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                              <div className="grid grid-cols-2 gap-4">
-                                <input name="agencia" defaultValue={editingClient?.agencia} placeholder="Agência" className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
-                                <input name="conta" defaultValue={editingClient?.conta} placeholder="Conta" className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                                <input value={agencia} onChange={(e) => setAgencia(e.target.value)} placeholder="Agência" className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                                <input value={conta} onChange={(e) => setConta(e.target.value)} placeholder="Conta" className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                              </div>
-                             <select name="tipoConta" defaultValue={editingClient?.tipoConta || 'Corrente'} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200">
+                             <select value={tipoConta} onChange={(e) => setTipoConta(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200">
                                 <option value="Corrente">Conta Corrente</option>
                                 <option value="Poupança">Conta Poupança</option>
                              </select>
@@ -3127,13 +3430,13 @@ const ClientsPage = () => {
                     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                        <div className="space-y-1">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Categoria Comercial</label>
-                          <select name="categoria" defaultValue={editingClient?.categoria || (clientCategories[0]?.nome || 'Geral')} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
+                          <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
                              {clientCategories.map(cat => <option key={cat.id} value={cat.nome}>{cat.nome}</option>)}
                           </select>
                        </div>
                        <div className="space-y-1">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Origem do Lead</label>
-                          <select name="origem" defaultValue={editingClient?.origem} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
+                          <select value={origem} onChange={(e) => setOrigem(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
                              <option value="Site">Site Institucional</option>
                              <option value="Indicação">Indicação Direta</option>
                              <option value="Prospecção">Prospecção Ativa</option>
@@ -3144,8 +3447,8 @@ const ClientsPage = () => {
                        <div className="space-y-1">
                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Avaliação Interna (Rating)</label>
                           <select 
-                            name="avaliacaoInterna" 
-                            defaultValue={editingClient?.avaliacaoInterna || 0} 
+                            value={avaliacaoInterna} 
+                            onChange={(e) => setAvaliacaoInterna(Number(e.target.value))}
                             className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary"
                           >
                              <option value="0">0 - Não Avaliado</option>
@@ -3163,7 +3466,7 @@ const ClientsPage = () => {
                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                           <div className="space-y-1">
                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Situação de Crédito</label>
-                             <select name="situacao" defaultValue={editingClient?.situacao || 'Ativo'} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
+                             <select value={situacao} onChange={(e) => setSituacao(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
                                 <option value="Ativo">Liberado / Ativo</option>
                                 <option value="Inadimplente">Inadimplente</option>
                                 <option value="Bloqueado para venda">Bloqueado para venda</option>
@@ -3171,15 +3474,15 @@ const ClientsPage = () => {
                           </div>
                           <div className="lg:col-span-2 space-y-1">
                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Motivo do Bloqueio (Se houver)</label>
-                             <input name="motivoBloqueio" defaultValue={editingClient?.motivoBloqueio} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" />
+                             <input value={motivoBloqueio} onChange={(e) => setMotivoBloqueio(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" />
                           </div>
                           <div className="space-y-1">
                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Data Última Venda</label>
                              <input 
-                               name="dataUltimaVenda" 
                                type="date" 
+                               value={dataUltimaVenda}
+                               onChange={(e) => setDataUltimaVenda(e.target.value)}
                                max={today}
-                               defaultValue={editingClient?.dataUltimaVenda} 
                                className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" 
                              />
                           </div>
@@ -3188,7 +3491,7 @@ const ClientsPage = () => {
 
                     <section className="space-y-1">
                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Observações Gerais</label>
-                       <textarea name="observacoes" rows={4} defaultValue={editingClient?.observacoes} placeholder="Notas internas sobre o relacionamento, histórico e peculiaridades..." className="w-full px-7 py-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 outline-none resize-none font-medium focus:border-primary shadow-inner" />
+                       <textarea value={observacoes} onChange={(e) => setObservacoes(e.target.value)} rows={4} placeholder="Notas internas sobre o relacionamento, histórico e peculiaridades..." className="w-full px-7 py-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 outline-none resize-none font-medium focus:border-primary shadow-inner" />
                     </section>
 
                     {customFields.length > 0 && (
@@ -3200,9 +3503,9 @@ const ClientsPage = () => {
                                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{field.name}</label>
                                   {field.type === 'select' ? (
                                      <select 
-                                       name={`custom_${field.id}`} 
                                        required={field.required}
-                                       defaultValue={editingClient?.customData?.[field.id] || ''} 
+                                       value={customData[field.id] || ''} 
+                                       onChange={(e) => setCustomData({ ...customData, [field.id]: e.target.value })}
                                        className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary"
                                      >
                                         <option value="">{field.placeholder || 'Selecione...'}</option>
@@ -3215,8 +3518,8 @@ const ClientsPage = () => {
                                         <label className="flex items-center gap-3 cursor-pointer w-full">
                                            <input 
                                              type="checkbox" 
-                                             name={`custom_${field.id}`} 
-                                             defaultChecked={editingClient?.customData?.[field.id] === 'on' || editingClient?.customData?.[field.id] === true}
+                                             checked={customData[field.id] === 'on' || customData[field.id] === true}
+                                             onChange={(e) => setCustomData({ ...customData, [field.id]: e.target.checked })}
                                              className="w-5 h-5 rounded text-primary focus:ring-primary" 
                                            />
                                            <span className="font-bold text-slate-700">Sim</span>
@@ -3225,12 +3528,12 @@ const ClientsPage = () => {
                                   ) : (
                                      <input 
                                        type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
-                                       name={`custom_${field.id}`} 
                                        required={field.required}
                                        pattern={field.regex}
                                        maxLength={field.maxLength}
                                        placeholder={field.placeholder}
-                                       defaultValue={editingClient?.customData?.[field.id] || ''} 
+                                       value={customData[field.id] || ''} 
+                                       onChange={(e) => setCustomData({ ...customData, [field.id]: e.target.value })}
                                        className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" 
                                      />
                                   )}
@@ -3447,12 +3750,15 @@ const TasksPage = () => {
   const [draggedOverStatus, setDraggedOverStatus] = useState<TaskStatus | null>(null);
 
   useEffect(() => {
-    if (location.state?.openModal) {
-      setEditingTask(null);
-      setIsModalOpen(true);
+    if (location.state?.openModal || location.state?.taskId) {
+      const taskToEdit = location.state?.taskId ? tasks.find(t => t.id === location.state.taskId) : null;
+      openTaskModal(taskToEdit || null);
+      if (location.state?.initialDate && !taskToEdit) {
+        setStartDate(location.state.initialDate);
+      }
       navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location.state, navigate, location.pathname]);
+  }, [location.state, navigate, location.pathname, tasks]);
   
   // Local Form States
   const [startDate, setStartDate] = useState<string>('');
@@ -3470,6 +3776,15 @@ const TasksPage = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  // New Controlled Form States (Fixing multi-tab data loss)
+  const [titulo, setTitulo] = useState('');
+  const [descricao, setDescricao] = useState('');
+  const [tipo, setTipo] = useState<TaskType>(TaskType.REQUEST);
+  const [solicitanteId, setSolicitanteId] = useState('');
+  const [responsavelId, setResponsavelId] = useState('');
+  const [setorId, setSetorId] = useState('');
+  const [interessados, setInteressados] = useState('');
   const [filterPriority, setFilterPriority] = useState<TaskPriority | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<TaskStatus | 'all'>('all');
   const [filterMyTasks, setFilterMyTasks] = useState(false);
@@ -3569,7 +3884,6 @@ const TasksPage = () => {
         let valOld = valOldRaw || 'Vazio';
         let valNew = valNewRaw || 'Vazio';
 
-        // Melhorar legibilidade de IDs
         if (key === 'solicitanteId' || key === 'responsavelId') {
           valOld = users.find(u => u.id === valOldRaw)?.nome || valOldRaw;
           valNew = users.find(u => u.id === valNewRaw)?.nome || valNewRaw;
@@ -3581,6 +3895,33 @@ const TasksPage = () => {
         changes.push(`${labels[key]}: "${valOld}" → "${valNew}"`);
       }
     });
+
+    // Subtasks Comparison
+    const oldSubtasks = oldT.subtasks || [];
+    const newSubtasks = newT.subtasks || [];
+
+    newSubtasks.forEach(nst => {
+      const ost = oldSubtasks.find(o => o.id === nst.id);
+      if (!ost) {
+        changes.push(`Subtarefa adicionada: "${nst.title}"`);
+      } else if (ost.completed !== nst.completed) {
+        changes.push(`Subtarefa "${nst.title}": ${ost.completed ? 'Concluída → Pendente' : 'Pendente → Concluída'}`);
+      }
+    });
+
+    oldSubtasks.forEach(ost => {
+      if (!newSubtasks.find(n => n.id === ost.id)) {
+        changes.push(`Subtarefa removida: "${ost.title}"`);
+      }
+    });
+
+    // Comments Comparison
+    const oldCommentsCnt = (oldT.comments || []).length;
+    const newCommentsCnt = (newT.comments || []).length;
+    if (newCommentsCnt > oldCommentsCnt) {
+      changes.push(`${newCommentsCnt - oldCommentsCnt} novo(s) comentário(s) adicionado(s)`);
+    }
+
     return changes;
   };
 
@@ -3591,9 +3932,16 @@ const TasksPage = () => {
     const dateChanged = startDate !== (editingTask.dataInicio || '');
     const priorityChanged = priority !== editingTask.prioridade;
     const conclusaoRealChanged = conclusaoReal !== (editingTask.dataConclusaoReal || '');
+    
+    // Subtasks or Comments changes
+    const subtasksChanged = JSON.stringify(subtasks) !== JSON.stringify(editingTask.subtasks || []);
+    const commentsChanged = comments.length !== (editingTask.comments || []).length;
 
-    return statusChanged || dateChanged || priorityChanged || conclusaoRealChanged;
-  }, [currentStatus, startDate, priority, conclusaoReal, editingTask]);
+    const isRealDateChange = editingTask.dataInicio ? dateChanged : (startDate !== '' && startDate !== new Date().toISOString().split('T')[0]);
+    const isRealConclusaoChange = editingTask.dataConclusaoReal ? conclusaoRealChanged : (conclusaoReal !== '');
+
+    return statusChanged || (editingTask.dataInicio && dateChanged) || priorityChanged || (editingTask.dataConclusaoReal && conclusaoRealChanged) || subtasksChanged || commentsChanged;
+  }, [currentStatus, startDate, priority, conclusaoReal, subtasks, comments, editingTask]);
 
   useEffect(() => {
     setShowLogInput(needsLogEntry);
@@ -3601,23 +3949,23 @@ const TasksPage = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data: any = Object.fromEntries(formData.entries());
     
     const newTaskPartial: Partial<Task> = {
-      titulo: data.titulo,
-      descricao: data.descricao,
-      tipo: data.tipo as TaskType,
-      solicitanteId: data.solicitanteId,
-      responsavelId: data.responsavelId || currentUser?.id,
-      setorId: data.setorId,
-      interessados: data.interessados,
+      titulo: titulo,
+      descricao: descricao,
+      tipo: tipo,
+      solicitanteId: solicitanteId,
+      responsavelId: responsavelId || currentUser?.id,
+      setorId: setorId,
+      interessados: interessados,
       prioridade: priority,
       status: currentStatus,
       dataInicio: startDate,
       dataConclusaoReal: conclusaoReal,
       tempoGasto: tempoGasto,
-      attachments: attachments
+      attachments: attachments,
+      subtasks: subtasks,
+      comments: comments
     };
 
     const logs: TaskLog[] = [...(editingTask?.logs || [])];
@@ -3673,6 +4021,15 @@ const TasksPage = () => {
 
   const openTaskModal = (t: Task | null) => {
     setEditingTask(t);
+    // Control States Setup
+    setTitulo(t?.titulo || '');
+    setDescricao(t?.descricao || '');
+    setTipo(t?.tipo || TaskType.REQUEST);
+    setSolicitanteId(t?.solicitanteId || (t ? '' : currentUser?.id || ''));
+    setResponsavelId(t?.responsavelId || (t ? '' : currentUser?.id || ''));
+    setSetorId(t?.setorId || '');
+    setInteressados(t?.interessados || '');
+
     setStartDate(t?.dataInicio || new Date().toISOString().split('T')[0]);
     setPriority(t?.prioridade || TaskPriority.MEDIUM);
     setCurrentStatus(t?.status || TaskStatus.OPEN);
@@ -3684,6 +4041,7 @@ const TasksPage = () => {
     setNewSubtaskTitle('');
     setNewCommentText('');
     setActiveModalTab('geral');
+    if (actionRef.current) actionRef.current.value = '';
     setIsModalOpen(true);
   };
 
@@ -4093,17 +4451,17 @@ const TasksPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Título</label>
-                        <input name="titulo" required defaultValue={editingTask?.titulo} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-primary outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
+                        <input value={titulo} onChange={(e) => setTitulo(e.target.value)} required className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-primary outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
                       </div>
                       <div className="space-y-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Tipo de Demanda</label>
-                        <select name="tipo" defaultValue={editingTask?.tipo || TaskType.REQUEST} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-slate-800 dark:text-slate-200">
+                        <select value={tipo} onChange={(e: any) => setTipo(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-slate-800 dark:text-slate-200">
                           {Object.values(TaskType).map(v => <option key={v} value={v} className="dark:bg-slate-900">{v}</option>)}
                         </select>
                       </div>
                       <div className="md:col-span-2 space-y-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Descrição Detalhada</label>
-                        <textarea name="descricao" rows={3} defaultValue={editingTask?.descricao} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-medium resize-none shadow-inner text-slate-800 dark:text-slate-200" />
+                        <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={3} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-medium resize-none shadow-inner text-slate-800 dark:text-slate-200" />
                       </div>
                     </div>
                   </section>
@@ -4113,27 +4471,27 @@ const TasksPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                       <div className="space-y-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Solicitante</label>
-                        <select name="solicitanteId" required defaultValue={editingTask?.solicitanteId} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-slate-800 dark:text-slate-200">
+                        <select value={solicitanteId} onChange={(e) => setSolicitanteId(e.target.value)} required className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-slate-800 dark:text-slate-200">
                           <option value="" className="dark:bg-slate-900">Selecione...</option>
                           {activeUsers.map(u => <option key={u.id} value={u.id} className="dark:bg-slate-900">{u.nome}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Responsável (Owner)</label>
-                        <select name="responsavelId" defaultValue={editingTask?.responsavelId || currentUser?.id} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-primary">
+                        <select value={responsavelId} onChange={(e) => setResponsavelId(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-primary">
                           {users.map(u => <option key={u.id} value={u.id} className="dark:bg-slate-900">{u.nome}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Equipe / Setor (Config.)</label>
-                        <select name="setorId" defaultValue={editingTask?.setorId} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-slate-800 dark:text-slate-200">
+                        <select value={setorId} onChange={(e) => setSetorId(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-slate-800 dark:text-slate-200">
                           <option value="" className="dark:bg-slate-900">Nenhum Setor Selecionado</option>
                           {sectors.map(s => <option key={s.id} value={s.id} className="dark:bg-slate-900">{s.nome}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Stakeholders / Interessados</label>
-                        <input name="interessados" defaultValue={editingTask?.interessados} placeholder="E-mails ou nomes..." className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
+                        <input value={interessados} onChange={(e) => setInteressados(e.target.value)} placeholder="E-mails ou nomes..." className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
                       </div>
                     </div>
                   </section>
@@ -6193,7 +6551,7 @@ const SobrePage = () => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-3 pt-4">
-            <span className="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-black text-white uppercase tracking-widest">Versão 1.1.0</span>
+            <span className="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-black text-white uppercase tracking-widest">Versão 1.2.0</span>
             <span className="px-6 py-2 bg-primary/20 backdrop-blur-md border border-primary/20 rounded-full text-[10px] font-black text-primary uppercase tracking-widest">Standard Edition</span>
             <span className="px-6 py-2 bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 rounded-full text-[10px] font-black text-emerald-500 uppercase tracking-widest">Status: Operacional</span>
           </div>
@@ -6231,7 +6589,7 @@ const SobrePage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Inovações da Versão 1.1.0</h3>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Inovações da Versão 1.2.0</h3>
             </div>
             <Icon name="chevron-right" className="text-slate-300" />
           </div>
@@ -6261,14 +6619,16 @@ const SobrePage = () => {
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800 space-y-6">
             <div className="flex items-center gap-2 text-slate-400">
               <Icon name="cpu" className="text-xs" />
-              <h4 className="text-[9px] font-black uppercase tracking-widest">System Specs</h4>
+              <h4 className="text-[9px] font-black uppercase tracking-widest">Tecnologia</h4>
             </div>
             <div className="space-y-3">
               {[
                 { k: 'Engine', v: 'React 19' },
                 { k: 'Style', v: 'Tailwind 4' },
-                { k: 'Motion', v: 'Framer' },
-                { k: 'Type', v: 'TS 5.8' },
+                { k: 'Runtime', v: 'Node/Express' },
+                { k: 'Database', v: 'Prisma/SQLite' },
+                { k: 'Realtime', v: 'Socket.io' },
+                { k: 'Types', v: 'TS 5.8' },
               ].map((s, i) => (
                 <div key={i} className="flex justify-between items-center font-mono">
                   <span className="text-[9px] text-slate-400 uppercase">{s.k}</span>
@@ -6278,7 +6638,7 @@ const SobrePage = () => {
             </div>
             <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
               <p className="text-[9px] text-slate-400 font-medium leading-relaxed">
-                Arquitetura distribuída com foco em escalabilidade e segurança.
+                Arquitetura moderna e resiliente, otimizada para alta performance e segurança de dados.
               </p>
             </div>
           </div>
