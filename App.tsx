@@ -25,69 +25,91 @@ import { auditService } from './services/auditService';
 
 import { 
   Edit, Trash2, Plus, Tag, Building2, Clock, Palette, Shield, Check, 
-  Users, LayoutDashboard, Mail, FileText, Settings, ShieldAlert, Info,
+  Users, LayoutDashboard, Mail, FileText, Settings, ShieldCheck, Info,
   Search, Filter, Download, Upload, LogOut, User as UserIcon, Phone, Mail as MailIcon,
   Globe, MapPin, CreditCard, PieChart as PieChartIcon, Activity, AlertTriangle, ChevronRight,
   ChevronLeft, MoreVertical, X, Calendar, MessageSquare, ExternalLink, HelpCircle,
   Bell, BellOff, Zap, TrendingUp, Target, Briefcase, Star, Award, CheckCircle,
-  AlertCircle, PlayCircle, CheckSquare, ListTodo, UserPlus, FilePlus, Building
+  AlertCircle, PlayCircle, CheckSquare, ListTodo, UserPlus, FilePlus, Building,
+  Sun, Moon, Send, ClipboardList, Cog, BookOpen, BarChart2, Home, MoreHorizontal
 } from 'lucide-react';
 
-// Icons from Lucide
+// Icons from Lucide — mapeamento completo e correto
 const iconMap: Record<string, any> = {
+  // Ações
   'edit': Edit,
   'trash': Trash2,
   'plus': Plus,
-  'tag': Tag,
-  'building': Building2,
-  'clock': Clock,
-  'palette': Palette,
-  'shield-alt': Shield,
   'check': Check,
-  'users': Users,
-  'dashboard': LayoutDashboard,
-  'mala-direta': Mail,
-  'tarefas': FileText,
-  'configuracoes': Settings,
-  'auditoria': ShieldAlert,
-  'sobre': Info,
+  'x': X,
   'search': Search,
   'filter': Filter,
   'download': Download,
   'upload': Upload,
-  'logout': LogOut,
-  'user': UserIcon,
-  'phone': Phone,
-  'email': MailIcon,
-  'globe': Globe,
-  'map-pin': MapPin,
-  'credit-card': CreditCard,
-  'pie-chart': PieChartIcon,
-  'activity': Activity,
-  'alert-triangle': AlertTriangle,
+  'external-link': ExternalLink,
   'chevron-right': ChevronRight,
   'chevron-left': ChevronLeft,
   'more-vertical': MoreVertical,
-  'x': X,
+  'more-horizontal': MoreHorizontal,
+  'logout': LogOut,
+  // Navegação (USA-04: nomes corrigidos para equivalentes Lucide)
+  'dashboard': LayoutDashboard,
+  'home': Home,
   'calendar': Calendar,
-  'message-square': MessageSquare,
-  'external-link': ExternalLink,
+  'address-book': Users,        // FA: address-book → Lucide: Users
+  'chart-line': BarChart2,      // FA: chart-line → Lucide: BarChart2
+  'paper-plane': Send,          // FA: paper-plane → Lucide: Send
+  'mala-direta': Send,
+  'tasks': ClipboardList,       // FA: tasks → Lucide: ClipboardList
+  'tarefas': ClipboardList,
+  'users': Users,
+  'cog': Cog,                   // FA: cog → Lucide: Cog
+  'configuracoes': Settings,
+  'shield-alt': ShieldCheck,    // FA: shield-alt → Lucide: ShieldCheck
+  'auditoria': ShieldCheck,
+  'info-circle': Info,          // FA: info-circle → Lucide: Info
+  'sobre': Info,
+  // Entidades
+  'tag': Tag,
+  'building': Building2,
+  'building-plus': Building,
+  'user': UserIcon,
+  'user-plus': UserPlus,
+  'file-plus': FilePlus,
+  'briefcase': Briefcase,
+  // Comunicação
+  'phone': Phone,
+  'email': MailIcon,
   'bell': Bell,
   'bell-slash': BellOff,
-  'zap': Zap,
-  'trending-up': TrendingUp,
-  'target': Target,
-  'briefcase': Briefcase,
-  'star': Star,
-  'award': Award,
+  'message-square': MessageSquare,
+  'mail': Mail,
+  // Status e indicadores
   'check-circle': CheckCircle,
   'alert-circle': AlertCircle,
+  'alert-triangle': AlertTriangle,
   'play-circle': PlayCircle,
   'check-square': CheckSquare,
   'list-todo': ListTodo,
-  'user-plus': UserPlus,
-  'file-plus': FilePlus,
-  'building-plus': Building
+  'shield': Shield,
+  // Gráficos e dados
+  'pie-chart': PieChartIcon,
+  'bar-chart': BarChart2,
+  'activity': Activity,
+  'trending-up': TrendingUp,
+  'target': Target,
+  // Miscelânea
+  'clock': Clock,
+  'palette': Palette,
+  'globe': Globe,
+  'map-pin': MapPin,
+  'credit-card': CreditCard,
+  'star': Star,
+  'award': Award,
+  'zap': Zap,
+  'book-open': BookOpen,
+  'sun': Sun,
+  'moon': Moon,
 };
 
 const Icon: React.FC<{ name: string; className?: string; title?: string }> = ({ name, className = "", title }) => {
@@ -354,7 +376,6 @@ export const useToast = () => {
 };
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  console.log('ToastProvider rendering');
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const addToast = useCallback((options: { title?: string, message: string, type: ToastType } | string, type: ToastType = 'info') => {
@@ -389,21 +410,21 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           <div 
             key={t.id} 
             className={`pointer-events-auto flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-right-8 fade-in duration-300
-              ${t.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-900' : 
-                t.type === 'error' ? 'bg-red-50 border-red-100 text-red-900' : 
-                t.type === 'warning' ? 'bg-amber-50 border-amber-100 text-amber-900' : 
-                'bg-blue-50 border-blue-100 text-blue-900'}`}
+              ${t.type === 'success' ? 'bg-emerald-50 dark:bg-emerald-950 border-emerald-100 dark:border-emerald-900 text-emerald-900 dark:text-emerald-100' : 
+                t.type === 'error' ? 'bg-red-50 dark:bg-red-950 border-red-100 dark:border-red-900 text-red-900 dark:text-red-100' : 
+                t.type === 'warning' ? 'bg-amber-50 dark:bg-amber-950 border-amber-100 dark:border-amber-900 text-amber-900 dark:text-amber-100' : 
+                'bg-blue-50 dark:bg-blue-950 border-blue-100 dark:border-blue-900 text-blue-900 dark:text-blue-100'}`}
           >
             <Icon 
-              name={t.type === 'success' ? 'check-circle' : t.type === 'error' ? 'exclamation-circle' : t.type === 'warning' ? 'exclamation-triangle' : 'info-circle'} 
-              className={`text-xl ${t.type === 'success' ? 'text-emerald-500' : t.type === 'error' ? 'text-red-500' : t.type === 'warning' ? 'text-amber-500' : 'text-blue-500'}`}
+              name={t.type === 'success' ? 'check-circle' : t.type === 'error' ? 'alert-circle' : t.type === 'warning' ? 'alert-triangle' : 'bell'} 
+              className={`shrink-0 ${t.type === 'success' ? 'text-emerald-500' : t.type === 'error' ? 'text-red-500' : t.type === 'warning' ? 'text-amber-500' : 'text-blue-500'}`}
             />
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-0">
               {t.title && <p className="font-black text-xs uppercase tracking-wider mb-0.5">{t.title}</p>}
               <p className="font-bold text-sm">{t.message}</p>
             </div>
-            <button onClick={() => removeToast(t.id)} className="ml-4 opacity-50 hover:opacity-100 transition-opacity">
-              <Icon name="times" />
+            <button onClick={() => removeToast(t.id)} className="ml-2 shrink-0 opacity-50 hover:opacity-100 transition-opacity">
+              <X size={14} />
             </button>
           </div>
         ))}
@@ -434,7 +455,6 @@ export const useConfirm = () => {
 };
 
 export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  console.log('ConfirmProvider rendering');
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
 
   const confirm = useCallback((opts: ConfirmOptions) => {
@@ -459,30 +479,46 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
       {children}
       {options && (
         <div className="fixed inset-0 z-[9999] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className={`p-6 border-b ${options.isDestructive ? 'bg-red-50 border-red-100' : 'bg-slate-50 border-slate-100'}`}>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-100 dark:border-slate-800">
+            <div className={`p-6 border-b ${
+              options.isDestructive 
+                ? 'bg-red-50 dark:bg-red-950/50 border-red-100 dark:border-red-900' 
+                : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700'
+            }`}>
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${options.isDestructive ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                  <Icon name={options.isDestructive ? 'exclamation-triangle' : 'question-circle'} className="text-xl" />
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  options.isDestructive 
+                    ? 'bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400' 
+                    : 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400'
+                }`}>
+                  <Icon name={options.isDestructive ? 'alert-triangle' : 'alert-circle'} className="text-xl" />
                 </div>
-                <h3 className={`font-black text-lg ${options.isDestructive ? 'text-red-900' : 'text-slate-900'}`}>
+                <h3 className={`font-black text-lg ${
+                  options.isDestructive 
+                    ? 'text-red-900 dark:text-red-100' 
+                    : 'text-slate-900 dark:text-slate-50'
+                }`}>
                   {options.title || 'Confirmação'}
                 </h3>
               </div>
             </div>
             <div className="p-6">
-              <p className="text-slate-600 font-medium leading-relaxed">{options.message}</p>
+              <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed">{options.message}</p>
             </div>
-            <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+            <div className="p-6 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
               <button 
                 onClick={handleCancel}
-                className="px-6 py-3 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition-colors"
+                className="px-6 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
               >
                 {options.cancelLabel || 'Cancelar'}
               </button>
               <button 
                 onClick={handleConfirm}
-                className={`px-6 py-3 rounded-xl font-black text-white shadow-lg hover:brightness-110 transition-all ${options.isDestructive ? 'bg-red-500 shadow-red-500/20' : 'bg-primary shadow-primary/20'}`}
+                className={`px-6 py-3 rounded-xl font-black text-white shadow-lg hover:brightness-110 transition-all ${
+                  options.isDestructive 
+                    ? 'bg-red-500 shadow-red-500/20' 
+                    : 'bg-primary shadow-primary/20'
+                }`}
               >
                 {options.confirmLabel || 'Confirmar'}
               </button>
@@ -607,7 +643,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   });
 
-  console.log('AppProvider rendering. currentUser:', currentUser?.id || 'null');
+  const [isLoading, setIsLoading] = useState(false);
 
   const [users, setUsers] = useState<User[]>([
     {
@@ -654,7 +690,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
-    console.log('Socket useEffect triggered. currentUser:', currentUser?.id);
     if (!currentUser) return;
     
     const socket = io();
@@ -664,7 +699,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     });
 
     socket.on('data_updated', () => {
-      // Use a small debounce to prevent rapid-fire reloads if multiple updates happen
       if ((window as any)._loadDataTimeout) clearTimeout((window as any)._loadDataTimeout);
       (window as any)._loadDataTimeout = setTimeout(() => {
         loadData();
@@ -687,19 +721,45 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     };
   }, [currentUser]);
 
-  // --- Session Timeout (Security Improvement) ---
+  // --- USA-02: Session Timeout com aviso prévio de 2 minutos ---
+  const [showSessionWarning, setShowSessionWarning] = useState(false);
+  const [sessionCountdown, setSessionCountdown] = useState(120);
+
   useEffect(() => {
     if (!currentUser) return;
 
-    let timeout: NodeJS.Timeout;
-    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutes
+    let logoutTimeout: NodeJS.Timeout;
+    let warningTimeout: NodeJS.Timeout;
+    let countdownInterval: NodeJS.Timeout;
+    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutos
+    const WARNING_BEFORE = 2 * 60 * 1000;    // aviso 2 min antes
 
     const resetTimer = () => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
+      clearTimeout(logoutTimeout);
+      clearTimeout(warningTimeout);
+      clearInterval(countdownInterval);
+      setShowSessionWarning(false);
+      setSessionCountdown(120);
+
+      // Aviso 2 minutos antes
+      warningTimeout = setTimeout(() => {
+        setShowSessionWarning(true);
+        setSessionCountdown(120);
+        countdownInterval = setInterval(() => {
+          setSessionCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(countdownInterval);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }, INACTIVITY_LIMIT - WARNING_BEFORE);
+
+      // Logout após 30 minutos
+      logoutTimeout = setTimeout(() => {
+        setShowSessionWarning(false);
         logout();
-        // We can't use toast here easily because it's outside the provider's consumer, 
-        // but the logout will trigger a redirect to login.
       }, INACTIVITY_LIMIT);
     };
 
@@ -707,15 +767,19 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     window.addEventListener('keydown', resetTimer);
     window.addEventListener('click', resetTimer);
     window.addEventListener('scroll', resetTimer);
+    window.addEventListener('touchstart', resetTimer);
 
     resetTimer();
 
     return () => {
-      clearTimeout(timeout);
+      clearTimeout(logoutTimeout);
+      clearTimeout(warningTimeout);
+      clearInterval(countdownInterval);
       window.removeEventListener('mousemove', resetTimer);
       window.removeEventListener('keydown', resetTimer);
       window.removeEventListener('click', resetTimer);
       window.removeEventListener('scroll', resetTimer);
+      window.removeEventListener('touchstart', resetTimer);
     };
   }, [currentUser]);
 
@@ -728,37 +792,34 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const loadData = async () => {
-    console.log('loadData called');
+    setIsLoading(true);
     try {
       const token = localStorage.getItem('senseirm_token');
-      console.log('loadData: token exists:', !!token);
-      if (!token) return;
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
       
-      // Fetch current user to ensure we have the latest permissions and profile
       const meRes = await fetch('/api/auth/me', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
-      console.log('loadData: /api/auth/me status:', meRes.status);
       if (meRes.ok) {
         const meData = await meRes.json();
-        console.log('loadData: auth success, user:', meData.id);
         setCurrentUser(meData);
         localStorage.setItem('senseirm_current_user', JSON.stringify(meData));
       } else if (meRes.status === 401 || meRes.status === 403 || meRes.status === 404) {
-        console.log('loadData: auth failed, logging out');
         logout();
+        setIsLoading(false);
         return;
       }
 
-      console.log('loadData: fetching /api/data');
       const res = await fetch(`/api/data?t=${Date.now()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+
       if (res.ok) {
-          
         const data = await res.json();
-        console.log('loadData: /api/data success');
         if (data.users && data.users.length > 0) setUsers(data.users);
         if (data.roles && data.roles.length > 0) setRoles(data.roles);
         setClients(data.clients || []);
@@ -773,29 +834,13 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         if (data.emailSettings) setEmailSettings(data.emailSettings);
         if (data.systemSettings) setSystemSettings(data.systemSettings);
         if (data.notifications) setNotifications(data.notifications);
-        setCustomFields(data.customFields || []);
-        setHistory(data.history || []);
-        setTemplates(data.templates || []);
-        setAuditLogs(data.auditLogs || []);
-        if (data.slaSettings) setSlaSettings(data.slaSettings);
-        if (data.emailSettings) setEmailSettings(data.emailSettings);
-        if (data.systemSettings) setSystemSettings(data.systemSettings);
-        if (data.notifications) setNotifications(data.notifications);
-        setCustomFields(data.customFields || []);
-        setHistory(data.history || []);
-        setTemplates(data.templates || []);
-        setAuditLogs(data.auditLogs || []);
-        if (data.slaSettings) setSlaSettings(data.slaSettings);
-        if (data.emailSettings) setEmailSettings(data.emailSettings);
-        if (data.systemSettings) setSystemSettings(data.systemSettings);
-        if (data.notifications) setNotifications(data.notifications);
-      } else if (res.status === 429) {
-        alert('Muitas requisições ao servidor. Por favor, aguarde um momento e recarregue a página.');
       } else {
-        console.error("Server error:", res.status, res.statusText);
+        console.error('Erro no servidor:', res.status);
       }
     } catch (e) {
-      console.error('Failed to load data', e);
+      console.error('Falha ao carregar dados', e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -820,9 +865,10 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       if (res.status === 401 || res.status === 403) {
         logout();
       } else if (res.status === 429) {
-        alert('Muitas requisições ao servidor. Por favor, aguarde um momento.');
+        // USA-01: Sem alert() — erro tratado via console e retorno de erro
+        console.warn('[SYNC] Rate limit atingido. Tente novamente em instantes.');
       } else if (!res.ok) {
-        console.error("Sync error:", res.status, res.statusText);
+        console.error('Sync error:', res.status, res.statusText);
       }
     } catch (e) {
       console.error('Failed to sync data', e);
@@ -842,7 +888,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, [systemSettings.companyName]);
 
   const login = async (email: string, pass: string) => {
-    console.log('login function called for:', email);
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -864,9 +909,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    console.log('logout function called');
-    if (currentUser) auditService.log(currentUser.id, currentUser.nome, 'LOGOUT', 'AUTH', 'Sessão encerrada.');
+  const logout = async () => {
+    if (currentUser) await auditService.log(currentUser.id, currentUser.nome, 'LOGOUT', 'AUTH', 'Sessão encerrada.');
     setCurrentUser(null);
     localStorage.removeItem('senseirm_current_user');
     localStorage.removeItem('senseirm_token');
@@ -992,7 +1036,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const deleteSector = (id: string) => {
-    console.log('Deleting sector:', id);
     const target = sectors.find(s => s.id === id);
     if (!target) return;
 
@@ -1032,7 +1075,6 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   const deleteClientCategory = (id: string) => {
-    console.log('Deleting category:', id);
     const target = clientCategories.find(c => c.id === id);
     if (!target) return;
 
@@ -1140,9 +1182,10 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     updateSync: apiSync,
     hasPermission,
     theme,
-    toggleTheme
+    toggleTheme,
+    isLoading
   }), [
-    currentUser, users, roles, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, systemSettings, clientCategories, customFields, notifications, apiSync, hasPermission, theme
+    currentUser, users, roles, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, systemSettings, clientCategories, customFields, notifications, apiSync, hasPermission, theme, isLoading
   ]);
 
   return (
@@ -1155,7 +1198,60 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         .hover\\:bg-primary:hover { background-color: var(--primary-color); }
         .focus\\:border-primary:focus { border-color: var(--primary-color); }
       `}</style>
-      {children}
+      {/* USA-06: Global Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 z-[200] bg-white/60 dark:bg-slate-950/60 backdrop-blur-sm flex items-center justify-center transition-opacity duration-300">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+            <p className="text-xs font-black text-primary uppercase tracking-[0.2em] animate-pulse">Carregando Ecossistema</p>
+          </div>
+        </div>
+      )}
+
+      {/* USA-02: Modal de aviso de sessão expirando */}
+      {showSessionWarning && (
+        <div className="fixed inset-0 z-[10000] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden border border-amber-200 dark:border-amber-800 animate-in zoom-in-95 duration-300">
+            <div className="p-6 border-b border-amber-100 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                  <Clock size={18} />
+                </div>
+                <div>
+                  <h3 className="font-black text-amber-900 dark:text-amber-100 text-base">Sessão Expirando</h3>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">Por inatividade</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 text-center">
+              <div className="w-20 h-20 rounded-full border-4 border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl font-black text-amber-600 dark:text-amber-400">{sessionCountdown}</span>
+              </div>
+              <p className="text-slate-600 dark:text-slate-300 text-sm font-medium leading-relaxed">
+                Sua sessão será encerrada em <strong>{sessionCountdown}</strong> segundo{sessionCountdown !== 1 ? 's' : ''} por inatividade. Deseja continuar?
+              </p>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-700 flex gap-3">
+              <button
+                onClick={logout}
+                className="flex-1 py-3 rounded-xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-sm"
+              >
+                Sair Agora
+              </button>
+              <button
+                onClick={() => {
+                  setShowSessionWarning(false);
+                  // Simula interação do usuário para resetar o timer
+                  window.dispatchEvent(new MouseEvent('mousemove'));
+                }}
+                className="flex-[2] py-3 rounded-xl font-black text-white bg-primary shadow-lg shadow-primary/20 hover:brightness-110 transition-all text-sm"
+              >
+                Manter Sessão
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppContext.Provider>
   );
 };
@@ -1361,8 +1457,9 @@ const Sidebar = () => {
           {systemSettings.appLogo ? (
             <img src={systemSettings.appLogo} alt="SenseiRM" className="w-10 h-10 rounded-lg object-contain bg-white/10 p-1" />
           ) : (
+            // VIS-04: Fallback usa inicial da empresa em vez do texto fixo 'SEN'
             <div className="bg-primary w-10 h-10 rounded-lg text-white flex items-center justify-center font-black text-xl tracking-tighter shadow-lg">
-              SEN
+              {systemSettings.companyName?.charAt(0)?.toUpperCase() || 'S'}
             </div>
           )}
           <div>
@@ -1382,7 +1479,7 @@ const Sidebar = () => {
                     onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${isActive ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-slate-800 hover:text-white'}`}
                   >
-                    <Icon name={item.icon} className={isActive ? 'text-primary' : 'text-slate-50 group-hover:text-slate-300'} />
+                    <Icon name={item.icon} className={isActive ? 'text-primary' : 'text-slate-400 group-hover:text-slate-200'} />
                     <span>{item.label}</span>
                   </Link>
                 </li>
@@ -1405,7 +1502,7 @@ const Sidebar = () => {
             </div>
           </div>
           <button onClick={logout} className="w-full flex items-center justify-center gap-2 py-2 bg-slate-700 hover:bg-red-500/20 hover:text-red-400 transition-all rounded-lg text-sm font-bold">
-            <Icon name="sign-out-alt" /> Sair
+            <LogOut size={14} /> Sair
           </button>
         </div>
       </div>
@@ -1428,7 +1525,7 @@ const BottomNavigation = () => {
   const moreItems = [
     { path: '/mala-direta', label: 'Mala Direta', icon: 'paper-plane', perm: 'malaDireta' },
     { path: '/usuarios', label: 'Usuários', icon: 'users', perm: 'usuarios' },
-    { path: '/configuracoes', label: 'Configurações', icon: 'cog', perm: 'configuracoes' },
+    { path: '/configuracoes', label: 'Config.', icon: 'cog', perm: 'configuracoes' },
     { path: '/auditoria', label: 'Auditoria', icon: 'shield-alt', perm: 'auditoria' },
     { path: '/sobre', label: 'Sobre', icon: 'info-circle', perm: null },
   ];
@@ -1452,12 +1549,13 @@ const BottomNavigation = () => {
             </Link>
           );
         })}
+        {/* USA-04: ícone corrigido de 'ellipsis-h' (FA) para 'more-horizontal' (Lucide) */}
         <button 
           onClick={() => setIsMoreMenuOpen(true)}
           className={`flex flex-col items-center gap-1 transition-all ${isMoreMenuOpen ? 'text-primary' : 'text-slate-400'}`}
         >
           <div className={`p-2 rounded-xl ${isMoreMenuOpen ? 'bg-primary/10' : ''}`}>
-            <Icon name="ellipsis-h" className="text-xl" />
+            <MoreHorizontal size={18} />
           </div>
           <span className="text-[9px] font-black uppercase tracking-tighter">Mais</span>
         </button>
@@ -1468,8 +1566,12 @@ const BottomNavigation = () => {
         <div className="fixed inset-0 z-[100] lg:hidden animate-in fade-in duration-300">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMoreMenuOpen(false)} />
           <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-slate-900 rounded-t-[2.5rem] p-8 pb-12 shadow-2xl animate-in slide-in-from-bottom duration-300">
-            <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mb-8" onClick={() => setIsMoreMenuOpen(false)} />
-            <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Menu Adicional</h3>
+            <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mb-8 cursor-pointer" onClick={() => setIsMoreMenuOpen(false)} />
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Menu Adicional</h3>
+              {/* RES-02: ThemeToggle acessível no mobile via drawer 'Mais' */}
+              <ThemeToggle showLabel />
+            </div>
             <div className="grid grid-cols-3 gap-6">
               {moreItems.map(item => {
                 if (item.perm && !hasPermission(item.perm as any, 'acesso')) return null;
@@ -1561,15 +1663,22 @@ const NotificationsPopover = () => {
   );
 };
 
-const ThemeToggle = () => {
+// VIS-06 + RES-02: ThemeToggle com ícones Sun/Moon, acessível em todas as resoluções
+const ThemeToggle = ({ showLabel = false }: { showLabel?: boolean }) => {
   const { theme, toggleTheme } = useApp();
   return (
     <button 
       onClick={toggleTheme}
-      className="px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400"
+      className="flex items-center gap-2 px-3 py-2 rounded-full border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-slate-500 dark:text-slate-400"
       title={theme === 'light' ? 'Mudar para Modo Escuro' : 'Mudar para Modo Claro'}
+      aria-label={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
     >
-      {theme === 'light' ? 'Escuro' : 'Claro'}
+      {theme === 'light' ? <Moon size={15} /> : <Sun size={15} />}
+      {showLabel && (
+        <span className="text-xs font-bold uppercase tracking-widest">
+          {theme === 'light' ? 'Escuro' : 'Claro'}
+        </span>
+      )}
     </button>
   );
 };
@@ -1577,13 +1686,18 @@ const ThemeToggle = () => {
 const Header = ({ title }: { title: React.ReactNode }) => (
   <header className="h-16 lg:h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40 transition-colors duration-300">
     <div className="flex items-center gap-3">
-      <div className="lg:hidden w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-         <Icon name="rocket" className="text-primary text-sm" />
+      {/* RES-01: Header mobile com branding contextual */}
+      <div className="lg:hidden">
+        <SenseiLogo className="text-sm text-slate-700 dark:text-slate-200" />
       </div>
-      <div className="text-lg md:text-xl font-black text-slate-800 dark:text-slate-50 tracking-tight truncate max-w-[50vw]">{title}</div>
+      <div className="text-lg md:text-xl font-black text-slate-800 dark:text-slate-50 tracking-tight truncate max-w-[40vw] sm:max-w-[50vw]">{title}</div>
     </div>
-    <div className="flex items-center gap-2 md:gap-4">
+    <div className="flex items-center gap-2 md:gap-3">
+      {/* ThemeToggle visível em desktop com label, sinóptico no mobile */}
       <div className="hidden sm:block">
+        <ThemeToggle showLabel />
+      </div>
+      <div className="sm:hidden">
         <ThemeToggle />
       </div>
       <NotificationsPopover />
@@ -1825,7 +1939,7 @@ const CalendarView = () => {
                     onClick={() => handleQuickCreate(day)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => handleDayDrop(e, day)}
-                    className={`min-h-[160px] p-3 border-r border-b border-slate-50 dark:border-slate-800/50 transition-all hover:bg-slate-50/70 dark:hover:bg-slate-800/30 cursor-pointer group ${!isCurMonth ? 'bg-slate-50/30 dark:bg-slate-900/50 opacity-40' : ''} ${isWeekend ? 'bg-slate-50/20 dark:bg-slate-800/10' : ''}`}
+                    className={`min-h-[72px] md:min-h-[110px] lg:min-h-[160px] p-1.5 md:p-3 border-r border-b border-slate-50 dark:border-slate-800/50 transition-all hover:bg-slate-50/70 dark:hover:bg-slate-800/30 cursor-pointer group ${!isCurMonth ? 'bg-slate-50/30 dark:bg-slate-900/50 opacity-40' : ''} ${isWeekend ? 'bg-slate-50/20 dark:bg-slate-800/10' : ''}`}
                   >
                     <div className="flex justify-between items-start mb-3">
                       <span className={`text-[11px] font-black w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-xl md:rounded-2xl transition-all ${isToday(day) ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-110' : isCurMonth ? 'text-slate-700 dark:text-slate-300' : 'text-slate-300 dark:text-slate-600'}`}>
@@ -1868,7 +1982,7 @@ const CalendarView = () => {
         )}
 
         {viewMode === 'week' && (
-          <div className="grid grid-cols-7 h-[600px]">
+          <div className="grid grid-cols-7 h-[400px] md:h-[550px] lg:h-[650px]">
             {weekDays.map(day => {
                const dayTasks = getTasksForDay(day);
                const isWeekend = day.getDay() === 0 || day.getDay() === 6;
@@ -1948,7 +2062,9 @@ const CalendarView = () => {
       {selectedTask && (
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xl z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setSelectedTask(null)}>
           <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[3.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
-            <div className={`h-32 p-10 flex justify-between items-start ${getPriorityClasses(selectedTask.prioridade)}`}>
+            {/* RES-04: padding e altura responsivos — mobile-first */}
+            <div className={`h-24 md:h-32 p-4 md:p-8 flex justify-between items-start ${getPriorityClasses(selectedTask.prioridade)}`}>
+
               <div className="px-5 py-2 rounded-2xl bg-white/20 backdrop-blur-md border border-white/20 text-[10px] font-black uppercase tracking-[0.2em] text-white">
                 Prioridade {selectedTask.prioridade}
               </div>
@@ -1957,11 +2073,11 @@ const CalendarView = () => {
               </button>
             </div>
             
-            <div className="p-10 -mt-8 bg-white dark:bg-slate-900 rounded-t-[3rem] relative">
-              <h3 className="text-3xl font-black text-slate-800 dark:text-slate-100 mb-4 tracking-tighter">{selectedTask.titulo}</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-base mb-10 leading-relaxed font-medium">{selectedTask.descricao || 'Nenhuma descrição detalhada fornecida para esta tarefa.'}</p>
+            <div className="p-5 md:p-8 -mt-6 md:-mt-8 bg-white dark:bg-slate-900 rounded-t-[2rem] md:rounded-t-[3rem] relative">
+              <h3 className="text-xl md:text-3xl font-black text-slate-800 dark:text-slate-100 mb-3 md:mb-4 tracking-tighter">{selectedTask.titulo}</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base mb-6 md:mb-10 leading-relaxed font-medium">{selectedTask.descricao || 'Nenhuma descrição detalhada fornecida para esta tarefa.'}</p>
               
-              <div className="grid grid-cols-2 gap-6 mb-10">
+              <div className="grid grid-cols-2 gap-3 md:gap-6 mb-6 md:mb-10">
                 <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-inner group hover:bg-white dark:hover:bg-slate-800 transition-all">
                   <span className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-2 tracking-widest flex items-center gap-2">
                     <Icon name="activity" className="w-3 h-3" /> Status Atual
@@ -6828,7 +6944,6 @@ const SobrePage = () => {
 };
 
 const LoginPage = () => {
-  console.log('LoginPage rendering');
   const { login, currentUser, systemSettings } = useApp();
   const [error, setError] = useState('');
   if (currentUser) return <Navigate to="/dashboard" />;
@@ -7281,6 +7396,14 @@ const MailListPage = () => {
   );
 };
 
+
+// VIS-05: Wrapper de transição de página — animação de entrada CSS em cada rota
+const PageTransition: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="page-enter w-full">
+    {children}
+  </div>
+);
+
 const MainLayout = () => {
   const { currentUser, systemSettings } = useApp();
   const location = useLocation();
@@ -7303,17 +7426,18 @@ const MainLayout = () => {
       <div className="flex-1 lg:ml-64 min-h-screen flex flex-col w-full">
         <Header title={titles[Object.keys(titles).find(k => location.pathname.startsWith(k)) || ''] || <SenseiLogo className="text-xl" />} />
         <main className="flex-1 pb-32 lg:pb-16 w-full max-w-[100vw] overflow-x-hidden">
-          <Routes>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/calendario" element={<CalendarView />} />
-            <Route path="/clientes" element={<ClientsPage />} />
-            <Route path="/mala-direta" element={<MailListPage />} />
-            <Route path="/tarefas" element={<TasksPage />} />
-            <Route path="/usuarios" element={<UsersPage />} />
-            <Route path="/configuracoes" element={<ConfiguracoesPage />} />
-            <Route path="/auditoria" element={<AuditoriaPage />} />
-            <Route path="/sobre" element={<SobrePage />} />
-            <Route path="*" element={<Navigate to="/dashboard" />} />
+          {/* Chave da rota para garantir re-animação a cada navegação */}
+          <Routes location={location} key={location.pathname}>
+            <Route path="/dashboard"     element={<PageTransition><Dashboard /></PageTransition>} />
+            <Route path="/calendario"    element={<PageTransition><CalendarView /></PageTransition>} />
+            <Route path="/clientes"      element={<PageTransition><ClientsPage /></PageTransition>} />
+            <Route path="/mala-direta"   element={<PageTransition><MailListPage /></PageTransition>} />
+            <Route path="/tarefas"       element={<PageTransition><TasksPage /></PageTransition>} />
+            <Route path="/usuarios"      element={<PageTransition><UsersPage /></PageTransition>} />
+            <Route path="/configuracoes" element={<PageTransition><ConfiguracoesPage /></PageTransition>} />
+            <Route path="/auditoria"     element={<PageTransition><AuditoriaPage /></PageTransition>} />
+            <Route path="/sobre"         element={<PageTransition><SobrePage /></PageTransition>} />
+            <Route path="*"              element={<Navigate to="/dashboard" />} />
           </Routes>
         </main>
       </div>
@@ -7321,8 +7445,8 @@ const MainLayout = () => {
   );
 };
 
+
 const App: React.FC = () => {
-  console.log('App component rendering');
   return (
     <ToastProvider>
       <ConfirmProvider>

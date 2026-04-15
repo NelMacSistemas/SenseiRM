@@ -3,6 +3,7 @@ import nodemailer from 'nodemailer';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import bcrypt from 'bcryptjs';
@@ -20,15 +21,30 @@ const app = express();
 // Set to 1 to trust the first hop (the immediate proxy)
 app.set('trust proxy', 1);
 const server = http.createServer(app);
+// SEG-02: CORS restrito por allowlist (Socket.IO)
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',').map(o => o.trim());
 const io = new SocketIOServer(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+        callback(null, true);
+      } else {
+        callback(new Error('Socket.IO CORS bloqueado: origem não permitida'));
+      }
+    },
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
-const PORT = 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-senseirm';
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+
+// SEG-01: JWT_SECRET sem fallback inseguro — gera um temporário se não configurado
+if (!process.env.JWT_SECRET) {
+  console.warn('⚠️  [AVISO DE SEGURANÇA] JWT_SECRET não definido em variáveis de ambiente.');
+  console.warn('⚠️  Um segredo temporário foi gerado. Defina JWT_SECRET no arquivo .env para persistência.');
+}
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(64).toString('hex');
 const DATA_FILE = path.join(__dirname, 'data.json');
 
 // --- Security Middlewares ---
@@ -92,13 +108,23 @@ const upload = multer({
   }
 });
 
+// SEG-02: CORS restrito por allowlist (HTTP)
 app.use(cors({
-  origin: '*',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS bloqueado: origem não permitida'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  credentials: true
 }));
-app.use(express.json({ limit: '100mb' })); 
-app.use(express.urlencoded({ limit: '100mb', extended: true }));
+
+// SEG-03: Limite seguro para body JSON (era 100MB — vetor de DoS)
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ limit: '2mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // --- Utility Functions ---
@@ -192,20 +218,32 @@ const defaultRoles = [
 ];
 
 const salt = bcrypt.genSaltSync(10);
+
+// SEG-05: Senha do admin gerada aleatoriamente no primeiro boot
+const ADMIN_INITIAL_PASSWORD = process.env.ADMIN_INITIAL_PASSWORD || crypto.randomBytes(10).toString('base64url');
+if (!process.env.ADMIN_INITIAL_PASSWORD) {
+  console.log('\n' + '='.repeat(60));
+  console.log('🔑  SENHA INICIAL DO ADMINISTRADOR (primeiro acesso)');
+  console.log('    Email: admin@senseirm.com');
+  console.log(`    Senha: ${ADMIN_INITIAL_PASSWORD}`);
+  console.log('    Altere imediatamente após o primeiro login!');
+  console.log('='.repeat(60) + '\n');
+}
+
 const defaultAdmin = [
   {
     id: '1',
     nome: 'Administrador',
     email: 'admin@senseirm.com',
-    senha: bcrypt.hashSync('admin123', salt),
+    senha: bcrypt.hashSync(ADMIN_INITIAL_PASSWORD, salt),
     roleId: 'admin',
     status: 'ativo',
     tema: 'verde',
     dataCriacao: new Date().toISOString(),
-    foto: 'https://picsum.photos/200',
-    telefone: '5133334444',
-    celular: '51992733121',
-    possuiWhatsapp: true
+    foto: '',
+    telefone: '',
+    celular: '',
+    possuiWhatsapp: false
   }
 ];
 
@@ -329,9 +367,8 @@ const checkPermission = (module: string, action: 'acesso' | 'leitura' | 'incluir
     
     const role = db.roles.find((r: any) => r.id === user.roleId);
     if (!role) return res.status(403).json({ error: 'Função não encontrada' });
-    
-    if (role.id === 'admin') return next();
-    
+
+    // SEG-06: Verificação via matriz de permissões (sem bypass por ID hardcoded)
     const permissions = role.permissions?.[module];
     if (permissions && permissions[action]) {
       return next();
@@ -437,7 +474,10 @@ app.get('/api/data', authenticateToken, apiLimiter, (req: any, res: any) => {
   if (!user) return res.sendStatus(404);
 
   const role = db.roles.find((r: any) => r.id === user.roleId);
-  const isAdmin = role?.id === 'admin';
+  // SEG-06: isAdmin determinado por permissões completas, não por ID hardcoded
+  const isAdmin = Object.values(role?.permissions || {}).every((p: any) =>
+    p.acesso && p.leitura && p.incluir && p.editar && p.excluir
+  );
   const perms: any = role?.permissions || {};
 
   // Filter data based on permissions
@@ -479,7 +519,10 @@ app.post('/api/sync', authenticateToken, apiLimiter, (req: any, res: any) => {
   }
 
   const role = db.roles.find((r: any) => r.id === user.roleId);
-  const isAdmin = role?.id === 'admin';
+  // SEG-06: isAdmin é determinado pelas permissões completas, não pelo ID hardcoded
+  const isAdmin = Object.values(role?.permissions || {}).every((p: any) =>
+    p.acesso && p.leitura && p.incluir && p.editar && p.excluir
+  );
   const perms: any = role?.permissions || {};
 
   // Map collection types to permission modules

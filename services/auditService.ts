@@ -1,9 +1,7 @@
-
 import { AuditEntry } from '../types';
 
 export const auditService = {
   getLogs: async (): Promise<AuditEntry[]> => {
-    console.log('auditService.getLogs called');
     try {
       const token = localStorage.getItem('senseirm_token');
       const res = await fetch(`/api/data?t=${Date.now()}`, {
@@ -15,8 +13,7 @@ export const auditService = {
       } else if (res.status === 401 || res.status === 403) {
         localStorage.removeItem('senseirm_token');
         localStorage.removeItem('senseirm_current_user');
-        console.log('Reloading page due to 401/403 in getLogs');
-        window.location.reload();
+        // AUD-05: Redirecionamento removido, App.tsx cuidará do estado de login
       }
       return [];
     } catch (e) {
@@ -26,10 +23,11 @@ export const auditService = {
   },
 
   log: async (userId: string, userName: string, action: string, module: string, details: string, entityId?: string, diff?: { field: string; oldValue: any; newValue: any }[]) => {
-    console.log('auditService.log called for:', action);
     try {
       const token = localStorage.getItem('senseirm_token');
-      const res = await fetch('/api/audit', {
+      if (!token) return; // Não tenta logar se não houver token
+
+      await fetch('/api/audit', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -37,12 +35,6 @@ export const auditService = {
         },
         body: JSON.stringify({ action, module, details, entityId, diff })
       });
-      if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem('senseirm_token');
-        localStorage.removeItem('senseirm_current_user');
-        console.log('Reloading page due to 401/403 in log');
-        window.location.reload();
-      }
     } catch (e) {
       console.error("Error saving audit log", e);
     }
@@ -59,13 +51,7 @@ export const auditService = {
         },
         body: JSON.stringify({ reason })
       });
-      if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem('senseirm_token');
-        localStorage.removeItem('senseirm_current_user');
-        console.log('Reloading page due to 401/403 in clearLogs');
-        window.location.reload();
-        return false;
-      }
+      
       if (res.status === 429) {
         throw new Error('Muitas requisições ao servidor. Por favor, aguarde um momento.');
       }

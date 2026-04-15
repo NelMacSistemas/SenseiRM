@@ -1,9 +1,32 @@
 @import "tailwindcss";
 
+/* VIS-02: Registro nativo de cores no Tailwind v4 via @theme */
+@theme {
+  --color-primary: #10b981;
+  --color-primary-dark: #059669;
+  --color-primary-light: #34d399;
+}
+
 @custom-variant dark (&:is(.dark *));
 
+/* Design System — Tokens globais */
 :root {
   --primary-color: #10b981;
+
+  /* VIS-01: Tokens de border-radius consistentes */
+  --radius-xs:  0.5rem;   /* 8px  — tags, badges pequenos         */
+  --radius-sm:  0.75rem;  /* 12px — inputs, botões inline          */
+  --radius-md:  1rem;     /* 16px — cards secundários, selects     */
+  --radius-lg:  1.5rem;   /* 24px — cards primários, modais small  */
+  --radius-xl:  2rem;     /* 32px — painéis, modais médios         */
+  --radius-2xl: 2.5rem;   /* 40px — modais grandes, drawers        */
+  --radius-3xl: 3rem;     /* 48px — hero cards, calendário         */
+
+  /* Sombras sistematizadas */
+  --shadow-sm:  0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.09), 0 8px 10px -6px rgb(0 0 0 / 0.09);
 }
 
 body {
@@ -11,20 +34,82 @@ body {
   @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50;
 }
 
+/* ====================================================
+   Classes de cor primária dinâmica (tema do usuário)
+   Mantidas para compatibilidade com o sistema de temas
+   ==================================================== */
+.bg-primary    { background-color: var(--primary-color); }
+.text-primary  { color: var(--primary-color); }
+.border-primary { border-color: var(--primary-color); }
+.hover\:bg-primary:hover   { background-color: var(--primary-color); }
+.focus\:border-primary:focus { border-color: var(--primary-color); }
+.ring-primary  { --tw-ring-color: var(--primary-color); }
+.shadow-primary\/20 { --tw-shadow-color: color-mix(in srgb, var(--primary-color) 20%, transparent); }
+.shadow-primary\/30 { --tw-shadow-color: color-mix(in srgb, var(--primary-color) 30%, transparent); }
+.shadow-primary\/40 { --tw-shadow-color: color-mix(in srgb, var(--primary-color) 40%, transparent); }
+.bg-primary\/5  { background-color: color-mix(in srgb, var(--primary-color)  5%, transparent); }
+.bg-primary\/10 { background-color: color-mix(in srgb, var(--primary-color) 10%, transparent); }
+.bg-primary\/20 { background-color: color-mix(in srgb, var(--primary-color) 20%, transparent); }
+.text-primary\/80 { color: color-mix(in srgb, var(--primary-color) 80%, transparent); }
+.border-primary\/20 { border-color: color-mix(in srgb, var(--primary-color) 20%, transparent); }
+.border-primary\/30 { border-color: color-mix(in srgb, var(--primary-color) 30%, transparent); }
+
+/* Sidebar */
 .sidebar-transition {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
+/* Scrollbar customizada */
+.custom-scrollbar::-webkit-scrollbar       { width: 4px; height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   @apply bg-slate-300 dark:bg-slate-700;
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   @apply bg-slate-400 dark:bg-slate-600;
+}
+
+/* VIS-05: Animações de entrada de página */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.page-enter {
+  animation: page-enter 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Transição suave de rota */
+.route-transition {
+  animation: page-enter 0.2s ease-out both;
+}
+
+/* Utilitário de safe-area para iOS */
+.pb-safe {
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+}
+
+/* Focus ring acessível */
+*:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* Seleção de texto com cor primária */
+::selection {
+  background-color: color-mix(in srgb, var(--primary-color) 25%, transparent);
+}
+
+/* Transição de cores global (dark/light mode) */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+/* Exceções — não queremos transição em todo lugar */
+input, textarea, select, button, a, [class*="animate"] {
+  transition-property: none;
 }
