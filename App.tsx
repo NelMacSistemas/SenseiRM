@@ -515,8 +515,8 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
     <ConfirmContext.Provider value={value}>
       {children}
       {options && (
-        <div className="fixed inset-0 z-[9999] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-100 dark:border-slate-800">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-100 dark:border-slate-800 w-[95vw] lg:w-[90vw] max-w-6xl h-[90vh] max-h-[900px] flex flex-col">
             <div className={`p-6 border-b ${
               options.isDestructive 
                 ? 'bg-red-50 dark:bg-red-950/50 border-red-100 dark:border-red-900' 
@@ -1259,7 +1259,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       `}</style>
       {/* USA-06: Global Loading Overlay */}
       {isLoading && (
-        <div className="fixed inset-0 z-[200] bg-white/60 dark:bg-slate-950/60 backdrop-blur-sm flex items-center justify-center transition-opacity duration-300">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
             <p className="text-xs font-black text-primary uppercase tracking-[0.2em] animate-pulse">Carregando Ecossistema</p>
@@ -1269,8 +1269,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
       {/* USA-02: Modal de aviso de sessão expirando */}
       {showSessionWarning && (
-        <div className="fixed inset-0 z-[10000] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden border border-amber-200 dark:border-amber-800 animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-amber-200 dark:border-amber-800 animate-in zoom-in-95 duration-300 w-[95vw] lg:w-[90vw] max-w-6xl h-[90vh] max-h-[900px] flex flex-col">
             <div className="p-6 border-b border-amber-100 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/50">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
@@ -1623,7 +1623,7 @@ const BottomNavigation = () => {
 
       {/* More Menu Drawer */}
       {isMoreMenuOpen && (
-        <div className="fixed inset-0 z-[100] lg:hidden animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMoreMenuOpen(false)} />
           <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-slate-900 rounded-t-[2.5rem] p-8 pb-12 shadow-2xl animate-in slide-in-from-bottom duration-300">
             <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mb-8 cursor-pointer" onClick={() => setIsMoreMenuOpen(false)} />
@@ -1679,8 +1679,8 @@ const NotificationsPopover = () => {
 
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 w-[95vw] lg:w-[90vw] max-w-6xl h-[90vh] max-h-[900px] flex flex-col">
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
               <h3 className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Notificações</h3>
               {notifications.length > 0 && (
@@ -1972,7 +1972,7 @@ const CalendarView = () => {
       </div>
 
       {/* CALENDAR BODY */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden relative">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden relative">
         {viewMode === 'month' && (
           <>
             <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
@@ -1994,7 +1994,7 @@ const CalendarView = () => {
                     onClick={() => handleQuickCreate(day)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => handleDayDrop(e, day)}
-                    className={`min-h-[72px] md:min-h-[110px] lg:min-h-[160px] p-1.5 md:p-3 border-r border-b border-slate-50 dark:border-slate-800/50 transition-all hover:bg-slate-50/70 dark:hover:bg-slate-800/30 cursor-pointer group ${!isCurMonth ? 'bg-slate-50/30 dark:bg-slate-900/50 opacity-40' : ''} ${isWeekend ? 'bg-slate-50/20 dark:bg-slate-800/10' : ''}`}
+                    className={`min-h-[72px] md:min-h-[110px] lg:min-h-[160px] p-1.5 md:p-3 border-r border-b border-slate-50 dark:border-slate-800/50 transition-all hover:bg-slate-50/70 dark:hover:bg-slate-800/30 cursor-pointer group ${!isCurMonth ? 'bg-red-500 dark:bg-slate-900/50 opacity-40' : ''} ${isWeekend ? 'bg-slate-50/20 dark:bg-slate-800/10' : ''}`}
                   >
                     <div className="flex justify-between items-start mb-3">
                       <span className={`text-[11px] font-black w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-xl md:rounded-2xl transition-all ${isToday(day) ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-110' : isCurMonth ? 'text-slate-700 dark:text-slate-300' : 'text-slate-300 dark:text-slate-600'}`}>
@@ -2043,8 +2043,8 @@ const CalendarView = () => {
                const isWeekend = day.getDay() === 0 || day.getDay() === 6;
                return (
                  <div key={day.toString()} onClick={() => handleQuickCreate(day)} className={`flex flex-col border-r border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-all cursor-pointer ${isWeekend ? 'bg-slate-50/20 dark:bg-slate-800/10' : ''}`}>
-                    <div className="p-6 text-center border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30">
-                      <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">{format(day, 'EEE', { locale: ptBR })}</p>
+                    <div className="p-6 text-center border-b border-slate-100 dark:border-slate-800 bg-red-500 dark:bg-slate-800/30">
+                      <p className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">{format(day, 'EEE', { locale: ptBR })}</p>
                       <p className={`text-2xl font-black ${isToday(day) ? 'text-primary' : 'text-slate-800 dark:text-slate-100'}`}>{format(day, 'd')}</p>
                     </div>
                     <div className="flex-1 p-4 space-y-3 overflow-y-auto custom-scrollbar">
@@ -2096,7 +2096,7 @@ const CalendarView = () => {
                   <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1 font-medium italic">{task.descricao || 'Sem descrição.'}</p>
                 </div>
                 <div className="flex flex-col items-end shrink-0 gap-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{task.dataVencimento ? format(parseISO(task.dataVencimento), 'MMMM', { locale: ptBR }) : 'Sem data'}</p>
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest">{task.dataVencimento ? format(parseISO(task.dataVencimento), 'MMMM', { locale: ptBR }) : 'Sem data'}</p>
                   <Icon name="chevron-right" className="text-slate-300 group-hover:text-primary transition-colors" />
                 </div>
               </div>
@@ -2115,8 +2115,8 @@ const CalendarView = () => {
       
       {/* Task Details Modal - Optimized with Premium UI */}
       {selectedTask && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xl z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setSelectedTask(null)}>
-          <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[3.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100" onClick={() => setSelectedTask(null)}>
+          <div className="bg-white dark:bg-slate-900 rounded-[3.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden animate-in zoom-in-95 duration-300 w-[95vw] lg:w-[90vw] max-w-6xl h-[90vh] max-h-[900px] flex flex-col" onClick={e => e.stopPropagation()}>
             {/* RES-04: padding e altura responsivos — mobile-first */}
             <div className={`h-24 md:h-32 p-4 md:p-8 flex justify-between items-start ${getPriorityClasses(selectedTask.prioridade)}`}>
 
@@ -2134,13 +2134,13 @@ const CalendarView = () => {
               
               <div className="grid grid-cols-2 gap-3 md:gap-6 mb-6 md:mb-10">
                 <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-inner group hover:bg-white dark:hover:bg-slate-800 transition-all">
-                  <span className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-2 tracking-widest flex items-center gap-2">
+                  <span className="block text-xs font-black text-slate-500 dark:text-slate-500 uppercase mb-2 tracking-widest flex items-center gap-2">
                     <Icon name="activity" className="w-3 h-3" /> Status Atual
                   </span>
                   <span className="text-base font-black text-slate-800 dark:text-slate-100">{selectedTask.status}</span>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-inner group hover:bg-white dark:hover:bg-slate-800 transition-all">
-                  <span className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-2 tracking-widest flex items-center gap-2">
+                  <span className="block text-xs font-black text-slate-500 dark:text-slate-500 uppercase mb-2 tracking-widest flex items-center gap-2">
                     <Icon name="calendar" className="w-3 h-3" /> Prazo de Entrega
                   </span>
                   <span className="text-base font-black text-slate-800 dark:text-slate-100">{selectedTask.dataVencimento ? format(parseISO(selectedTask.dataVencimento), 'dd/MM/yyyy') : 'N/A'}</span>
@@ -2555,8 +2555,8 @@ const Dashboard = () => {
 
       {/* PASSWORD MODAL */}
       {isPasswordModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl animate-in zoom-in duration-200 border border-slate-100 dark:border-slate-800">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-2xl animate-in zoom-in duration-200 border border-slate-100 dark:border-slate-800 w-[95vw] lg:w-[90vw] max-w-6xl h-[90vh] max-h-[900px] flex flex-col">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-black text-slate-800 dark:text-slate-50">Alterar Senha</h3>
               <button onClick={() => setIsPasswordModalOpen(false)} className="text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-colors">
@@ -2566,7 +2566,7 @@ const Dashboard = () => {
             
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Senha Atual</label>
+                <label className="block text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-2">Senha Atual</label>
                 <input 
                   type="password" 
                   name="currentPass" 
@@ -2575,7 +2575,7 @@ const Dashboard = () => {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Nova Senha</label>
+                <label className="block text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-2">Nova Senha</label>
                 <input 
                   type="password" 
                   name="newPass" 
@@ -2585,7 +2585,7 @@ const Dashboard = () => {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Confirmar Nova Senha</label>
+                <label className="block text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-2">Confirmar Nova Senha</label>
                 <input 
                   type="password" 
                   name="confirmPass" 
@@ -3110,7 +3110,7 @@ const ClientsPage = () => {
     <button
       type="button"
       onClick={() => setActiveTab(id)}
-      className={`flex items-center gap-2 px-6 py-4 border-b-4 transition-all font-black text-[10px] uppercase tracking-widest ${activeTab === id ? 'border-primary text-primary bg-primary/5 dark:bg-primary/10' : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'} ${index < currentTabIndex ? 'text-slate-600 dark:text-slate-400' : ''}`}
+      className={`flex items-center gap-2 px-4 py-3 border-b-4 transition-all font-black text-[10px] uppercase tracking-widest ${activeTab === id ? 'border-primary text-primary bg-primary/5 dark:bg-primary/10' : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'} ${index < currentTabIndex ? 'text-slate-600 dark:text-slate-400' : ''}`}
     >
       <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] ${activeTab === id ? 'bg-primary text-white' : (index < currentTabIndex ? 'bg-emerald-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500')}`}>
         {index < currentTabIndex ? <Icon name="check" /> : index + 1}
@@ -3249,7 +3249,7 @@ const ClientsPage = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
           <table className="w-full text-left hidden md:table">
             <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
@@ -3268,12 +3268,12 @@ const ClientsPage = () => {
                     }}
                   />
                 </th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cód.</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Nome / Razão Social</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Documento</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cidade/UF</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Ações</th>
+                <th className="px-6 py-5 text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Cód.</th>
+                <th className="px-6 py-5 text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Nome / Razão Social</th>
+                <th className="px-6 py-5 text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Documento</th>
+                <th className="px-6 py-5 text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Cidade/UF</th>
+                <th className="px-6 py-5 text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Status</th>
+                <th className="px-6 py-5 text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -3369,11 +3369,11 @@ const ClientsPage = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[110] flex items-center justify-center p-0 md:p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-t-[2.5rem] md:rounded-[3rem] w-full max-w-6xl h-full md:max-h-[90vh] shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom md:zoom-in duration-300">
-            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/30 dark:bg-slate-800/30">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-red-500 dark:bg-slate-800/30">
                <div>
-                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingClient ? editingClient.clientCode : 'Novo Cadastro Corporativo'}</span>
+                 <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">{editingClient ? editingClient.clientCode : 'Novo Cadastro Corporativo'}</span>
                  <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
                     <Icon name={isViewOnly ? 'eye' : (editingClient ? 'edit' : 'user-plus')} className="text-primary" />
                     {isViewOnly ? 'Visualização de Cliente' : (editingClient ? 'Edição de Cliente' : 'Novo Cliente')}
@@ -3405,36 +3405,36 @@ const ClientsPage = () => {
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                        <div className="space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Tipo de Pessoa</label>
-                         <select value={tipoPessoa} onChange={(e: any) => setTipoPessoa(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200">
+                         <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Tipo de Pessoa</label>
+                         <select value={tipoPessoa} onChange={(e: any) => setTipoPessoa(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200">
                             <option value="Jurídica">Pessoa Jurídica (PJ)</option>
                             <option value="Física">Pessoa Física (PF)</option>
                          </select>
                        </div>
                        <div className="md:col-span-2 space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Nome / Razão Social</label>
+                         <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Nome / Razão Social</label>
                          <input 
                             name="nomeRazaoSocial" 
                             required 
                             value={nomeRazaoSocial} 
                             onChange={(e) => setNomeRazaoSocial(capitalizeWords(e.target.value))}
                             placeholder="Ex: Razão Social da Empresa" 
-                            className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary shadow-inner text-slate-800 dark:text-slate-200" 
+                            className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary shadow-inner text-slate-800 dark:text-slate-200" 
                          />
                        </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                        <div className="space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Nome Fantasia</label>
+                         <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Nome Fantasia</label>
                          <input 
                             name="nomeFantasia" 
                             value={nomeFantasia} 
                             onChange={(e) => setNomeFantasia(capitalizeWords(e.target.value))}
-                            className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" 
+                            className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" 
                          />
                        </div>
                        <div className="space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex justify-between items-center">
+                         <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1 flex justify-between items-center">
                            {tipoPessoa === 'Jurídica' ? 'CNPJ' : 'CPF'}
                            {loadingCnpj && <Icon name="spinner" className="animate-spin text-primary" />}
                          </label>
@@ -3455,7 +3455,7 @@ const ClientsPage = () => {
                              }}
                             onBlur={handleDocumentoBlur}
                             placeholder={tipoPessoa === 'Jurídica' ? '00.000.000/0000-00' : '000.000.000-00'} 
-                            className={`w-full px-6 py-4 rounded-2xl border font-bold outline-none focus:border-primary dark:focus:border-primary transition-colors text-slate-800 dark:text-slate-200 ${!isDocumentoValid && documento.length > 0 ? 'border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-400' : 'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50'}`} 
+                            className={`w-full px-4 py-3 rounded-2xl border font-bold outline-none focus:border-primary dark:focus:border-primary transition-colors text-slate-800 dark:text-slate-200 ${!isDocumentoValid && documento.length > 0 ? 'border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-400' : 'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50'}`} 
                          />
                          {!isDocumentoValid && documento.length > 0 && (
                            <span className="text-[9px] font-bold text-red-500 uppercase tracking-tighter ml-2 animate-pulse">Documento Inválido</span>
@@ -3463,20 +3463,20 @@ const ClientsPage = () => {
                        </div>
                        {tipoPessoa === 'Jurídica' && (
                          <div className="space-y-1">
-                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Inscrição Estadual</label>
+                            <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Inscrição Estadual</label>
                             <input 
                               value={inscricaoEstadual} 
                               onChange={(e) => setInscricaoEstadual(maskIE(e.target.value))}
-                              className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" 
+                              className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" 
                             />
                          </div>
                        )}
                        <div className="space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Status Base</label>
+                         <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Status Base</label>
                          <select 
                             value={status} 
                             onChange={(e: any) => setStatus(e.target.value)}
-                            className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200"
+                            className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200"
                          >
                             <option value={EntityStatus.ACTIVE}>Ativo</option>
                             <option value={EntityStatus.INACTIVE}>Inativo</option>
@@ -3491,7 +3491,7 @@ const ClientsPage = () => {
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                        <div className="space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex justify-between items-center">
+                         <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1 flex justify-between items-center">
                            CEP {loadingCep && <Icon name="spinner" className="animate-spin text-primary" />}
                          </label>
                          <input 
@@ -3499,51 +3499,51 @@ const ClientsPage = () => {
                            onChange={(e) => setCep(maskCEP(e.target.value))}
                            onBlur={handleCepBlur}
                            placeholder="00000-000" 
-                           className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary shadow-inner text-slate-800 dark:text-slate-200" 
+                           className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary shadow-inner text-slate-800 dark:text-slate-200" 
                          />
                        </div>
                        <div className="md:col-span-2 space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Logradouro</label>
+                         <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Logradouro</label>
                          <input 
                            value={logradouro} 
                            onChange={(e) => setLogradouro(e.target.value)}
                            placeholder="Rua, Av, Travessa..." 
-                           className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary shadow-inner text-slate-800 dark:text-slate-200" 
+                           className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary shadow-inner text-slate-800 dark:text-slate-200" 
                          />
                        </div>
                        <div className="space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Número</label>
-                         <input value={numero} onChange={(e) => setNumero(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary shadow-inner text-slate-800 dark:text-slate-200" />
+                         <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Número</label>
+                         <input value={numero} onChange={(e) => setNumero(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary shadow-inner text-slate-800 dark:text-slate-200" />
                        </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                        <div className="space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Complemento</label>
-                         <input value={complemento} onChange={(e) => setComplemento(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                         <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Complemento</label>
+                         <input value={complemento} onChange={(e) => setComplemento(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                        </div>
                        <div className="space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Bairro</label>
+                         <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Bairro</label>
                          <input 
                            value={bairro} 
                            onChange={(e) => setBairro(e.target.value)}
-                           className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" 
+                           className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" 
                          />
                        </div>
                        <div className="space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Cidade</label>
+                         <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Cidade</label>
                          <input 
                            value={cidade} 
                            onChange={(e) => setCidade(e.target.value)}
-                           className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" 
+                           className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" 
                          />
                        </div>
                        <div className="space-y-1">
-                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">UF</label>
+                         <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">UF</label>
                          <input 
                            value={uf} 
                            onChange={(e) => setUf(e.target.value.toUpperCase())}
                            maxLength={2} 
-                           className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary uppercase text-slate-800 dark:text-slate-200" 
+                           className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary uppercase text-slate-800 dark:text-slate-200" 
                          />
                        </div>
                     </div>
@@ -3551,20 +3551,20 @@ const ClientsPage = () => {
                </div>
 
                <div data-tab-id="cont" className={activeTab === 'cont' ? 'block' : 'hidden'}>
-                 <div className="space-y-10 animate-in slide-in-from-left-4 duration-300">
+                 <div className="space-y-6 animate-in slide-in-from-left-4 duration-300">
                     <section className="space-y-6">
                        <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Canais de Contato Institucional</h4>
                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                           <div className="space-y-1">
-                             <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Telefone Principal</label>
-                             <PhoneInput value={telefonePrincipal} onChange={(val) => setTelefonePrincipal(val)} required className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                             <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Telefone Principal</label>
+                             <PhoneInput value={telefonePrincipal} onChange={(val) => setTelefonePrincipal(val)} required className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                           </div>
                           <div className="space-y-1">
-                             <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">WhatsApp / Secundário</label>
-                             <PhoneInput value={telefoneSecundario} onChange={(val) => setTelefoneSecundario(val)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                             <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">WhatsApp / Secundário</label>
+                             <PhoneInput value={telefoneSecundario} onChange={(val) => setTelefoneSecundario(val)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                           </div>
                           <div className="space-y-1">
-                             <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Site / URL</label>
+                             <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Site / URL</label>
                              <input 
                                value={site} 
                                onChange={(e) => setSite(e.target.value)}
@@ -3574,16 +3574,16 @@ const ClientsPage = () => {
                                  }
                                }}
                                placeholder="https://..." 
-                               className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" 
+                               className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" 
                              />
                           </div>
                           <div className="space-y-1">
-                             <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">E-mail Principal</label>
-                             <input required type="email" value={emailPrincipal} onChange={(e) => setEmailPrincipal(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                             <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">E-mail Principal</label>
+                             <input required type="email" value={emailPrincipal} onChange={(e) => setEmailPrincipal(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                           </div>
                           <div className="space-y-1">
-                             <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">E-mail Financeiro</label>
-                             <input type="email" value={emailFinanceiro} onChange={(e) => setEmailFinanceiro(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                             <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">E-mail Financeiro</label>
+                             <input type="email" value={emailFinanceiro} onChange={(e) => setEmailFinanceiro(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                           </div>
                        </div>
                     </section>
@@ -3628,21 +3628,21 @@ const ClientsPage = () => {
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                        <div className="space-y-4">
-                          <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] border-b border-slate-100 dark:border-slate-800 pb-2">Domicílio Bancário</h5>
+                          <h5 className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.15em] border-b border-slate-100 dark:border-slate-800 pb-2">Domicílio Bancário</h5>
                           <div className="space-y-4">
-                             <input value={banco} onChange={(e) => setBanco(e.target.value)} placeholder="Instituição (Banco)" className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                             <input value={banco} onChange={(e) => setBanco(e.target.value)} placeholder="Instituição (Banco)" className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                              <div className="grid grid-cols-2 gap-4">
-                                <input value={agencia} onChange={(e) => setAgencia(e.target.value)} placeholder="Agência" className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
-                                <input value={conta} onChange={(e) => setConta(e.target.value)} placeholder="Conta" className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                                <input value={agencia} onChange={(e) => setAgencia(e.target.value)} placeholder="Agência" className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
+                                <input value={conta} onChange={(e) => setConta(e.target.value)} placeholder="Conta" className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200" />
                              </div>
-                             <select value={tipoConta} onChange={(e) => setTipoConta(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200">
+                             <select value={tipoConta} onChange={(e) => setTipoConta(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200">
                                 <option value="Corrente">Conta Corrente</option>
                                 <option value="Poupança">Conta Poupança</option>
                              </select>
                           </div>
                        </div>
                        <div className="md:col-span-2 space-y-4">
-                          <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] border-b border-slate-100 dark:border-slate-800 pb-2">Sistema de Recebimento PIX</h5>
+                          <h5 className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.15em] border-b border-slate-100 dark:border-slate-800 pb-2">Sistema de Recebimento PIX</h5>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                              <div className="space-y-1">
                                 <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase ml-1">Tipo da Chave</label>
@@ -3653,7 +3653,7 @@ const ClientsPage = () => {
                                     setTipoChavePix(e.target.value as any);
                                     setChavePix('');
                                   }}
-                                  className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200"
+                                  className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary text-slate-800 dark:text-slate-200"
                                 >
                                    <option value="CPF/CNPJ">CPF/CNPJ</option>
                                    <option value="E-mail">E-mail</option>
@@ -3687,7 +3687,7 @@ const ClientsPage = () => {
                                     }
                                   }}
                                   placeholder="Insira a chave registrada" 
-                                  className={`w-full px-6 py-4 rounded-2xl border ${!isChavePixValid ? 'border-red-500 bg-red-50' : 'border-slate-100 bg-slate-50'} font-bold outline-none focus:border-primary shadow-inner transition-colors`}
+                                  className={`w-full px-4 py-3 rounded-2xl border ${!isChavePixValid ? 'border-red-500 bg-red-50' : 'border-slate-100 bg-slate-50'} font-bold outline-none focus:border-primary shadow-inner transition-colors`}
                                 />
                                 {!isChavePixValid && (
                                   <p className="text-[10px] font-bold text-red-500 ml-2 animate-in fade-in slide-in-from-top-1">Documento inválido</p>
@@ -3704,17 +3704,17 @@ const ClientsPage = () => {
                </div>
 
                <div data-tab-id="crm" className={activeTab === 'crm' ? 'block' : 'hidden'}>
-                 <div className="space-y-10 animate-in slide-in-from-left-4 duration-300">
+                 <div className="space-y-6 animate-in slide-in-from-left-4 duration-300">
                     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                        <div className="space-y-1">
-                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Categoria Comercial</label>
-                          <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
+                          <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Categoria Comercial</label>
+                          <select value={categoria} onChange={(e) => setCategoria(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
                              {clientCategories.map(cat => <option key={cat.id} value={cat.nome}>{cat.nome}</option>)}
                           </select>
                        </div>
                        <div className="space-y-1">
-                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Origem do Lead</label>
-                          <select value={origem} onChange={(e) => setOrigem(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
+                          <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Origem do Lead</label>
+                          <select value={origem} onChange={(e) => setOrigem(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
                              <option value="Site">Site Institucional</option>
                              <option value="Indicação">Indicação Direta</option>
                              <option value="Prospecção">Prospecção Ativa</option>
@@ -3723,11 +3723,11 @@ const ClientsPage = () => {
                           </select>
                        </div>
                        <div className="space-y-1">
-                          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Avaliação Interna (Rating)</label>
+                          <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Avaliação Interna (Rating)</label>
                           <select 
                             value={avaliacaoInterna} 
                             onChange={(e) => setAvaliacaoInterna(Number(e.target.value))}
-                            className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary"
+                            className="w-full px-4 py-3 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary"
                           >
                              <option value="0">0 - Não Avaliado</option>
                              <option value="1">1 - Baixo Potencial / Risco Alto</option>
@@ -3743,33 +3743,33 @@ const ClientsPage = () => {
                        <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Status & Governança de Vendas</h4>
                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                           <div className="space-y-1">
-                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Situação de Crédito</label>
-                             <select value={situacao} onChange={(e) => setSituacao(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
+                             <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Situação de Crédito</label>
+                             <select value={situacao} onChange={(e) => setSituacao(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary">
                                 <option value="Ativo">Liberado / Ativo</option>
                                 <option value="Inadimplente">Inadimplente</option>
                                 <option value="Bloqueado para venda">Bloqueado para venda</option>
                              </select>
                           </div>
                           <div className="lg:col-span-2 space-y-1">
-                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Motivo do Bloqueio (Se houver)</label>
-                             <input value={motivoBloqueio} onChange={(e) => setMotivoBloqueio(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" />
+                             <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Motivo do Bloqueio (Se houver)</label>
+                             <input value={motivoBloqueio} onChange={(e) => setMotivoBloqueio(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" />
                           </div>
                           <div className="space-y-1">
-                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Data àšltima Venda</label>
+                             <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Data àšltima Venda</label>
                              <input 
                                type="date" 
                                value={dataUltimaVenda}
                                onChange={(e) => setDataUltimaVenda(e.target.value)}
                                max={today}
-                               className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" 
+                               className="w-full px-4 py-3 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" 
                              />
                           </div>
                        </div>
                     </section>
 
                     <section className="space-y-1">
-                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Observações Gerais</label>
-                       <textarea value={observacoes} onChange={(e) => setObservacoes(e.target.value)} rows={4} placeholder="Notas internas sobre o relacionamento, histórico e peculiaridades..." className="w-full px-7 py-6 rounded-[2.5rem] border border-slate-100 bg-slate-50 outline-none resize-none font-medium focus:border-primary shadow-inner" />
+                       <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Observações Gerais</label>
+                       <textarea value={observacoes} onChange={(e) => setObservacoes(e.target.value)} rows={4} placeholder="Notas internas sobre o relacionamento, histórico e peculiaridades..." className="w-full px-7 py-6 rounded-2xl border border-slate-100 bg-slate-50 outline-none resize-none font-medium focus:border-primary shadow-inner" />
                     </section>
 
                     {customFields.length > 0 && (
@@ -3778,13 +3778,13 @@ const ClientsPage = () => {
                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {customFields.map(field => (
                                <div key={field.id} className="space-y-1">
-                                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{field.name}</label>
+                                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">{field.name}</label>
                                   {field.type === 'select' ? (
                                      <select 
                                        required={field.required}
                                        value={customData[field.id] || ''} 
                                        onChange={(e) => setCustomData({ ...customData, [field.id]: e.target.value })}
-                                       className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary"
+                                       className="w-full px-4 py-3 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary"
                                      >
                                         <option value="">{field.placeholder || 'Selecione...'}</option>
                                         {field.options?.map(opt => (
@@ -3812,7 +3812,7 @@ const ClientsPage = () => {
                                        placeholder={field.placeholder}
                                        value={customData[field.id] || ''} 
                                        onChange={(e) => setCustomData({ ...customData, [field.id]: e.target.value })}
-                                       className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" 
+                                       className="w-full px-4 py-3 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary" 
                                      />
                                   )}
                                </div>
@@ -3824,7 +3824,7 @@ const ClientsPage = () => {
                </div>
 
                <div data-tab-id="anexos" className={activeTab === 'anexos' ? 'block' : 'hidden'}>
-                 <div className="space-y-10 animate-in slide-in-from-left-4 duration-300">
+                 <div className="space-y-6 animate-in slide-in-from-left-4 duration-300">
                     <section className="space-y-6">
                       <AttachmentsManager 
                         attachments={attachments} 
@@ -3842,7 +3842,7 @@ const ClientsPage = () => {
                        <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
                           <div className="flex flex-col md:flex-row gap-4">
                              <div className="w-full md:w-1/3">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo de Interação</label>
+                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Tipo de Interação</label>
                                 <select 
                                   value={newInteractionType} 
                                   onChange={(e) => setNewInteractionType(e.target.value as any)} 
@@ -3856,7 +3856,7 @@ const ClientsPage = () => {
                                 </select>
                              </div>
                              <div className="w-full md:w-2/3">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
+                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Descrição</label>
                                 <div className="flex flex-col sm:flex-row gap-2 mt-1">
                                    <input 
                                      value={newInteractionDesc} 
@@ -3942,21 +3942,21 @@ const ClientsPage = () => {
             </fieldset>
           </form>
 
-            <div className="p-6 md:p-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-white transition-all uppercase text-[10px] tracking-widest text-center">{isViewOnly ? 'Fechar' : 'Cancelar'}</button>
+            <div className="p-6 md:p-8 pb-32 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-8 py-3 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-white transition-all uppercase text-[10px] tracking-widest text-center">{isViewOnly ? 'Fechar' : 'Cancelar'}</button>
                 {!isViewOnly && (
                   <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
                     {currentTabIndex > 0 && (
-                      <button type="button" onClick={handlePrevTab} className="w-full sm:w-auto px-10 py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-600 hover:bg-white transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
+                      <button type="button" onClick={handlePrevTab} className="w-full sm:w-auto px-8 py-3 rounded-2xl border-2 border-slate-200 font-bold text-slate-600 hover:bg-white transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
                         <Icon name="arrow-left" /> Anterior
                       </button>
                     )}
                     {currentTabIndex < clientTabs.length - 1 ? (
-                      <button key="next" type="button" onClick={handleNextTab} className="w-full sm:w-auto px-14 py-4 rounded-2xl bg-primary text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
+                      <button key="next" type="button" onClick={handleNextTab} className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-primary text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
                         Próximo <Icon name="arrow-right" />
                       </button>
                     ) : (
-                      <button key="submit" type="submit" form="clientForm" className="w-full sm:w-auto px-14 py-4 rounded-2xl bg-emerald-500 text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
+                      <button key="submit" type="submit" form="clientForm" className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-emerald-500 text-white font-black shadow-xl hover:brightness-110 transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
                         <Icon name="check" /> Confirmar
                       </button>
                     )}
@@ -4435,12 +4435,12 @@ const TasksPage = () => {
     return (
       <div 
         key={t.id} 
-        className="bg-white p-6 rounded-[2.5rem] border border-slate-200 hover:shadow-xl transition-all relative overflow-hidden group"
+        className="bg-white p-6 rounded-2xl border border-slate-200 hover:shadow-xl transition-all relative overflow-hidden group"
       >
         <div className={`absolute left-0 top-0 bottom-0 w-2 ${t.prioridade === TaskPriority.CRITICAL ? 'bg-red-600' : t.prioridade === TaskPriority.HIGH ? 'bg-orange-500' : 'bg-blue-400'}`} />
         <div className="flex justify-between items-start pl-3 mb-4">
           <div>
-             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t.taskNumber} â€¢ {t.tipo}</span>
+             <span className="text-xs font-black text-slate-500 uppercase tracking-widest">{t.taskNumber} â€¢ {t.tipo}</span>
              <h4 className="text-lg font-extrabold text-slate-800 leading-tight mt-1">{t.titulo}</h4>
           </div>
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -4583,7 +4583,7 @@ const TasksPage = () => {
             return (
               <div 
                 key={status} 
-                className={`flex-shrink-0 w-[85vw] md:w-80 rounded-2xl md:rounded-[2.5rem] p-4 border flex flex-col h-[calc(100vh-250px)] md:h-[calc(100vh-200px)] min-h-[400px] md:min-h-[500px] snap-center transition-all duration-300 ${isDraggedOver ? 'bg-slate-200/80 dark:bg-slate-800/80 border-primary shadow-inner scale-[1.02]' : 'bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800'}`}
+                className={`flex-shrink-0 w-[85vw] md:w-80 rounded-2xl md:rounded-2xl p-4 border flex flex-col h-[calc(100vh-250px)] md:h-[calc(100vh-200px)] min-h-[400px] md:min-h-[500px] snap-center transition-all duration-300 ${isDraggedOver ? 'bg-slate-200/80 dark:bg-slate-800/80 border-primary shadow-inner scale-[1.02]' : 'bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800'}`}
                 onDragOver={(e) => handleDragOver(e, status)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, status)}
@@ -4620,9 +4620,9 @@ const TasksPage = () => {
       )}
 
       {isHistoryModalOpen && historyTask && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[110] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col animate-in zoom-in duration-300">
-            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-red-500">
               <div>
                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">{historyTask.taskNumber}</span>
                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Timeline de Ações</h3>
@@ -4631,12 +4631,12 @@ const TasksPage = () => {
             </div>
             <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8">
               {historyTask.logs && historyTask.logs.length > 0 ? (
-                <div className="relative border-l-2 border-slate-100 ml-4 space-y-12">
+                <div className="relative border-l-2 border-slate-100 ml-4 space-y-6">
                   {historyTask.logs.map((log, idx) => (
                     <div key={log.id} className="relative pl-10 animate-in slide-in-from-left-4" style={{ animationDelay: `${idx * 50}ms` }}>
                       <div className="absolute left-[-11px] top-0 w-5 h-5 rounded-full bg-white border-4 border-primary shadow-sm" />
                       <div className="flex justify-between items-start mb-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Date(log.timestamp).toLocaleString()}</span>
+                        <span className="text-xs font-black text-slate-500 uppercase tracking-widest">{new Date(log.timestamp).toLocaleString()}</span>
                         <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
                           <span className="text-[9px] font-black text-slate-400 uppercase">{log.fromStatus}</span>
                           <Icon name="arrow-right" className="text-[8px] text-slate-300" />
@@ -4654,7 +4654,7 @@ const TasksPage = () => {
                           
                           {log.changes && log.changes.length > 0 && (
                             <div className="mb-3 space-y-1">
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Alterações:</p>
+                              <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Alterações:</p>
                               <ul className="list-disc list-inside text-xs text-slate-600 space-y-1 ml-1">
                                 {log.changes.map((change, i) => (
                                   <li key={i}>{change}</li>
@@ -4665,7 +4665,7 @@ const TasksPage = () => {
 
                           {log.justification && (
                             <div className="bg-white p-3 rounded-xl border border-slate-100">
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Justificativa:</p>
+                              <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Justificativa:</p>
                               <p className="text-xs text-slate-700 italic">"{log.justification}"</p>
                             </div>
                           )}
@@ -4674,7 +4674,7 @@ const TasksPage = () => {
                            <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[8px] text-primary font-black uppercase">
                               {log.userName.charAt(0)}
                            </div>
-                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Realizado por {log.userName}</span>
+                           <span className="text-xs font-bold text-slate-600 uppercase tracking-tighter">Realizado por {log.userName}</span>
                         </div>
                       </div>
                     </div>
@@ -4687,7 +4687,7 @@ const TasksPage = () => {
                 </div>
               )}
             </div>
-            <div className="p-6 md:p-8 border-t border-slate-100 flex justify-end bg-slate-50/30">
+            <div className="p-6 md:p-8 pb-32 border-t border-slate-100 flex justify-end bg-red-500">
                <button onClick={() => setIsHistoryModalOpen(false)} className="w-full sm:w-auto px-10 py-3 rounded-2xl bg-slate-900 text-white font-black text-xs uppercase shadow-lg hover:bg-slate-800 transition-all text-center">Fechar Timeline</button>
             </div>
           </div>
@@ -4695,11 +4695,11 @@ const TasksPage = () => {
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[110] flex items-center justify-center p-0 md:p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-t-[2.5rem] md:rounded-[3rem] w-full max-w-5xl h-full md:max-h-[90vh] overflow-hidden shadow-2xl flex flex-col animate-in slide-in-from-bottom md:zoom-in duration-300">
-            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-red-500">
               <div>
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingTask ? editingTask.taskNumber : 'Identificador Automático'}</span>
+                <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">{editingTask ? editingTask.taskNumber : 'Identificador Automático'}</span>
                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Gerenciamento de Atividade</h3>
               </div>
             <div className="flex items-center gap-3">
@@ -4724,25 +4724,25 @@ const TasksPage = () => {
                 <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
             </div>
-            <form id="taskForm" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 md:p-12 space-y-8 md:space-y-12 bg-white dark:bg-slate-900 custom-scrollbar pb-24 md:pb-12">
+            <form id="taskForm" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 md:p-12 space-y-8 md:space-y-6 bg-white dark:bg-slate-900 custom-scrollbar pb-24 md:pb-12">
               {activeModalTab === 'geral' && (
-                <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
                   <section className="space-y-6">
                     <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">1. Identificação da Tarefa</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Título</label>
-                        <input value={titulo} onChange={(e) => setTitulo(e.target.value)} required className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-primary outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Título</label>
+                        <input value={titulo} onChange={(e) => setTitulo(e.target.value)} required className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-primary outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Tipo de Demanda</label>
-                        <select value={tipo} onChange={(e: any) => setTipo(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-slate-800 dark:text-slate-200">
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Tipo de Demanda</label>
+                        <select value={tipo} onChange={(e: any) => setTipo(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-slate-800 dark:text-slate-200">
                           {Object.values(TaskType).map(v => <option key={v} value={v} className="dark:bg-slate-900">{v}</option>)}
                         </select>
                       </div>
                       <div className="md:col-span-2 space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Descrição Detalhada</label>
-                        <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={3} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-medium resize-none shadow-inner text-slate-800 dark:text-slate-200" />
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Descrição Detalhada</label>
+                        <textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={3} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-medium resize-none shadow-inner text-slate-800 dark:text-slate-200" />
                       </div>
                     </div>
                   </section>
@@ -4751,28 +4751,28 @@ const TasksPage = () => {
                     <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">2. Pessoas Envolvidas</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Solicitante</label>
-                        <select value={solicitanteId} onChange={(e) => setSolicitanteId(e.target.value)} required className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-slate-800 dark:text-slate-200">
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Solicitante</label>
+                        <select value={solicitanteId} onChange={(e) => setSolicitanteId(e.target.value)} required className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-slate-800 dark:text-slate-200">
                           <option value="" className="dark:bg-slate-900">Selecione...</option>
                           {activeUsers.map(u => <option key={u.id} value={u.id} className="dark:bg-slate-900">{u.nome}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Responsável (Owner)</label>
-                        <select value={responsavelId} onChange={(e) => setResponsavelId(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-primary">
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Responsável (Owner)</label>
+                        <select value={responsavelId} onChange={(e) => setResponsavelId(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-primary">
                           {users.map(u => <option key={u.id} value={u.id} className="dark:bg-slate-900">{u.nome}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Equipe / Setor (Config.)</label>
-                        <select value={setorId} onChange={(e) => setSetorId(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-slate-800 dark:text-slate-200">
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Equipe / Setor (Config.)</label>
+                        <select value={setorId} onChange={(e) => setSetorId(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-slate-800 dark:text-slate-200">
                           <option value="" className="dark:bg-slate-900">Nenhum Setor Selecionado</option>
                           {sectors.map(s => <option key={s.id} value={s.id} className="dark:bg-slate-900">{s.nome}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Stakeholders / Interessados</label>
-                        <input value={interessados} onChange={(e) => setInteressados(e.target.value)} placeholder="E-mails ou nomes..." className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Stakeholders / Interessados</label>
+                        <input value={interessados} onChange={(e) => setInteressados(e.target.value)} placeholder="E-mails ou nomes..." className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
                       </div>
                     </div>
                   </section>
@@ -4781,20 +4781,20 @@ const TasksPage = () => {
                     <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">3. Esforço e Prazos</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Data de Início</label>
-                        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-primary outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Data de Início</label>
+                        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:border-primary outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Prazo (SLA / Auto)</label>
-                        <input type="date" value={calculatedDeadline} readOnly className="w-full px-6 py-4 rounded-2xl border border-slate-50 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold outline-none cursor-not-allowed" />
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Prazo (SLA / Auto)</label>
+                        <input type="date" value={calculatedDeadline} readOnly className="w-full px-4 py-3 rounded-2xl border border-slate-50 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold outline-none cursor-not-allowed" />
                       </div>
                        <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Conclusão Efetiva</label>
-                        <input type="date" value={conclusaoReal} readOnly className="w-full px-6 py-4 rounded-2xl border border-slate-50 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold outline-none cursor-not-allowed" />
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Conclusão Efetiva</label>
+                        <input type="date" value={conclusaoReal} readOnly className="w-full px-4 py-3 rounded-2xl border border-slate-50 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold outline-none cursor-not-allowed" />
                       </div>
                        <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Esforço Gasto (H:M)</label>
-                        <input name="tempoGasto" placeholder="Ex: 08:30" value={tempoGasto} onChange={(e) => setTempoGasto(maskTime(e.target.value))} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Esforço Gasto (H:M)</label>
+                        <input name="tempoGasto" placeholder="Ex: 08:30" value={tempoGasto} onChange={(e) => setTempoGasto(maskTime(e.target.value))} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200" />
                       </div>
                     </div>
                   </section>
@@ -4803,13 +4803,13 @@ const TasksPage = () => {
                     <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">4. Governança e Status</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                        <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Prioridade (Config. SLA)</label>
-                        <select value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)} className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-black text-slate-800 dark:text-slate-200">
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Prioridade (Config. SLA)</label>
+                        <select value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-black text-slate-800 dark:text-slate-200">
                           {Object.values(TaskPriority).map(v => <option key={v} value={v} className="dark:bg-slate-900">{v}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Status Atual</label>
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Status Atual</label>
                         <select 
                           value={currentStatus} 
                           onChange={(e) => {
@@ -4821,7 +4821,7 @@ const TasksPage = () => {
                               setConclusaoReal('');
                             }
                           }} 
-                          className="w-full px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-black text-primary"
+                          className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-black text-primary"
                         >
                           {Object.values(TaskStatus).map(v => <option key={v} value={v} className="dark:bg-slate-900">{v}</option>)}
                         </select>
@@ -4832,7 +4832,7 @@ const TasksPage = () => {
               )}
 
               {activeModalTab === 'checklist' && (
-                <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
                   <section className="space-y-6">
                     <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Subtarefas (Checklist)</h4>
                     <div className="space-y-4">
@@ -4842,7 +4842,7 @@ const TasksPage = () => {
                           value={newSubtaskTitle} 
                           onChange={(e) => setNewSubtaskTitle(e.target.value)} 
                           placeholder="Adicionar nova subtarefa..." 
-                          className="flex-1 px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200"
+                          className="flex-1 px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
@@ -4861,7 +4861,7 @@ const TasksPage = () => {
                               setNewSubtaskTitle('');
                             }
                           }}
-                          className="px-6 py-4 bg-primary text-white rounded-2xl font-black shadow-md hover:brightness-110 transition-all"
+                          className="px-4 py-3 bg-primary text-white rounded-2xl font-black shadow-md hover:brightness-110 transition-all"
                         >
                           <Icon name="plus" />
                         </button>
@@ -4899,7 +4899,7 @@ const TasksPage = () => {
                           value={newCommentText} 
                           onChange={(e) => setNewCommentText(e.target.value)} 
                           placeholder="Escreva um comentário..." 
-                          className="flex-1 px-6 py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200"
+                          className="flex-1 px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold shadow-inner text-slate-800 dark:text-slate-200"
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
@@ -4918,7 +4918,7 @@ const TasksPage = () => {
                               setNewCommentText('');
                             }
                           }}
-                          className="px-6 py-4 bg-primary text-white rounded-2xl font-black shadow-md hover:brightness-110 transition-all"
+                          className="px-4 py-3 bg-primary text-white rounded-2xl font-black shadow-md hover:brightness-110 transition-all"
                         >
                           <Icon name="message-square" />
                         </button>
@@ -4944,7 +4944,7 @@ const TasksPage = () => {
               )}
 
               {activeModalTab === 'anexos' && (
-                <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
                   <section className="space-y-6">
                     <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Gestão de Arquivos</h4>
                     <AttachmentsManager 
@@ -4957,16 +4957,16 @@ const TasksPage = () => {
               )}
 
               {activeModalTab === 'historico' && (
-                <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
                   <section className="space-y-6">
                     <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Timeline de Ações e Auditoria</h4>
-                    <div className="relative border-l-2 border-slate-100 dark:border-slate-800 ml-4 space-y-12">
+                    <div className="relative border-l-2 border-slate-100 dark:border-slate-800 ml-4 space-y-6">
                       {editingTask?.logs && editingTask.logs.length > 0 ? (
                         editingTask.logs.map((log, idx) => (
                           <div key={log.id} className="relative pl-10">
                             <div className="absolute left-[-11px] top-0 w-5 h-5 rounded-full bg-white dark:bg-slate-900 border-4 border-primary shadow-sm" />
                             <div className="flex justify-between items-start mb-2">
-                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Date(log.timestamp).toLocaleString()}</span>
+                              <span className="text-xs font-black text-slate-500 uppercase tracking-widest">{new Date(log.timestamp).toLocaleString()}</span>
                               <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 dark:bg-slate-800 rounded-full border border-slate-100 dark:border-slate-700">
                                 <span className="text-[9px] font-black text-slate-400 uppercase">{log.fromStatus}</span>
                                 <Icon name="arrow-right" className="text-[8px] text-slate-300" />
@@ -4977,7 +4977,7 @@ const TasksPage = () => {
                               <p className="text-slate-800 dark:text-slate-200 font-bold text-sm mb-2">{log.action}</p>
                               {log.changes && log.changes.length > 0 && (
                                 <div className="mb-3 space-y-1">
-                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Alterações:</p>
+                                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Alterações:</p>
                                   <ul className="list-disc list-inside text-xs text-slate-600 dark:text-slate-400 space-y-1 ml-1">
                                     {log.changes.map((change, i) => (
                                       <li key={i}>{change}</li>
@@ -4987,7 +4987,7 @@ const TasksPage = () => {
                               )}
                               {log.justification && (
                                 <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Justificativa:</p>
+                                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Justificativa:</p>
                                   <p className="text-xs text-slate-700 dark:text-slate-300 italic">"{log.justification}"</p>
                                 </div>
                               )}
@@ -4995,7 +4995,7 @@ const TasksPage = () => {
                                 <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[8px] text-primary font-black uppercase">
                                     {log.userName.charAt(0)}
                                 </div>
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Realizado por {log.userName}</span>
+                                <span className="text-xs font-bold text-slate-600 uppercase tracking-tighter">Realizado por {log.userName}</span>
                               </div>
                             </div>
                           </div>
@@ -5009,15 +5009,15 @@ const TasksPage = () => {
               )}
 
               {showLogInput && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 p-8 rounded-[3rem] border-2 border-amber-200 dark:border-amber-800/50 space-y-4 animate-in slide-in-from-top-4">
+                <div className="bg-amber-50 dark:bg-amber-900/20 p-8 rounded-3xl border-2 border-amber-200 dark:border-amber-800/50 space-y-4 animate-in slide-in-from-top-4">
                     <h5 className="text-[11px] font-black text-amber-800 dark:text-amber-400 uppercase tracking-widest flex items-center gap-2"><Icon name="edit-alt" /> Justificativa / Ação Realizada (Obrigatório para Log)</h5>
                     <textarea ref={actionRef} required placeholder="Descreva o motivo das alterações nos campos gatilho..." className="w-full px-7 py-5 rounded-[2rem] border border-amber-300 dark:border-amber-800 focus:border-amber-500 outline-none h-32 font-medium bg-white dark:bg-slate-900 shadow-inner text-slate-800 dark:text-slate-200" />
                 </div>
               )}
             </form>
             <div className="p-6 md:p-10 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-end gap-4 bg-slate-50/50 dark:bg-slate-800/30">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-10 py-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 font-bold text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 transition-all text-center">Cancelar</button>
-                <button type="submit" form="taskForm" className="w-full sm:w-auto px-14 py-4 rounded-2xl bg-primary text-white font-extrabold shadow-xl hover:brightness-110 transition-all text-center">Confirmar</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-8 py-3 rounded-2xl border-2 border-slate-200 dark:border-slate-700 font-bold text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 transition-all text-center">Cancelar</button>
+                <button type="submit" form="taskForm" className="w-full sm:w-auto px-8 py-3 rounded-2xl bg-primary text-white font-extrabold shadow-xl hover:brightness-110 transition-all text-center">Confirmar</button>
             </div>
           </div>
         </div>
@@ -5179,8 +5179,8 @@ const UsersPage = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {paginatedUsers.map(u => (
-          <div key={u.id} className="bg-white dark:bg-slate-900 p-8 rounded-2xl md:rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all text-center space-y-4">
-             <img src={u.foto || `https://picsum.photos/seed/${u.id}/200`} className="w-24 h-24 rounded-[2.5rem] object-cover border-4 border-slate-50 dark:border-slate-800 shadow-lg mx-auto" />
+          <div key={u.id} className="bg-white dark:bg-slate-900 p-8 rounded-2xl md:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all text-center space-y-4">
+             <img src={u.foto || `https://picsum.photos/seed/${u.id}/200`} className="w-24 h-24 rounded-2xl object-cover border-4 border-slate-50 dark:border-slate-800 shadow-lg mx-auto" />
              <div>
                 <h4 className="text-lg font-black text-slate-800 dark:text-slate-100">{u.nome}</h4>
                 <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">{roles.find(r => r.id === u.roleId)?.name || 'Usuário'}</p>
@@ -5192,38 +5192,46 @@ const UsersPage = () => {
       </div>
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[110] flex items-center justify-center p-0 md:p-4 text-slate-800 dark:text-slate-100">
-          <div className="bg-white dark:bg-slate-900 rounded-t-[2.5rem] md:rounded-[3rem] w-full max-w-4xl h-full md:max-h-[95vh] shadow-2xl p-6 md:p-10 lg:p-14 space-y-6 md:space-y-10 animate-in slide-in-from-bottom md:zoom-in duration-300 overflow-hidden flex flex-col">
-            <h3 className="text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tighter text-center shrink-0">Acesso ao Sistema</h3>
-            <div className="flex justify-center shrink-0">
-                <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                    <img src={modalPhoto || `https://picsum.photos/seed/${editingUser?.id || 'new'}/200`} className="w-24 h-24 md:w-32 md:h-32 rounded-[2.5rem] object-cover border-4 border-slate-50 shadow-xl" />
-                    <div className="absolute inset-0 bg-black/40 rounded-[2.5rem] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Icon name="camera" className="text-white text-xl md:text-2xl" />
-                    </div>
-                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
-                </div>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-5xl h-fit max-h-[95vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-red-500 dark:bg-slate-800/30 shrink-0">
+               <div>
+                 <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">Gestão de Perfil</span>
+                 <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">REVISADO - REVISADO - Acesso ao Sistema</h3>
+               </div>
+               <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
-            <form id="userForm" onSubmit={handleSubmit} className="space-y-6 md:space-y-10 overflow-y-auto pr-2 md:pr-4 flex-1 custom-scrollbar">
+            
+            <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-1">
+              <div className="flex justify-center mb-8 shrink-0">
+                  <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                      <img src={modalPhoto || `https://picsum.photos/seed/${editingUser?.id || 'new'}/200`} className="w-24 h-24 md:w-32 md:h-32 rounded-2xl object-cover border-4 border-slate-50 shadow-xl" />
+                      <div className="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Icon name="camera" className="text-white text-xl md:text-2xl" />
+                      </div>
+                      <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+                  </div>
+              </div>
+              <form id="userForm" onSubmit={handleSubmit} className="space-y-8">
               <section className="space-y-4 md:space-y-6">
                 <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Identificação</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Nome Exibição</label>
-                    <input name="nome" readOnly={!canManageUsers} defaultValue={editingUser?.nome} required className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 outline-none font-bold shadow-inner text-sm md:text-base" />
+                    <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Nome Exibição</label>
+                    <input name="nome" readOnly={!canManageUsers} defaultValue={editingUser?.nome} required className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 outline-none font-bold shadow-inner text-sm md:text-base" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">E-mail Corporativo</label>
-                    <input name="email" readOnly={!canManageUsers} defaultValue={editingUser?.email} required type="email" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 outline-none font-bold shadow-inner text-sm md:text-base" />
+                    <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">E-mail Corporativo</label>
+                    <input name="email" readOnly={!canManageUsers} defaultValue={editingUser?.email} required type="email" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 outline-none font-bold shadow-inner text-sm md:text-base" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Chave de Acesso (Senha)</label>
-                    <input name="senha" type="password" placeholder="Defina a senha" defaultValue={editingUser?.senha} required className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 focus:bg-white dark:focus:bg-slate-800 outline-none font-bold shadow-inner text-sm md:text-base" />
+                    <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Chave de Acesso (Senha)</label>
+                    <input name="senha" type="password" placeholder="Defina a senha" defaultValue={editingUser?.senha} required className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 focus:bg-white dark:focus:bg-slate-800 outline-none font-bold shadow-inner text-sm md:text-base" />
                   </div>
                   {canManageUsers && (
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Status da Conta</label>
-                      <select name="status" defaultValue={editingUser?.status || EntityStatus.ACTIVE} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 outline-none font-bold text-sm md:text-base">
+                      <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Status da Conta</label>
+                      <select name="status" defaultValue={editingUser?.status || EntityStatus.ACTIVE} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 outline-none font-bold text-sm md:text-base">
                         <option value={EntityStatus.ACTIVE}>Ativo</option>
                         <option value={EntityStatus.INACTIVE}>Inativo</option>
                       </select>
@@ -5235,15 +5243,15 @@ const UsersPage = () => {
                 <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Contato Direto</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                    <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Celular</label>
-                    <PhoneInput name="celular" defaultValue={editingUser?.celular} className={`w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 outline-none font-bold transition-colors shadow-inner text-sm md:text-base ${hasWhatsapp ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 dark:text-emerald-50' : 'bg-slate-50 dark:bg-slate-900 dark:text-slate-50'}`} />
+                    <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Celular</label>
+                    <PhoneInput name="celular" defaultValue={editingUser?.celular} className={`w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 outline-none font-bold transition-colors shadow-inner text-sm md:text-base ${hasWhatsapp ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 dark:text-emerald-50' : 'bg-slate-50 dark:bg-slate-900 dark:text-slate-50'}`} />
                    </div>
                    <div className="flex items-center gap-3 pt-2 md:pt-6">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <div onClick={() => setHasWhatsapp(!hasWhatsapp)} className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${hasWhatsapp ? 'bg-primary border-primary' : 'border-slate-300 dark:border-slate-700'}`}>
                           {hasWhatsapp && <Icon name="check" className="text-white text-[10px]" />}
                         </div>
-                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">WhatsApp Ativo</span>
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">WhatsApp Ativo</span>
                       </label>
                    </div>
                 </div>
@@ -5252,8 +5260,8 @@ const UsersPage = () => {
                 <section className="space-y-4 md:space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Função (Role)</label>
-                      <select name="roleId" value={modalRoleId} onChange={(e) => setModalRoleId(e.target.value)} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 outline-none font-bold text-sm md:text-base">
+                      <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Função (Role)</label>
+                      <select name="roleId" value={modalRoleId} onChange={(e) => setModalRoleId(e.target.value)} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 outline-none font-bold text-sm md:text-base">
                         {roles.map(r => (
                           <option key={r.id} value={r.id}>{r.name}</option>
                         ))}
@@ -5263,9 +5271,10 @@ const UsersPage = () => {
                 </section>
               )}
             </form>
+            </div>
             <div className="flex flex-col sm:flex-row justify-end gap-3 md:gap-4 pt-6 md:pt-8 border-t border-slate-50 shrink-0">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-10 py-3 md:py-4 rounded-2xl border-2 border-slate-200 text-slate-500 font-black text-xs uppercase hover:bg-slate-50 transition-all">Cancelar</button>
-                <button type="submit" form="userForm" className="w-full sm:w-auto px-14 py-3 md:py-4 rounded-2xl bg-primary text-white font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all">Confirmar</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-10 py-2 md:py-3 rounded-2xl border-2 border-slate-200 text-slate-500 font-black text-xs uppercase hover:bg-slate-50 transition-all">Cancelar</button>
+                <button type="submit" form="userForm" className="w-full sm:w-auto px-14 py-2 md:py-3 rounded-2xl bg-primary text-white font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all">Confirmar</button>
             </div>
           </div>
         </div>
@@ -5310,7 +5319,7 @@ const TemplatesTab = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] shadow-sm border border-slate-100 dark:border-slate-800 space-y-10 animate-in slide-in-from-bottom-2">
+    <div className="bg-white dark:bg-slate-900 p-10 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 animate-in slide-in-from-bottom-2">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Templates de Mensagem</h3>
@@ -5325,7 +5334,7 @@ const TemplatesTab = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {paginatedTemplates.map(t => (
-          <div key={t.id} className="bg-slate-50 dark:bg-slate-800/50 p-6 md:p-10 rounded-2xl md:rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group relative">
+          <div key={t.id} className="bg-slate-50 dark:bg-slate-800/50 p-6 md:p-10 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group relative">
             <div className="flex justify-between items-start mb-6">
               <h3 className="font-black text-slate-800 dark:text-slate-100 text-xl">{t.name}</h3>
               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -5352,7 +5361,7 @@ const TemplatesTab = () => {
           </div>
         ))}
         {paginatedTemplates.length === 0 && (
-          <div className="col-span-full p-20 text-center text-slate-400 font-bold italic bg-slate-50 rounded-[3rem] border border-slate-200 border-dashed">
+          <div className="col-span-full p-20 text-center text-slate-400 font-bold italic bg-slate-50 rounded-3xl border border-slate-200 border-dashed">
             Nenhum template cadastrado.
           </div>
         )}
@@ -5367,11 +5376,11 @@ const TemplatesTab = () => {
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[110] flex items-center justify-center p-0 md:p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-t-[2.5rem] md:rounded-[3rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom md:zoom-in duration-300 h-full md:max-h-[90vh]">
-            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/30 shrink-0">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-red-500 shrink-0">
                <div>
-                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingTemplate ? 'Edição' : 'Novo Cadastro'}</span>
+                 <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">{editingTemplate ? 'Edição' : 'Novo Cadastro'}</span>
                  <h3 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Template de Mensagem</h3>
                </div>
                <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
@@ -5379,22 +5388,22 @@ const TemplatesTab = () => {
 
             <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-4 md:space-y-6 overflow-y-auto custom-scrollbar">
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Template</label>
-                <input name="name" required defaultValue={editingTemplate?.name} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary text-sm md:text-base" placeholder="Ex: Boas-vindas" />
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Nome do Template</label>
+                <input name="name" required defaultValue={editingTemplate?.name} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary text-sm md:text-base" placeholder="Ex: Boas-vindas" />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assunto (Para E-mails)</label>
-                <input name="subject" defaultValue={editingTemplate?.subject} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary text-sm md:text-base" placeholder="Assunto do e-mail" />
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Assunto (Para E-mails)</label>
+                <input name="subject" defaultValue={editingTemplate?.subject} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 bg-slate-50 font-bold outline-none focus:border-primary text-sm md:text-base" placeholder="Assunto do e-mail" />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Conteúdo</label>
-                <textarea name="content" required rows={8} defaultValue={editingTemplate?.content} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 font-medium outline-none focus:border-primary resize-none text-sm md:text-base" placeholder="Conteúdo da mensagem. Use {nome} para o nome do cliente." />
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Conteúdo</label>
+                <textarea name="content" required rows={8} defaultValue={editingTemplate?.content} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 bg-slate-50 font-medium outline-none focus:border-primary resize-none text-sm md:text-base" placeholder="Conteúdo da mensagem. Use {nome} para o nome do cliente." />
                 <p className="text-xs text-slate-400 mt-2 ml-1">Variáveis disponíveis: <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{nome}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{empresa}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{email}'}</code>, <code className="bg-slate-100 px-1 rounded text-primary font-bold">{'{telefone}'}</code></p>
               </div>
 
               <div className="pt-4 md:pt-6 flex flex-col sm:flex-row justify-end gap-3 md:gap-4 shrink-0">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-8 py-3 md:py-4 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all uppercase text-[10px] tracking-widest">Cancelar</button>
-                <button type="submit" className="w-full sm:w-auto px-8 py-3 md:py-4 rounded-2xl bg-primary text-white font-bold hover:brightness-110 transition-all uppercase text-[10px] tracking-widest shadow-lg shadow-primary/30">Salvar Template</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-8 py-2 md:py-3 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all uppercase text-[10px] tracking-widest">Cancelar</button>
+                <button type="submit" className="w-full sm:w-auto px-8 py-2 md:py-3 rounded-2xl bg-primary text-white font-bold hover:brightness-110 transition-all uppercase text-[10px] tracking-widest shadow-lg shadow-primary/30">Salvar Template</button>
               </div>
             </form>
           </div>
@@ -5516,7 +5525,7 @@ const RolesTab = () => {
   ];
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] shadow-sm border border-slate-100 dark:border-slate-800 space-y-10 animate-in slide-in-from-bottom-2">
+    <div className="bg-white dark:bg-slate-900 p-10 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 animate-in slide-in-from-bottom-2">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Funções e Permissões (RBAC)</h3>
@@ -5531,7 +5540,7 @@ const RolesTab = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         {roles.map(r => (
-          <div key={r.id} className="bg-slate-50 dark:bg-slate-800/50 p-10 rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group relative">
+          <div key={r.id} className="bg-slate-50 dark:bg-slate-800/50 p-10 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group relative">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h3 className="font-black text-slate-800 dark:text-slate-100 text-xl">{r.name}</h3>
@@ -5573,11 +5582,11 @@ const RolesTab = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-[3rem] w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in duration-300 max-h-[90vh]">
-            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/30 dark:bg-slate-800/30 shrink-0">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-red-500 dark:bg-slate-800/30 shrink-0">
                <div>
-                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{editingRole ? 'Edição' : 'Novo Cadastro'}</span>
+                 <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">{editingRole ? 'Edição' : 'Novo Cadastro'}</span>
                  <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Função de Acesso</h3>
                </div>
                <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
@@ -5586,24 +5595,24 @@ const RolesTab = () => {
             <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-4 md:space-y-6 overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Nome da Função</label>
-                  <input name="name" required defaultValue={editingRole?.name} disabled={editingRole?.id === 'admin'} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 dark:text-slate-100 font-bold outline-none focus:border-primary text-sm md:text-base disabled:opacity-50" placeholder="Ex: Analista de Vendas" />
+                  <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Nome da Função</label>
+                  <input name="name" required defaultValue={editingRole?.name} disabled={editingRole?.id === 'admin'} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 dark:text-slate-100 font-bold outline-none focus:border-primary text-sm md:text-base disabled:opacity-50" placeholder="Ex: Analista de Vendas" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Descrição</label>
-                  <input name="description" required defaultValue={editingRole?.description} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 dark:text-slate-100 font-bold outline-none focus:border-primary text-sm md:text-base" placeholder="Descrição da função" />
+                  <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Descrição</label>
+                  <input name="description" required defaultValue={editingRole?.description} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 dark:text-slate-100 font-bold outline-none focus:border-primary text-sm md:text-base" placeholder="Descrição da função" />
                 </div>
               </div>
 
               <div className="space-y-4">
                 <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest pt-4">Matriz de Permissões</h4>
-                <div className="w-full overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-[2rem] bg-slate-50/30 dark:bg-slate-800/30 custom-scrollbar">
+                <div className="w-full overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-[2rem] bg-red-500 dark:bg-slate-800/30 custom-scrollbar">
                   <table className="w-full text-left border-collapse min-w-[600px]">
                     <thead className="bg-slate-100/50 dark:bg-slate-800/50">
                       <tr>
-                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800">Módulo</th>
+                        <th className="px-4 py-3 text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800">Módulo</th>
                         {types.map(t => (
-                          <th key={t.key} className="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-800">{t.label}</th>
+                          <th key={t.key} className="px-4 py-3 text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-800">{t.label}</th>
                         ))}
                       </tr>
                     </thead>
@@ -5612,7 +5621,7 @@ const RolesTab = () => {
                         const mod = modalPerms[m.key as keyof UserPermissions];
                         return (
                           <tr key={m.key} className="hover:bg-white dark:hover:bg-slate-800 transition-colors group/row">
-                            <td className="px-6 py-4">
+                            <td className="px-4 py-3">
                               <div className="flex items-center justify-between">
                                 <span className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-tighter">{m.label}</span>
                                 <div className="flex gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
@@ -5622,7 +5631,7 @@ const RolesTab = () => {
                               </div>
                             </td>
                             {types.map(t => (
-                              <td key={t.key} className="px-6 py-4 text-center">
+                              <td key={t.key} className="px-4 py-3 text-center">
                                 <button 
                                   type="button"
                                   onClick={() => togglePerm(m.key, t.key)}
@@ -5645,8 +5654,8 @@ const RolesTab = () => {
               </div>
 
               <div className="pt-4 md:pt-6 flex flex-col sm:flex-row justify-end gap-3 md:gap-4 shrink-0">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-8 py-3 md:py-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all uppercase text-[10px] tracking-widest">Cancelar</button>
-                <button type="submit" className="w-full sm:w-auto px-8 py-3 md:py-4 rounded-2xl bg-primary text-white font-bold hover:brightness-110 transition-all uppercase text-[10px] tracking-widest shadow-lg shadow-primary/30">Salvar Função</button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-8 py-2 md:py-3 rounded-2xl border-2 border-slate-200 dark:border-slate-700 font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all uppercase text-[10px] tracking-widest">Cancelar</button>
+                <button type="submit" className="w-full sm:w-auto px-8 py-2 md:py-3 rounded-2xl bg-primary text-white font-bold hover:brightness-110 transition-all uppercase text-[10px] tracking-widest shadow-lg shadow-primary/30">Salvar Função</button>
               </div>
             </form>
           </div>
@@ -5809,7 +5818,7 @@ const ConfiguracoesPage = () => {
       
       <div className="w-full max-w-[1550px]">
         {activeTab === 'sistema' && canAccessConfig && (
-           <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
+           <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-[2rem] md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.5rem] md:rounded-[2rem] bg-primary/10 text-primary flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
                   <Icon name="settings" />
@@ -5837,21 +5846,21 @@ const ConfiguracoesPage = () => {
                 });
                 success('Configurações do sistema atualizadas!');
               }} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-                 <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 dark:border-slate-800">
+                 <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-2xl border border-slate-100 dark:border-slate-800">
                     <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Nome do Sistema</label>
-                    <input name="appName" disabled value="SenseiRM" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 outline-none font-bold shadow-sm text-sm md:text-base text-slate-500 dark:text-slate-400 cursor-not-allowed" />
+                    <input name="appName" disabled value="SenseiRM" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 outline-none font-bold shadow-sm text-sm md:text-base text-slate-500 dark:text-slate-400 cursor-not-allowed" />
                  </div>
-                 <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 dark:border-slate-800">
+                 <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-2xl border border-slate-100 dark:border-slate-800">
                     <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Nome da Empresa</label>
-                    <input name="companyName" key={systemSettings.companyName} required defaultValue={systemSettings.companyName} placeholder="Sua Empresa" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base text-slate-800 dark:text-slate-200" />
+                    <input name="companyName" key={systemSettings.companyName} required defaultValue={systemSettings.companyName} placeholder="Sua Empresa" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base text-slate-800 dark:text-slate-200" />
                  </div>
-                 <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 dark:border-slate-800">
+                 <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-2xl border border-slate-100 dark:border-slate-800">
                     <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Logo do Sistema</label>
                     <div className="flex items-center gap-4">
                       {systemSettings.appLogo && (
                         <img src={systemSettings.appLogo} alt="Logo" className="w-12 h-12 rounded-lg object-contain bg-white border border-slate-200 dark:border-slate-700 p-1" />
                       )}
-                      <input type="file" name="appLogo" accept="image/*" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base text-slate-800 dark:text-slate-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all cursor-pointer" />
+                      <input type="file" name="appLogo" accept="image/*" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base text-slate-800 dark:text-slate-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all cursor-pointer" />
                     </div>
                  </div>
                  <button type="submit" className="md:col-span-2 py-4 md:py-5 bg-primary text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-base md:text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1 flex items-center justify-center gap-2 md:gap-3">
@@ -5866,7 +5875,7 @@ const ConfiguracoesPage = () => {
         )}
 
         {activeTab === 'setores' && canAccessConfig && (
-          <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-2xl md:rounded-[3rem] shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
+          <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                <div className="flex items-center gap-4">
                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-[2rem] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
@@ -5885,10 +5894,10 @@ const ConfiguracoesPage = () => {
               {sectors.slice((currentPageSectors - 1) * itemsPerPage, currentPageSectors * itemsPerPage).map(s => {
                 const manager = users.find(u => u.id === s.responsavelId);
                 return (
-                  <div key={s.id} className="p-6 rounded-2xl md:rounded-[2.5rem] border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-start group hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all shadow-sm">
+                  <div key={s.id} className="p-6 rounded-2xl md:rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-start group hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all shadow-sm">
                     <div className="flex-1 overflow-hidden pr-4">
                       <h4 className="font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-tighter text-lg truncate">{s.nome}</h4>
-                      <p className="text-[10px] font-black text-primary uppercase tracking-widest mt-1 flex items-center gap-1">
+                      <p className="text-xs font-black text-primary uppercase tracking-widest mt-1 flex items-center gap-1">
                         <Icon name="user" className="text-[10px]" /> {manager?.nome || 'Não definido'}
                       </p>
                       <p className="text-sm text-slate-500 dark:text-slate-400 mt-3 font-medium line-clamp-2">{s.descricao || 'Sem descrição definida.'}</p>
@@ -5927,7 +5936,7 @@ const ConfiguracoesPage = () => {
                 );
               })}
               {sectors.length === 0 && (
-                <div className="col-span-2 p-20 text-center text-slate-400 font-bold italic bg-slate-50 rounded-[3rem] border border-slate-200 border-dashed">
+                <div className="col-span-2 p-20 text-center text-slate-400 font-bold italic bg-slate-50 rounded-3xl border border-slate-200 border-dashed">
                   Nenhum setor registrado no sistema.
                 </div>
               )}
@@ -5943,7 +5952,7 @@ const ConfiguracoesPage = () => {
         )}
 
         {activeTab === 'categorias' && canAccessConfig && (
-          <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-2xl md:rounded-[3rem] shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
+          <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                <div className="flex items-center gap-4">
                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-[2rem] bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
@@ -6000,7 +6009,7 @@ const ConfiguracoesPage = () => {
                 </div>
               ))}
               {clientCategories.length === 0 && (
-                <div className="col-span-full p-20 text-center text-slate-400 font-bold italic bg-slate-50 rounded-[3rem] border border-slate-200 border-dashed">
+                <div className="col-span-full p-20 text-center text-slate-400 font-bold italic bg-slate-50 rounded-3xl border border-slate-200 border-dashed">
                   Nenhuma categoria cadastrada.
                 </div>
               )}
@@ -6016,7 +6025,7 @@ const ConfiguracoesPage = () => {
         )}
 
         {activeTab === 'customFields' && canAccessConfig && (
-          <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-2xl md:rounded-[3rem] shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
+          <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                <div className="flex items-center gap-4">
                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-[2rem] bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
@@ -6060,7 +6069,7 @@ const ConfiguracoesPage = () => {
                 </div>
               ))}
               {customFields.length === 0 && (
-                <div className="col-span-full text-center py-12 bg-slate-50 rounded-[3rem] border border-slate-100 border-dashed">
+                <div className="col-span-full text-center py-12 bg-slate-50 rounded-3xl border border-slate-100 border-dashed">
                   <Icon name="list-alt" className="text-4xl text-slate-300 mb-4" />
                   <p className="text-slate-500 font-medium">Nenhum campo personalizado cadastrado.</p>
                 </div>
@@ -6077,7 +6086,7 @@ const ConfiguracoesPage = () => {
         )}
 
         {activeTab === 'sla' && canAccessConfig && (
-           <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-6 md:space-y-10 animate-in slide-in-from-bottom-2">
+           <div className="bg-white p-6 md:p-10 rounded-3xl shadow-sm border border-slate-100 space-y-4 md:space-y-6 animate-in slide-in-from-bottom-2">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.5rem] md:rounded-[2rem] bg-blue-50 text-blue-500 flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
                   <Icon name="clock" />
@@ -6100,7 +6109,7 @@ const ConfiguracoesPage = () => {
                    const textClass = colorClass.split(' ')[0];
                    
                    return (
-                     <div key={p} className="bg-slate-50 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
+                     <div key={p} className="bg-slate-50 p-4 md:p-6 rounded-[2rem] md:rounded-2xl border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
                         <div className={`absolute top-0 left-0 w-2 h-full ${bgClass.replace('50', '500')}`} />
                         <div className="flex items-center justify-between mb-3 md:mb-4 pl-4">
                           <label className={`text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-2 ${textClass}`}>
@@ -6109,7 +6118,7 @@ const ConfiguracoesPage = () => {
                           </label>
                         </div>
                         <div className="relative pl-4">
-                          <input name={p} type="number" min="0" defaultValue={slaSettings[p as keyof SLASettings]} className="w-full px-4 md:px-6 py-3 md:py-5 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-black text-2xl md:text-3xl text-slate-800 focus:border-primary transition-all shadow-sm" />
+                          <input name={p} type="number" min="0" defaultValue={slaSettings[p as keyof SLASettings]} className="w-full px-4 md:px-6 py-3 md:py-5 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-black text-xl md:text-2xl text-slate-800 focus:border-primary transition-all shadow-sm" />
                           <span className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-slate-300 font-black text-[10px] md:text-xs uppercase">Dias</span>
                         </div>
                      </div>
@@ -6123,7 +6132,7 @@ const ConfiguracoesPage = () => {
         )}
 
         {activeTab === 'email' && canAccessConfig && (
-           <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-6 md:space-y-10 animate-in slide-in-from-bottom-2">
+           <div className="bg-white p-6 md:p-10 rounded-3xl shadow-sm border border-slate-100 space-y-4 md:space-y-6 animate-in slide-in-from-bottom-2">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.5rem] md:rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
                   <Icon name="envelope" />
@@ -6134,12 +6143,12 @@ const ConfiguracoesPage = () => {
                 </div>
               </div>
               <form onSubmit={handleSaveEmail} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-                 <div className="space-y-1 md:col-span-2 bg-slate-50 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Provedor</label>
+                 <div className="space-y-1 md:col-span-2 bg-slate-50 p-4 md:p-6 rounded-[2rem] md:rounded-2xl border border-slate-100">
+                    <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">Provedor</label>
                     <select 
                       name="provider" 
                       defaultValue={emailSettings.provider} 
-                      className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm mt-2 text-sm md:text-base"
+                      className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm mt-2 text-sm md:text-base"
                       onChange={(e) => {
                         const provider = e.target.value;
                         setSelectedProvider(provider);
@@ -6185,20 +6194,20 @@ const ConfiguracoesPage = () => {
                     </select>
                  </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Host SMTP</label>
-                    <input name="host" required defaultValue={emailSettings.host} placeholder="smtp.exemplo.com" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
+                    <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">Host SMTP</label>
+                    <input name="host" required defaultValue={emailSettings.host} placeholder="smtp.exemplo.com" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
                  </div>
                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Porta</label>
-                    <input name="port" type="number" required defaultValue={emailSettings.port} placeholder="587" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
+                    <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">Porta</label>
+                    <input name="port" type="number" required defaultValue={emailSettings.port} placeholder="587" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
                  </div>
                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Usuário</label>
-                    <input name="user" required defaultValue={emailSettings.user} placeholder="seu-email@exemplo.com" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
+                    <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">Usuário</label>
+                    <input name="user" required defaultValue={emailSettings.user} placeholder="seu-email@exemplo.com" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
                  </div>
                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Senha</label>
-                    <input name="pass" type="password" required defaultValue={emailSettings.pass} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
+                    <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">Senha</label>
+                    <input name="pass" type="password" required defaultValue={emailSettings.pass} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
                  </div>
                  <div className="space-y-1 md:col-span-2 flex items-center gap-3 bg-slate-50 p-4 md:p-6 rounded-xl md:rounded-2xl border border-slate-100">
                     <input name="secure" type="checkbox" id="secure" defaultChecked={emailSettings.secure} className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary" />
@@ -6229,7 +6238,7 @@ const ConfiguracoesPage = () => {
         )}
 
         {activeTab === 'aparencia' && (
-           <div className="bg-slate-900 p-6 md:p-12 rounded-[2rem] md:rounded-[3.5rem] shadow-2xl space-y-6 md:space-y-10 animate-in slide-in-from-bottom-2 relative overflow-hidden">
+           <div className="bg-slate-900 p-6 md:p-12 rounded-[2rem] md:rounded-[3.5rem] shadow-2xl space-y-4 md:space-y-6 animate-in slide-in-from-bottom-2 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
               <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-4">
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.5rem] md:rounded-[2rem] bg-white/10 text-white flex items-center justify-center text-xl md:text-2xl backdrop-blur-md border border-white/10 shrink-0">
@@ -6242,9 +6251,9 @@ const ConfiguracoesPage = () => {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-10 relative z-10">
                  {THEMES.map(t => (
-                   <button key={t.id} onClick={() => updateUser({ ...currentUser!, tema: t.id })} className={`p-6 md:p-10 rounded-[2.5rem] md:rounded-[3.5rem] border-2 transition-all flex flex-col items-center gap-4 md:gap-6 relative group ${currentUser?.tema === t.id ? 'border-primary bg-white/10 shadow-lg shadow-primary/20 scale-105' : 'border-white/5 bg-white/5 hover:border-white/20 hover:bg-white/10'}`}>
+                   <button key={t.id} onClick={() => updateUser({ ...currentUser!, tema: t.id })} className={`p-6 md:p-10 rounded-2xl md:rounded-[3.5rem] border-2 transition-all flex flex-col items-center gap-4 md:gap-6 relative group ${currentUser?.tema === t.id ? 'border-primary bg-white/10 shadow-lg shadow-primary/20 scale-105' : 'border-white/5 bg-white/5 hover:border-white/20 hover:bg-white/10'}`}>
                      <div className="w-16 h-16 md:w-24 md:h-24 rounded-full shadow-2xl transition-transform group-hover:scale-110 flex items-center justify-center" style={{ backgroundColor: t.color, boxShadow: `0 0 40px ${t.color}88` }}>
-                       {currentUser?.tema === t.id && <Icon name="check" className="text-white text-2xl md:text-3xl drop-shadow-md" />}
+                       {currentUser?.tema === t.id && <Icon name="check" className="text-white text-xl md:text-2xl drop-shadow-md" />}
                      </div>
                      <span className="text-[10px] md:text-xs font-black uppercase text-white tracking-[0.2em] text-center">{t.name}</span>
                    </button>
@@ -6254,7 +6263,7 @@ const ConfiguracoesPage = () => {
         )}
 
         {activeTab === 'notificacoes' && (
-          <div className="bg-white p-6 md:p-10 rounded-[3rem] shadow-sm border border-slate-100 space-y-10 animate-in slide-in-from-bottom-2">
+          <div className="bg-white p-6 md:p-10 rounded-3xl shadow-sm border border-slate-100 space-y-6 animate-in slide-in-from-bottom-2">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-[2rem] bg-purple-50 text-purple-500 flex items-center justify-center text-2xl shadow-inner shrink-0">
                 <Icon name="bell" />
@@ -6303,20 +6312,20 @@ const ConfiguracoesPage = () => {
       </div>
 
       {isSectorModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl p-6 md:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 p-6 md:p-8">
             <div className="flex justify-between items-center mb-6 md:mb-8">
                <h3 className="text-xl md:text-2xl font-black text-slate-800">{editingSector ? 'Configurar Setor' : 'Novo Setor'}</h3>
                <button onClick={() => setIsSectorModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
             <form onSubmit={handleSaveSector} className="space-y-4 md:space-y-6">
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Setor</label>
-                <input name="nome" required defaultValue={editingSector?.nome} placeholder="Ex: Engenharia, Comercial..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Nome do Setor</label>
+                <input name="nome" required defaultValue={editingSector?.nome} placeholder="Ex: Engenharia, Comercial..." className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Responsável pelo Setor</label>
-                <select name="responsavelId" defaultValue={editingSector?.responsavelId} required className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary text-sm md:text-base">
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Responsável pelo Setor</label>
+                <select name="responsavelId" defaultValue={editingSector?.responsavelId} required className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary text-sm md:text-base">
                   <option value="">Selecione um gestor...</option>
                   {users.filter(u => u.status === EntityStatus.ACTIVE).map(u => (
                     <option key={u.id} value={u.id}>{u.nome}</option>
@@ -6324,8 +6333,8 @@ const ConfiguracoesPage = () => {
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
-                <textarea name="descricao" rows={3} defaultValue={editingSector?.descricao} placeholder="Breve resumo da responsabilidade da equipe..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium resize-none focus:border-primary shadow-inner text-sm md:text-base" />
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Descrição</label>
+                <textarea name="descricao" rows={3} defaultValue={editingSector?.descricao} placeholder="Breve resumo da responsabilidade da equipe..." className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium resize-none focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
               <div className="flex flex-col md:flex-row justify-end gap-3 pt-4 md:pt-6">
                  <button type="button" onClick={() => setIsSectorModalOpen(false)} className="w-full md:w-auto px-8 py-3 rounded-xl border border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all text-sm md:text-base">Desistir</button>
@@ -6337,24 +6346,24 @@ const ConfiguracoesPage = () => {
       )}
 
       {isCategoryModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl p-6 md:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 p-6 md:p-8">
             <div className="flex justify-between items-center mb-6 md:mb-8">
                <h3 className="text-xl md:text-2xl font-black text-slate-800">{editingCategory ? 'Configurar Categoria' : 'Nova Categoria'}</h3>
                <button onClick={() => setIsCategoryModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
             <form onSubmit={handleSaveCategory} className="space-y-4 md:space-y-6">
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome da Categoria</label>
-                <input name="nome" required defaultValue={editingCategory?.nome} placeholder="Ex: VIP, Atacadista..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Nome da Categoria</label>
+                <input name="nome" required defaultValue={editingCategory?.nome} placeholder="Ex: VIP, Atacadista..." className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cor de Identificação</label>
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Cor de Identificação</label>
                 <input name="cor" type="color" defaultValue={editingCategory?.cor || '#10b981'} className="w-full h-12 p-1 rounded-xl border border-slate-100 bg-slate-50 cursor-pointer" />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
-                <textarea name="descricao" rows={3} defaultValue={editingCategory?.descricao} placeholder="Defina o perfil desta categoria..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium resize-none focus:border-primary shadow-inner text-sm md:text-base" />
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Descrição</label>
+                <textarea name="descricao" rows={3} defaultValue={editingCategory?.descricao} placeholder="Defina o perfil desta categoria..." className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium resize-none focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
               <div className="flex flex-col md:flex-row justify-end gap-3 pt-4 md:pt-6">
                  <button type="button" onClick={() => setIsCategoryModalOpen(false)} className="w-full md:w-auto px-8 py-3 rounded-xl border border-slate-200 font-bold text-slate-500 hover:bg-slate-50 transition-all text-sm md:text-base">Desistir</button>
@@ -6365,21 +6374,21 @@ const ConfiguracoesPage = () => {
         </div>
       )}
       {isCustomFieldModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl p-6 md:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 p-6 md:p-8">
             <div className="flex justify-between items-center mb-6 md:mb-8">
                <h3 className="text-xl md:text-2xl font-black text-slate-800">{editingCustomField ? 'Editar Campo' : 'Novo Campo Personalizado'}</h3>
                <button onClick={() => setIsCustomFieldModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
             <form onSubmit={handleSaveCustomField} className="space-y-4 md:space-y-6">
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Campo</label>
-                <input name="name" required defaultValue={editingCustomField?.name} placeholder="Ex: Data de Aniversário" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Nome do Campo</label>
+                <input name="name" required defaultValue={editingCustomField?.name} placeholder="Ex: Data de Aniversário" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo</label>
-                  <select name="type" required defaultValue={editingCustomField?.type || 'text'} className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base">
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Tipo</label>
+                  <select name="type" required defaultValue={editingCustomField?.type || 'text'} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base">
                     <option value="text">Texto Curto</option>
                     <option value="number">Número</option>
                     <option value="date">Data</option>
@@ -6395,31 +6404,31 @@ const ConfiguracoesPage = () => {
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Opções (Apenas para Lista de Seleção)</label>
-                <input name="options" defaultValue={editingCustomField?.options?.join(', ')} placeholder="Opção 1, Opção 2, Opção 3..." className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium focus:border-primary shadow-inner text-sm md:text-base" />
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Opções (Apenas para Lista de Seleção)</label>
+                <input name="options" defaultValue={editingCustomField?.options?.join(', ')} placeholder="Opção 1, Opção 2, Opção 3..." className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium focus:border-primary shadow-inner text-sm md:text-base" />
                 <p className="text-xs text-slate-400 ml-2 mt-1">Separe as opções por vírgula.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Placeholder / Dica</label>
-                  <input name="placeholder" defaultValue={editingCustomField?.placeholder} placeholder="Ex: DD/MM/AAAA" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Placeholder / Dica</label>
+                  <input name="placeholder" defaultValue={editingCustomField?.placeholder} placeholder="Ex: DD/MM/AAAA" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tamanho Máximo</label>
-                  <input type="number" name="maxLength" defaultValue={editingCustomField?.maxLength} placeholder="Ex: 50" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Tamanho Máximo</label>
+                  <input type="number" name="maxLength" defaultValue={editingCustomField?.maxLength} placeholder="Ex: 50" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-bold focus:border-primary shadow-inner text-sm md:text-base" />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Expressão Regular (Regex) para Validação</label>
-                <input name="regex" defaultValue={editingCustomField?.regex} placeholder="Ex: ^[0-9]*$" className="w-full px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium focus:border-primary shadow-inner text-sm md:text-base" />
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Expressão Regular (Regex) para Validação</label>
+                <input name="regex" defaultValue={editingCustomField?.regex} placeholder="Ex: ^[0-9]*$" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl border border-slate-100 bg-slate-50 focus:bg-white outline-none font-medium focus:border-primary shadow-inner text-sm md:text-base" />
                 <p className="text-xs text-slate-400 ml-2 mt-1">Opcional: Use regex para validar o formato do campo.</p>
               </div>
               
               <div className="pt-4 flex flex-col md:flex-row justify-end gap-3">
-                <button type="button" onClick={() => setIsCustomFieldModalOpen(false)} className="w-full md:w-auto px-6 py-3 md:py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-colors text-sm md:text-base">Cancelar</button>
-                <button type="submit" className="w-full md:w-auto bg-primary text-white px-8 py-3 md:py-4 rounded-2xl font-black uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2 text-sm md:text-base">
+                <button type="button" onClick={() => setIsCustomFieldModalOpen(false)} className="w-full md:w-auto px-6 py-2 md:py-3 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-colors text-sm md:text-base">Cancelar</button>
+                <button type="submit" className="w-full md:w-auto bg-primary text-white px-8 py-2 md:py-3 rounded-2xl font-black uppercase shadow-xl hover:brightness-110 transition-all flex items-center justify-center gap-2 text-sm md:text-base">
                   <Icon name="save" /> Salvar Campo
                 </button>
               </div>
@@ -6429,8 +6438,8 @@ const ConfiguracoesPage = () => {
       )}
 
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-md p-6 md:p-10 shadow-2xl space-y-6 md:space-y-8 animate-in zoom-in duration-200">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 p-6 md:p-8">
             <div className="w-16 h-16 md:w-20 md:h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto">
               <AlertTriangle size={32} className="text-red-500 md:w-10 md:h-10" />
             </div>
@@ -6441,7 +6450,7 @@ const ConfiguracoesPage = () => {
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
               <button 
                 onClick={() => setDeleteConfirm(null)}
-                className="flex-1 py-3 md:py-4 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-all text-sm md:text-base"
+                className="flex-1 py-2 md:py-3 rounded-2xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-all text-sm md:text-base"
               >
                 Cancelar
               </button>
@@ -6451,7 +6460,7 @@ const ConfiguracoesPage = () => {
                   else deleteClientCategory(deleteConfirm.id);
                   setDeleteConfirm(null);
                 }}
-                className="flex-1 py-3 md:py-4 rounded-2xl bg-red-500 text-white font-bold shadow-lg shadow-red-200 hover:bg-red-600 transition-all text-sm md:text-base"
+                className="flex-1 py-2 md:py-3 rounded-2xl bg-red-500 text-white font-bold shadow-lg shadow-red-200 hover:bg-red-600 transition-all text-sm md:text-base"
               >
                 Confirmar
               </button>
@@ -6601,8 +6610,8 @@ const AuditoriaPage = () => {
       </div>
 
       {isClearModalOpen && (
-        <div className="fixed inset-0 z-[110] bg-slate-900/60 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 rounded-t-[2.5rem] md:rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden animate-in slide-in-from-bottom md:zoom-in-95 duration-300">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-t-[2.5rem] md:rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom md:zoom-in-95 duration-300 w-[95vw] lg:w-[90vw] max-w-6xl h-[90vh] max-h-[900px] flex flex-col">
             <div className="p-8 border-b bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-900/30">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 flex items-center justify-center shadow-sm">
@@ -6619,7 +6628,7 @@ const AuditoriaPage = () => {
                 Esta ação irá remover permanentemente todos os registros de auditoria. Por favor, informe o motivo desta ação para fins de conformidade.
               </p>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Motivo da Limpeza</label>
+                <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Motivo da Limpeza</label>
                 <textarea 
                   value={clearReason}
                   onChange={(e) => setClearReason(e.target.value)}
@@ -6657,17 +6666,17 @@ const AuditoriaPage = () => {
         </div>
       )}
 
-      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2.5rem] shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse hidden md:table">
             <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
               <tr>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-32">Horário</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-48">Autor</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-32">IP</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest w-40">Módulo</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-32">Operação</th>
-                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalhes & Comparação</th>
+                <th className="px-6 py-5 text-xs font-black text-slate-500 uppercase tracking-widest w-32">Horário</th>
+                <th className="px-6 py-5 text-xs font-black text-slate-500 uppercase tracking-widest w-48">Autor</th>
+                <th className="px-6 py-5 text-xs font-black text-slate-500 uppercase tracking-widest w-32">IP</th>
+                <th className="px-6 py-5 text-xs font-black text-slate-500 uppercase tracking-widest w-40">Módulo</th>
+                <th className="px-6 py-5 text-xs font-black text-slate-500 uppercase tracking-widest text-center w-32">Operação</th>
+                <th className="px-6 py-5 text-xs font-black text-slate-500 uppercase tracking-widest">Detalhes & Comparação</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -6835,7 +6844,7 @@ const SobrePage = () => {
   return (
     <div className="p-4 sm:p-8 max-w-7xl mx-auto pb-20 space-y-8 animate-in fade-in duration-700">
       {/* Hero Section - Editorial Style (Combined at Top) */}
-      <div className="relative overflow-hidden rounded-[3rem] bg-slate-900 py-16 sm:py-24 px-6 sm:px-12 text-center shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-slate-900 py-16 sm:py-24 px-6 sm:px-12 text-center shadow-2xl">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#3b82f6_0%,transparent_50%)] animate-pulse" />
           <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
@@ -6863,7 +6872,7 @@ const SobrePage = () => {
 
           <div className="flex flex-wrap justify-center gap-3 pt-4">
             <span className="px-6 py-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-black text-white uppercase tracking-widest">Versão 1.2.0</span>
-            <span className="px-6 py-2 bg-primary/20 backdrop-blur-md border border-primary/20 rounded-full text-[10px] font-black text-primary uppercase tracking-widest">Standard Edition</span>
+            <span className="px-6 py-2 bg-primary/20 backdrop-blur-md border border-primary/20 rounded-full text-xs font-black text-primary uppercase tracking-widest">Standard Edition</span>
             <span className="px-6 py-2 bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 rounded-full text-[10px] font-black text-emerald-500 uppercase tracking-widest">Status: Operacional</span>
           </div>
         </div>
@@ -6896,7 +6905,7 @@ const SobrePage = () => {
         </div>
 
         {/* Features Bento - Grid within Grid */}
-        <div className="md:col-span-12 lg:col-span-9 bg-white dark:bg-slate-900 rounded-[3rem] p-8 sm:p-10 border border-slate-100 dark:border-slate-800 space-y-8">
+        <div className="md:col-span-12 lg:col-span-9 bg-white dark:bg-slate-900 rounded-3xl p-8 sm:p-10 border border-slate-100 dark:border-slate-800 space-y-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
@@ -6927,7 +6936,7 @@ const SobrePage = () => {
 
         {/* Tech Specs Sidebar */}
         <div className="md:col-span-12 lg:col-span-3 space-y-6">
-          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-[2.5rem] p-8 border border-slate-100 dark:border-slate-800 space-y-6">
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-8 border border-slate-100 dark:border-slate-800 space-y-6">
             <div className="flex items-center gap-2 text-slate-400">
               <Icon name="cpu" className="text-xs" />
               <h4 className="text-[9px] font-black uppercase tracking-widest">Tecnologia</h4>
@@ -6956,7 +6965,7 @@ const SobrePage = () => {
         </div>
 
         {/* Developer & Contact - Full Width */}
-        <div className="md:col-span-12 bg-primary rounded-[3rem] p-8 sm:p-12 text-white relative overflow-hidden">
+        <div className="md:col-span-12 bg-primary rounded-3xl p-8 sm:p-12 text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 relative z-10">
@@ -7035,11 +7044,11 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-primary/5 rounded-full blur-[150px]" />
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-[2.5rem] sm:rounded-[4rem] shadow-2xl p-8 sm:p-14 z-10 text-center border border-slate-100 dark:border-slate-800">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[4rem] shadow-2xl p-8 sm:p-14 z-10 text-center border border-slate-100 dark:border-slate-800">
         {systemSettings.appLogo ? (
           <img src={systemSettings.appLogo} alt="SenseiRM" className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-8 sm:mb-10 object-contain drop-shadow-xl" />
         ) : (
-          <div className="inline-block p-5 sm:p-7 bg-primary rounded-[2rem] sm:rounded-[2.5rem] mb-8 sm:mb-10 shadow-primary/20">
+          <div className="inline-block p-5 sm:p-7 bg-primary rounded-[2rem] sm:rounded-2xl mb-8 sm:mb-10 shadow-primary/20">
             <Icon name="users-cog" className="text-4xl sm:text-5xl text-white" />
           </div>
         )}
@@ -7245,7 +7254,7 @@ const MailListPage = () => {
       {/* WhatsApp Queue Overlay */}
       {whatsappQueue.length > 0 && (
         <div className="absolute inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center rounded-[2rem] sm:rounded-[3.5rem] p-4">
-          <div className="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] shadow-2xl max-w-md w-full text-center space-y-6 sm:space-y-8 animate-in zoom-in-95">
+          <div className="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-3xl shadow-2xl max-w-md w-full text-center space-y-6 sm:space-y-8 animate-in zoom-in-95">
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
               <Icon name="phone" className="text-3xl sm:text-4xl" />
             </div>
@@ -7258,7 +7267,7 @@ const MailListPage = () => {
             
             {whatsappIndex < whatsappQueue.length ? (
               <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-100 text-left">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Próximo Destinatário:</p>
+                <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Próximo Destinatário:</p>
                 <p className="font-bold text-slate-700 text-sm sm:text-base">{clients.find(c => c.id === whatsappQueue[whatsappIndex])?.nomeRazaoSocial}</p>
                 <p className="text-xs text-slate-500">{clients.find(c => c.id === whatsappQueue[whatsappIndex])?.telefoneSecundario || clients.find(c => c.id === whatsappQueue[whatsappIndex])?.telefonePrincipal}</p>
               </div>
@@ -7296,7 +7305,7 @@ const MailListPage = () => {
          </div>
          
          <div className="flex gap-2 shrink-0 flex-wrap">
-           <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center mr-2 w-full sm:w-auto mb-2 sm:mb-0">Variáveis Dinà¢micas:</span>
+           <span className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest flex items-center mr-2 w-full sm:w-auto mb-2 sm:mb-0">Variáveis Dinà¢micas:</span>
            {['{nome}', '{empresa}', '{email}', '{telefone}'].map(tag => (
              <button type="button" key={tag} onClick={() => setMessage(prev => prev + tag)} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-mono font-bold transition-colors">
                {tag}
@@ -7344,7 +7353,7 @@ const MailListPage = () => {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   required 
-                  className="flex-1 w-full px-5 sm:px-7 py-4 sm:py-6 rounded-[2rem] sm:rounded-[2.5rem] border border-slate-200 dark:border-slate-700 outline-none resize-none font-medium focus:border-primary dark:focus:border-primary shadow-inner text-sm sm:text-base bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100" 
+                  className="flex-1 w-full px-5 sm:px-7 py-4 sm:py-6 rounded-[2rem] sm:rounded-2xl border border-slate-200 dark:border-slate-700 outline-none resize-none font-medium focus:border-primary dark:focus:border-primary shadow-inner text-sm sm:text-base bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100" 
                   placeholder="Mensagem estruturada para WhatsApp..." 
                 />
               )}
@@ -7455,7 +7464,7 @@ const MailListPage = () => {
         )}
         
         <div className="mt-6 pt-4 border-t border-slate-50 flex justify-between items-center shrink-0">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Selecionado</span>
+          <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Total Selecionado</span>
           <span className="text-lg font-black text-primary">{selectedClients.length}</span>
         </div>
       </div>
