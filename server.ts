@@ -56,6 +56,17 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// SEG-08: Cabeçalhos de Segurança (Manual Helmet)
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:;");
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, 
   max: 5000, 
@@ -94,6 +105,7 @@ const storage = multer.diskStorage({
   }
 });
 
+// SEG-07: Validação de Magic Bytes (assinatura de arquivo)
 const upload = multer({ 
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
@@ -101,12 +113,44 @@ const upload = multer({
     const allowedTypes = /jpeg|jpg|png|pdf|doc|docx|xls|xlsx|csv|txt|zip|rar/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
+    
     if (extname && mimetype) {
       return cb(null, true);
     }
     cb(new Error('Tipo de arquivo não permitido.'));
   }
 });
+
+// Middleware para verificar magic bytes pós-upload (camada extra de segurança)
+const validateFileContent = (req: any, res: any, next: any) => {
+  if (!req.file) return next();
+  
+  const filePath = req.file.path;
+  const buffer = Buffer.alloc(4);
+  const fd = fs.openSync(filePath, 'r');
+  fs.readSync(fd, buffer, 0, 4, 0);
+  fs.closeSync(fd);
+
+  const hex = buffer.toString('hex').toUpperCase();
+  const mime = req.file.mimetype;
+
+  // Assinaturas comuns
+  const signatures: Record<string, string[]> = {
+    'image/jpeg': ['FFD8FF'],
+    'image/png': ['89504E47'],
+    'application/pdf': ['25504446']
+  };
+
+  if (signatures[mime]) {
+    const isValid = signatures[mime].some(sig => hex.startsWith(sig));
+    if (!isValid) {
+      fs.unlinkSync(filePath);
+      return res.status(400).json({ error: 'Conteúdo do arquivo não condiz com a extensão (File Spoofing detectado).' });
+    }
+  }
+
+  next();
+};
 
 // SEG-02: CORS restrito por allowlist (HTTP)
 app.use(cors({
@@ -458,9 +502,12 @@ app.post('/api/upload', authenticateToken, (req: any, res: any) => {
     if (!req.file) {
       return res.status(400).json({ error: 'Nenhum arquivo enviado' });
     }
-    
-    const fileUrl = `/uploads/${req.file.filename}`;
-    res.json({ url: fileUrl, name: req.file.originalname, size: req.file.size, type: req.file.mimetype });
+
+    // SEG-07: Validação de Magic Bytes após o upload
+    validateFileContent(req, res, () => {
+      const fileUrl = `/uploads/${req.file.filename}`;
+      res.json({ url: fileUrl, name: req.file.originalname, size: req.file.size, type: req.file.mimetype });
+    });
   });
 });
 

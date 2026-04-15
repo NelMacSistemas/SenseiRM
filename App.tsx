@@ -508,16 +508,16 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
             <div className="p-6 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
               <button 
                 onClick={handleCancel}
-                className="px-6 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                className="px-6 py-3 rounded-xl font-bold bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm"
               >
                 {options.cancelLabel || 'Cancelar'}
               </button>
               <button 
                 onClick={handleConfirm}
-                className={`px-6 py-3 rounded-xl font-black text-white shadow-lg hover:brightness-110 transition-all ${
+                className={`px-6 py-3 rounded-xl font-black text-white shadow-lg transition-all text-sm ${
                   options.isDestructive 
-                    ? 'bg-red-500 shadow-red-500/20' 
-                    : 'bg-primary shadow-primary/20'
+                    ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20' 
+                    : 'bg-primary hover:brightness-110 shadow-primary/20'
                 }`}
               >
                 {options.confirmLabel || 'Confirmar'}
@@ -2221,8 +2221,29 @@ const Dashboard = () => {
     }
   };
 
+  // AUD-04: Warning at 80% log limit
+  const logLimit = 5000;
+  const showLogLimitWarning = auditLogs.length > (logLimit * 0.8);
+
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-8 animate-in fade-in duration-700 max-w-7xl mx-auto">
+      {/* AUD-04: Alerta visual de limite de logs */}
+      {showLogLimitWarning && (
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-4 rounded-2xl flex items-center justify-between gap-4 animate-in slide-in-from-top-4 duration-300">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Icon name="exclamation-triangle" />
+            </div>
+            <div>
+              <p className="text-sm font-black text-amber-900 dark:text-amber-100 uppercase tracking-widest">Base de Auditoria Quase Cheia</p>
+              <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">Você atingiu <strong>{auditLogs.length}</strong> de 5.000 logs permitidos. Considere realizar uma limpeza.</p>
+            </div>
+          </div>
+          <Link to="/auditoria" className="px-4 py-2 bg-amber-600 dark:bg-amber-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-700 transition-all shrink-0 shadow-lg shadow-amber-600/20">
+            Limpar Agora
+          </Link>
+        </div>
+      )}
       
       {/* HEADER & QUICK ACTIONS */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white dark:bg-slate-900 p-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
