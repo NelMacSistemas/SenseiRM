@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import nodemailer from 'nodemailer';
 import cors from 'cors';
@@ -73,6 +74,16 @@ const apiLimiter = rateLimit({
   message: { error: 'Muitas requisições. Tente novamente em breve.' },
   standardHeaders: true,
   legacyHeaders: false,
+});
+
+// Global Request Logger for diagnostics
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`[HTTP] ${req.method} ${req.url} ${res.statusCode} (${duration}ms)`);
+  });
+  next();
 });
 
 // Handle Socket.IO connections
@@ -391,6 +402,34 @@ if (fs.existsSync(DATA_FILE)) {
   console.log('No data.json found, initialized with defaults');
 }
 
+// SECURITY: Ensure data integrity after loading (e.g. restore masked/missing passwords)
+(function checkDataIntegrity() {
+  if (!db.users || db.users.length === 0) return;
+  
+  let fixesApplied = false;
+  db.users.forEach((user: any) => {
+    // SECURITY: Only restore admin password if it's missing or accidentally masked
+    // If you need to force a reset again, temporarily change this condition or delete 'senha' from data.json
+    const isCorrupted = !user.senha || user.senha === '********';
+    
+    if (user.roleId === 'admin' && user.email === 'admin@senseirm.com' && isCorrupted) {
+      console.warn(`[SECURITY] Restoring administrator password for: ${user.email}`);
+      user.senha = bcrypt.hashSync(ADMIN_INITIAL_PASSWORD, salt);
+      fixesApplied = true;
+    }
+    
+    // Warn about any other users with masked passwords (these must be reset manually)
+    if (user.senha === '********' && user.email !== 'admin@senseirm.com') {
+      console.warn(`[SECURITY] Detected masked password for user: ${user.email}. This account is currently locked out.`);
+    }
+  });
+  
+  if (fixesApplied) {
+    saveData();
+  }
+})();
+
+
 // --- Middleware ---
 const authenticateToken = (req: any, res: any, next: any) => {
   const authHeader = req.headers['authorization'];
@@ -437,7 +476,9 @@ app.get('/api/health', (req, res) => {
 
 // Auth
 app.post('/api/auth/login', loginLimiter, (req, res) => {
-  const { email, pass } = req.body;
+  const { email, pass: incomingPass, senha } = req.body;
+  const pass = incomingPass || senha;
+  
   console.log(`Login attempt for email: ${email}`);
   
   if (!db.users || db.users.length === 0) {
@@ -445,7 +486,9 @@ app.post('/api/auth/login', loginLimiter, (req, res) => {
     db.users = [...defaultAdmin];
   }
 
-  const user = db.users.find((u: any) => u.email === email && u.status === 'ativo');
+  // Ensure case-insensitive email matching
+  const targetEmail = (email || '').toLowerCase();
+  const user = db.users.find((u: any) => (u.email || '').toLowerCase() === targetEmail && u.status === 'ativo');
   
   if (user) {
     console.log(`User found: ${user.nome}. Comparing password...`);
@@ -797,9 +840,29 @@ async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: 'spa',
+      appType: 'custom',
     });
     app.use(vite.middlewares);
+
+    app.get('*', async (req, res, next) => {
+      // Skip API and upload routes
+      if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/uploads')) {
+        return next();
+      }
+
+      try {
+        const url = req.originalUrl;
+        const templatePath = path.resolve(__dirname, 'index.html');
+        let template = fs.readFileSync(templatePath, 'utf-8');
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e) {
+        if (e instanceof Error) {
+          vite.ssrFixStacktrace(e);
+        }
+        next(e);
+      }
+    });
   } else {
     app.use(express.static('dist'));
     app.get('*', (req, res) => {

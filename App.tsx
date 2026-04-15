@@ -23,6 +23,12 @@ import { User, Client, ContactPerson, AuditEntry, MailHistory, EntityStatus, Tas
 import { INITIAL_USER, THEMES } from './constants';
 import { auditService } from './services/auditService';
 
+// --- Dashboard & Charts ---
+import { 
+  PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid
+} from 'recharts';
+
 import { 
   Edit, Trash2, Plus, Tag, Building2, Clock, Palette, Shield, Check, 
   Users, LayoutDashboard, Mail, FileText, Settings, ShieldCheck, Info,
@@ -111,6 +117,37 @@ const iconMap: Record<string, any> = {
   'sun': Sun,
   'moon': Moon,
 };
+
+// --- Error Boundary ---
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("[CRITICAL] App Crash:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-slate-900 flex items-center justify-center p-8">
+          <div className="max-w-md w-full bg-white rounded-3xl p-10 text-center shadow-2xl">
+            <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle size={40} />
+            </div>
+            <h1 className="text-2xl font-black text-slate-800 mb-4">Falha no Componente</h1>
+            <p className="text-slate-500 mb-8 font-medium">Ocorreu um erro ao renderizar esta parte do sistema. Detalhes: <code className="bg-slate-100 p-1 rounded text-red-500 text-xs">{this.state.error?.message}</code></p>
+            <button onClick={() => window.location.reload()} className="w-full py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest shadow-lg hover:brightness-110 transition-all">Recarregar App</button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const Icon: React.FC<{ name: string; className?: string; title?: string }> = ({ name, className = "", title }) => {
   const LucideIcon = iconMap[name] || HelpCircle;
@@ -698,11 +735,12 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       socket.emit('join', currentUser.id);
     });
 
-    socket.on('data_updated', () => {
+    socket.on('data_updated', (info) => {
+      console.log('[Sync] Update received:', info);
       if ((window as any)._loadDataTimeout) clearTimeout((window as any)._loadDataTimeout);
       (window as any)._loadDataTimeout = setTimeout(() => {
         loadData();
-      }, 500);
+      }, 1000);
     });
 
     socket.on('notification', (data: { title: string, message: string }) => {
@@ -719,7 +757,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return () => {
       socket.disconnect();
     };
-  }, [currentUser]);
+  }, [currentUser?.id]); // Use ID only to prevent loops on data refresh
 
   // --- USA-02: Session Timeout com aviso prévio de 2 minutos ---
   const [showSessionWarning, setShowSessionWarning] = useState(false);
@@ -793,10 +831,24 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const loadData = async () => {
     setIsLoading(true);
+    
+    // Safety timeout: stop loader after 10s even if it hangs
+    const safetyTimeout = setTimeout(() => {
+      setIsLoading(prev => {
+        if (prev) {
+          console.warn('[App] loadData safety timeout reached. Unlocking UI.');
+          // We don't use toast here yet as error might follow
+          return false;
+        }
+        return false;
+      });
+    }, 10000);
+
     try {
       const token = localStorage.getItem('senseirm_token');
       if (!token) {
         setIsLoading(false);
+        clearTimeout(safetyTimeout);
         return;
       }
       
@@ -811,6 +863,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       } else if (meRes.status === 401 || meRes.status === 403 || meRes.status === 404) {
         logout();
         setIsLoading(false);
+        clearTimeout(safetyTimeout);
         return;
       }
 
@@ -819,7 +872,9 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       });
 
       if (res.ok) {
+        console.log('[App] Data loaded successfully');
         const data = await res.json();
+        // Batch updates to minimize triggers
         if (data.users && data.users.length > 0) setUsers(data.users);
         if (data.roles && data.roles.length > 0) setRoles(data.roles);
         setClients(data.clients || []);
@@ -835,12 +890,16 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         if (data.systemSettings) setSystemSettings(data.systemSettings);
         if (data.notifications) setNotifications(data.notifications);
       } else {
-        console.error('Erro no servidor:', res.status);
+        const errText = `Server error ${res.status}`;
+        console.error(`[App] Server error during loadData: ${res.status} ${res.statusText}`);
+        toast({ title: 'Erro de Sincronização', message: 'Não foi possível carregar os dados do sistema.', type: 'error' });
       }
     } catch (e) {
-      console.error('Falha ao carregar dados', e);
+      console.error('[App] Failed to load data:', e);
+      toast({ title: 'Falha de Conexão', message: 'Verifique sua internet ou tente novamente.', type: 'error' });
     } finally {
       setIsLoading(false);
+      clearTimeout(safetyTimeout);
     }
   };
 
@@ -1252,6 +1311,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         </div>
       )}
+      {children}
     </AppContext.Provider>
   );
 };
@@ -1720,11 +1780,6 @@ const StatCard = ({ label, value, icon, color, subText }: any) => (
 
 // --- Pages ---
 
-import { 
-  PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid
-} from 'recharts';
-
 const CalendarView = () => {
   const { tasks, users, sectors, updateSync, hasPermission, addTask } = useApp();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -2116,7 +2171,8 @@ const CalendarView = () => {
 };
 
 const Dashboard = () => {
-  const { clients, tasks, users, currentUser, updateSync, hasPermission, roles } = useApp();
+  console.log('[App] Rendering Dashboard...');
+  const { clients, tasks, users, currentUser, updateSync, hasPermission, roles, auditLogs } = useApp();
   const { toast } = useToast();
   const { confirm } = useConfirm();
   const navigate = useNavigate();
@@ -2248,7 +2304,7 @@ const Dashboard = () => {
       {/* HEADER & QUICK ACTIONS */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white dark:bg-slate-900 p-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
         <div>
-          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Olá, {currentUser?.nome.split(' ')[0]} ðŸ‘‹</h2>
+          <h2 className="text-2xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Olá, {currentUser?.nome?.split(' ')[0] || 'Usuário'} 👋</h2>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Aqui está o resumo das suas operações hoje.</p>
         </div>
         
@@ -7008,7 +7064,7 @@ const LoginPage = () => {
           />
           {error && (
             <div className="p-4 bg-red-50 border-2 border-red-100 rounded-2xl flex items-center gap-3 text-red-600">
-              <Icon name="AlertCircle" className="w-5 h-5 shrink-0" />
+              <Icon name="alert-circle" className="w-5 h-5 shrink-0" />
               <p className="text-sm font-medium">{error}</p>
             </div>
           )}
@@ -7112,16 +7168,6 @@ const MailListPage = () => {
 
     if (type === 'whatsapp') {
       addMailHistory(entry);
-      setCustomFields(data.customFields || []);
-      setHistory(data.history || []);
-      setTemplates(data.templates || []);
-      setSlaSettings(data.slaSettings || { Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
-      setEmailSettings(data.emailSettings || { provider: 'SMTP', host: '', port: 587, user: '', pass: '', secure: false });
-      setSystemSettings({
-        companyName: (data.systemSettings as any)?.companyName || (data.systemSettings as any)?.appSlogan || 'CRM Ecosystem',
-        appLogo: data.systemSettings?.appLogo || ''
-      });
-      setAuditLogs(data.auditLogs || []);
       setWhatsappQueue(selectedClients);
       setWhatsappIndex(0);
       setWhatsappMessage(message);
@@ -7473,10 +7519,12 @@ const App: React.FC = () => {
       <ConfirmProvider>
         <AppProvider>
           <HashRouter>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/*" element={<MainLayout />} />
-            </Routes>
+            <ErrorBoundary>
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/*" element={<MainLayout />} />
+              </Routes>
+            </ErrorBoundary>
           </HashRouter>
         </AppProvider>
       </ConfirmProvider>

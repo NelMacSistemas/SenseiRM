@@ -16,7 +16,7 @@
         "email": true,
         "system": true
       },
-      "senha": "$2b$10$CykyspasThlL2Ect8sE7j.9ONoM2/CVwxSjcRNDKEODGr4pzoINPG"
+      "senha": "$2b$10$9c4/9y6au2CvMJupx6T3aOXtaiPJ2YGK1vyrGs9AUsiiKsAsSlrOe"
     },
     {
       "id": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
@@ -529,6 +529,118 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "z4il9apx1",
+      "timestamp": "2026-04-15T15:47:23.236Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "72lckqwxp",
+      "timestamp": "2026-04-15T15:46:37.331Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Nenhuma alteração nos campos principais.",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "onaq5we4m",
+      "timestamp": "2026-04-15T15:45:33.348Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "qfixy0ncc",
+      "timestamp": "2026-04-15T15:45:05.846Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ysrxecpv1",
+      "timestamp": "2026-04-15T15:27:18.289Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "h0cy7t44s",
+      "timestamp": "2026-04-15T15:27:11.819Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "xj05rjy9n",
+      "timestamp": "2026-04-15T14:25:21.619Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "m260vbpm5",
+      "timestamp": "2026-04-15T14:24:48.414Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "4hdbe55jc",
+      "timestamp": "2026-04-15T13:48:46.464Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "4jff4qlhz",
+      "timestamp": "2026-04-15T13:28:03.557Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "e2g120nzu",
+      "timestamp": "2026-04-15T13:14:05.650Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
     {
       "id": "wgxu89a5h",
       "timestamp": "2026-04-11T23:32:17.519Z",
