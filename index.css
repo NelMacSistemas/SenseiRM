@@ -113,3 +113,13 @@ body {
 input, textarea, select, button, a, [class*="animate"] {
   transition-property: none;
 }
+
+
+/* Utility to hide scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}

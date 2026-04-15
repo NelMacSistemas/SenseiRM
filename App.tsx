@@ -1561,7 +1561,7 @@ const Sidebar = () => {
               <p className="text-xs text-slate-500 uppercase tracking-tighter">{roles.find(r => r.id === currentUser?.roleId)?.name}</p>
             </div>
           </div>
-          <button onClick={logout} className="w-full flex items-center justify-center gap-2 py-2 bg-slate-700 hover:bg-red-500/20 hover:text-red-400 transition-all rounded-lg text-sm font-bold">
+          <button onClick={logout} className="w-full flex items-center justify-center gap-2 py-2 bg-slate-700 hover:bg-slate-50/50 dark:bg-slate-800/30/20 hover:text-red-400 transition-all rounded-lg text-sm font-bold">
             <LogOut size={14} /> Sair
           </button>
         </div>
@@ -1671,7 +1671,7 @@ const NotificationsPopover = () => {
       >
         <Icon name="bell" className="text-xl" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900">
+          <span className="absolute top-0 right-0 w-4 h-4 bg-slate-50/50 dark:bg-slate-800/50 text-white text-[9px] font-bold flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900">
             {unreadCount}
           </span>
         )}
@@ -1994,7 +1994,7 @@ const CalendarView = () => {
                     onClick={() => handleQuickCreate(day)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => handleDayDrop(e, day)}
-                    className={`min-h-[72px] md:min-h-[110px] lg:min-h-[160px] p-1.5 md:p-3 border-r border-b border-slate-50 dark:border-slate-800/50 transition-all hover:bg-slate-50/70 dark:hover:bg-slate-800/30 cursor-pointer group ${!isCurMonth ? 'bg-red-500 dark:bg-slate-900/50 opacity-40' : ''} ${isWeekend ? 'bg-slate-50/20 dark:bg-slate-800/10' : ''}`}
+                    className={`min-h-[72px] md:min-h-[110px] lg:min-h-[160px] p-1.5 md:p-3 border-r border-b border-slate-50 dark:border-slate-800/50 transition-all hover:bg-slate-50/70 dark:hover:bg-slate-800/30 cursor-pointer group ${!isCurMonth ? 'bg-slate-50/50 dark:bg-slate-800/30 dark:bg-slate-900/50 opacity-40' : ''} ${isWeekend ? 'bg-slate-50/20 dark:bg-slate-800/10' : ''}`}
                   >
                     <div className="flex justify-between items-start mb-3">
                       <span className={`text-[11px] font-black w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-xl md:rounded-2xl transition-all ${isToday(day) ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-110' : isCurMonth ? 'text-slate-700 dark:text-slate-300' : 'text-slate-300 dark:text-slate-600'}`}>
@@ -2043,7 +2043,7 @@ const CalendarView = () => {
                const isWeekend = day.getDay() === 0 || day.getDay() === 6;
                return (
                  <div key={day.toString()} onClick={() => handleQuickCreate(day)} className={`flex flex-col border-r border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-all cursor-pointer ${isWeekend ? 'bg-slate-50/20 dark:bg-slate-800/10' : ''}`}>
-                    <div className="p-6 text-center border-b border-slate-100 dark:border-slate-800 bg-red-500 dark:bg-slate-800/30">
+                    <div className="p-6 text-center border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 dark:bg-slate-800/30">
                       <p className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">{format(day, 'EEE', { locale: ptBR })}</p>
                       <p className={`text-2xl font-black ${isToday(day) ? 'text-primary' : 'text-slate-800 dark:text-slate-100'}`}>{format(day, 'd')}</p>
                     </div>
@@ -3110,12 +3110,12 @@ const ClientsPage = () => {
     <button
       type="button"
       onClick={() => setActiveTab(id)}
-      className={`flex items-center gap-2 px-4 py-3 border-b-4 transition-all font-black text-[10px] uppercase tracking-widest ${activeTab === id ? 'border-primary text-primary bg-primary/5 dark:bg-primary/10' : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'} ${index < currentTabIndex ? 'text-slate-600 dark:text-slate-400' : ''}`}
+      className={`flex items-center gap-3 px-5 py-4 border-b-4 transition-all font-black text-xs uppercase tracking-widest ${activeTab === id ? 'border-primary text-primary bg-primary/5 dark:bg-primary/10' : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'} ${index < currentTabIndex ? 'text-slate-600 dark:text-slate-400' : ''}`}
     >
-      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] ${activeTab === id ? 'bg-primary text-white' : (index < currentTabIndex ? 'bg-emerald-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500')}`}>
+      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] shadow-sm transform transition-transform ${activeTab === id ? 'bg-primary text-white scale-110 shadow-primary/30' : (index < currentTabIndex ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500')}`}>
         {index < currentTabIndex ? <Icon name="check" /> : index + 1}
       </div>
-      <Icon name={icon} className={activeTab === id ? 'text-primary' : ''} /> {label}
+      <Icon name={icon} className={`text-base ${activeTab === id ? 'text-primary' : ''}`} /> {label}
     </button>
   );
 
@@ -3370,8 +3370,8 @@ const ClientsPage = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
-            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-red-500 dark:bg-slate-800/30">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-5xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30 dark:bg-slate-800/30">
                <div>
                  <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">{editingClient ? editingClient.clientCode : 'Novo Cadastro Corporativo'}</span>
                  <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
@@ -3382,7 +3382,7 @@ const ClientsPage = () => {
                <button onClick={() => setIsModalOpen(false)} className="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
 
-            <div className="flex bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 px-4 overflow-x-auto scrollbar-hide">
+            <div className="flex bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 px-4 overflow-x-auto scrollbar-hide shrink-0">
                {clientTabs.map((tab, index) => (
                  <TabButton key={tab.id} id={tab.id} label={tab.label} icon={tab.icon} index={index} />
                ))}
@@ -3487,8 +3487,8 @@ const ClientsPage = () => {
                  </div>
                </div>
 
-               <div data-tab-id="end" className={activeTab === 'end' ? 'block' : 'hidden'}>
-                 <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
+               <div data-tab-id="end" className={`flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900 custom-scrollbar ${activeTab === 'end' ? 'block' : 'hidden'}`}>
+                 <div className="space-y-8 animate-in slide-in-from-left-4 duration-300 pb-20">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                        <div className="space-y-1">
                          <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1 flex justify-between items-center">
@@ -3550,8 +3550,8 @@ const ClientsPage = () => {
                  </div>
                </div>
 
-               <div data-tab-id="cont" className={activeTab === 'cont' ? 'block' : 'hidden'}>
-                 <div className="space-y-6 animate-in slide-in-from-left-4 duration-300">
+               <div data-tab-id="cont" className={`flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900 custom-scrollbar ${activeTab === 'cont' ? 'block' : 'hidden'}`}>
+                 <div className="space-y-6 animate-in slide-in-from-left-4 duration-300 pb-20">
                     <section className="space-y-6">
                        <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Canais de Contato Institucional</h4>
                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -3624,7 +3624,7 @@ const ClientsPage = () => {
                  </div>
                </div>
 
-               <div data-tab-id="fin" className={activeTab === 'fin' ? 'block' : 'hidden'}>
+               <div data-tab-id="fin" className={`flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900 custom-scrollbar ${activeTab === 'fin' ? 'block' : 'hidden'}`}>
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                        <div className="space-y-4">
@@ -3703,7 +3703,7 @@ const ClientsPage = () => {
                  </div>
                </div>
 
-               <div data-tab-id="crm" className={activeTab === 'crm' ? 'block' : 'hidden'}>
+               <div data-tab-id="crm" className={`flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900 custom-scrollbar ${activeTab === 'crm' ? 'block' : 'hidden'}`}>
                  <div className="space-y-6 animate-in slide-in-from-left-4 duration-300">
                     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                        <div className="space-y-1">
@@ -3823,7 +3823,7 @@ const ClientsPage = () => {
                  </div>
                </div>
 
-               <div data-tab-id="anexos" className={activeTab === 'anexos' ? 'block' : 'hidden'}>
+               <div data-tab-id="anexos" className={`flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900 custom-scrollbar ${activeTab === 'anexos' ? 'block' : 'hidden'}`}>
                  <div className="space-y-6 animate-in slide-in-from-left-4 duration-300">
                     <section className="space-y-6">
                       <AttachmentsManager 
@@ -3942,7 +3942,7 @@ const ClientsPage = () => {
             </fieldset>
           </form>
 
-            <div className="p-6 md:p-8 pb-32 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50">
+            <div className="p-6 md:p-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50/50">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-8 py-3 rounded-2xl border-2 border-slate-200 font-bold text-slate-500 hover:bg-white transition-all uppercase text-[10px] tracking-widest text-center">{isViewOnly ? 'Fechar' : 'Cancelar'}</button>
                 {!isViewOnly && (
                   <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
@@ -4621,8 +4621,8 @@ const TasksPage = () => {
 
       {isHistoryModalOpen && historyTask && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
-            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-red-500">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-5xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
               <div>
                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">{historyTask.taskNumber}</span>
                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Timeline de Ações</h3>
@@ -4687,7 +4687,7 @@ const TasksPage = () => {
                 </div>
               )}
             </div>
-            <div className="p-6 md:p-8 pb-32 border-t border-slate-100 flex justify-end bg-red-500">
+            <div className="p-6 md:p-8 border-t border-slate-100 flex justify-end bg-slate-50/50 dark:bg-slate-800/30">
                <button onClick={() => setIsHistoryModalOpen(false)} className="w-full sm:w-auto px-10 py-3 rounded-2xl bg-slate-900 text-white font-black text-xs uppercase shadow-lg hover:bg-slate-800 transition-all text-center">Fechar Timeline</button>
             </div>
           </div>
@@ -4696,8 +4696,8 @@ const TasksPage = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
-            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-red-500">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-5xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
               <div>
                 <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">{editingTask ? editingTask.taskNumber : 'Identificador Automático'}</span>
                 <h3 className="text-2xl font-black text-slate-800 tracking-tight">Gerenciamento de Atividade</h3>
@@ -5194,10 +5194,10 @@ const UsersPage = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
           <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-5xl h-fit max-h-[95vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
-            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-red-500 dark:bg-slate-800/30 shrink-0">
+            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30 dark:bg-slate-800/30 shrink-0">
                <div>
                  <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">Gestão de Perfil</span>
-                 <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">REVISADO - REVISADO - Acesso ao Sistema</h3>
+                 <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">Acesso ao Sistema</h3>
                </div>
                <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
             </div>
@@ -5272,7 +5272,7 @@ const UsersPage = () => {
               )}
             </form>
             </div>
-            <div className="flex flex-col sm:flex-row justify-end gap-3 md:gap-4 pt-6 md:pt-8 border-t border-slate-50 shrink-0">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 md:gap-4 p-6 md:p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-10 py-2 md:py-3 rounded-2xl border-2 border-slate-200 text-slate-500 font-black text-xs uppercase hover:bg-slate-50 transition-all">Cancelar</button>
                 <button type="submit" form="userForm" className="w-full sm:w-auto px-14 py-2 md:py-3 rounded-2xl bg-primary text-white font-black text-xs uppercase shadow-xl hover:brightness-110 transition-all">Confirmar</button>
             </div>
@@ -5377,8 +5377,8 @@ const TemplatesTab = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
-            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-red-500 shrink-0">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-5xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            <div className="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
                <div>
                  <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">{editingTemplate ? 'Edição' : 'Novo Cadastro'}</span>
                  <h3 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Template de Mensagem</h3>
@@ -5583,8 +5583,8 @@ const RolesTab = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
-            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-red-500 dark:bg-slate-800/30 shrink-0">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-5xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30 dark:bg-slate-800/30 shrink-0">
                <div>
                  <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">{editingRole ? 'Edição' : 'Novo Cadastro'}</span>
                  <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Função de Acesso</h3>
@@ -5606,7 +5606,7 @@ const RolesTab = () => {
 
               <div className="space-y-4">
                 <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest pt-4">Matriz de Permissões</h4>
-                <div className="w-full overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-[2rem] bg-red-500 dark:bg-slate-800/30 custom-scrollbar">
+                <div className="w-full overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-[2rem] bg-slate-50/50 dark:bg-slate-800/30 dark:bg-slate-800/30 custom-scrollbar">
                   <table className="w-full text-left border-collapse min-w-[600px]">
                     <thead className="bg-slate-100/50 dark:bg-slate-800/50">
                       <tr>
@@ -6313,7 +6313,7 @@ const ConfiguracoesPage = () => {
 
       {isSectorModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 p-6 md:p-8">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-5xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 p-6 md:p-8">
             <div className="flex justify-between items-center mb-6 md:mb-8">
                <h3 className="text-xl md:text-2xl font-black text-slate-800">{editingSector ? 'Configurar Setor' : 'Novo Setor'}</h3>
                <button onClick={() => setIsSectorModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
@@ -6347,7 +6347,7 @@ const ConfiguracoesPage = () => {
 
       {isCategoryModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 p-6 md:p-8">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-5xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 p-6 md:p-8">
             <div className="flex justify-between items-center mb-6 md:mb-8">
                <h3 className="text-xl md:text-2xl font-black text-slate-800">{editingCategory ? 'Configurar Categoria' : 'Nova Categoria'}</h3>
                <button onClick={() => setIsCategoryModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
@@ -6375,7 +6375,7 @@ const ConfiguracoesPage = () => {
       )}
       {isCustomFieldModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 p-6 md:p-8">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-5xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 p-6 md:p-8">
             <div className="flex justify-between items-center mb-6 md:mb-8">
                <h3 className="text-xl md:text-2xl font-black text-slate-800">{editingCustomField ? 'Editar Campo' : 'Novo Campo Personalizado'}</h3>
                <button onClick={() => setIsCustomFieldModalOpen(false)} className="text-slate-300 hover:text-red-500 transition-colors"><Icon name="times" className="text-2xl" /></button>
@@ -6439,7 +6439,7 @@ const ConfiguracoesPage = () => {
 
       {deleteConfirm && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-6xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 p-6 md:p-8">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-5xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 p-6 md:p-8">
             <div className="w-16 h-16 md:w-20 md:h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto">
               <AlertTriangle size={32} className="text-red-500 md:w-10 md:h-10" />
             </div>
@@ -6460,7 +6460,7 @@ const ConfiguracoesPage = () => {
                   else deleteClientCategory(deleteConfirm.id);
                   setDeleteConfirm(null);
                 }}
-                className="flex-1 py-2 md:py-3 rounded-2xl bg-red-500 text-white font-bold shadow-lg shadow-red-200 hover:bg-red-600 transition-all text-sm md:text-base"
+                className="flex-1 py-2 md:py-3 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 text-white font-bold shadow-lg shadow-red-200 hover:bg-red-600 transition-all text-sm md:text-base"
               >
                 Confirmar
               </button>
@@ -6600,7 +6600,7 @@ const AuditoriaPage = () => {
           {canClear && (
             <button 
               onClick={() => setIsClearModalOpen(true)} 
-              className="text-red-600 bg-red-50 px-5 py-3 rounded-2xl text-xs font-black uppercase border border-red-100 hover:bg-red-500 hover:text-white transition-all shadow-sm whitespace-nowrap flex-1 md:flex-none justify-center flex items-center"
+              className="text-red-600 bg-red-50 px-5 py-3 rounded-2xl text-xs font-black uppercase border border-red-100 hover:bg-slate-50/50 dark:bg-slate-800/30 hover:text-white transition-all shadow-sm whitespace-nowrap flex-1 md:flex-none justify-center flex items-center"
             >
               <Icon name="trash" className="inline-block mr-2 -mt-1" />
               Limpar Histórico
@@ -7501,7 +7501,7 @@ const MainLayout = () => {
       <BottomNavigation />
       <div className="flex-1 lg:ml-64 min-h-screen flex flex-col w-full">
         <Header title={titles[Object.keys(titles).find(k => location.pathname.startsWith(k)) || ''] || <SenseiLogo className="text-xl" />} />
-        <main className="flex-1 pb-32 lg:pb-16 w-full max-w-[100vw] overflow-x-hidden">
+        <main className="flex-1 lg:pb-16 w-full max-w-[100vw] overflow-x-hidden">
           {/* Chave da rota para garantir re-animação a cada navegação */}
           <Routes location={location} key={location.pathname}>
             <Route path="/dashboard"     element={<PageTransition><Dashboard /></PageTransition>} />
