@@ -119,6 +119,35 @@ const iconMap: Record<string, any> = {
   'magic': Wand2,
   'message-circle': MessageCircle,
   'spinner': Loader2,
+
+  'eye': Eye,
+  'cpu': Cpu,
+  'folder-open': FolderOpen,
+  'exclamation-triangle': ExclamationTriangle,
+  'key': Key,
+  'times': X,
+  'arrow-left': ArrowLeft,
+  'arrow-right': ArrowRight,
+  'edit-alt': EditAlt,
+  'camera': Camera,
+  'copy': Copy,
+  'save': Save,
+  'calendar-alt': Calendar,
+  'envelope': Envelope,
+  'loader': Loader2,
+  'file-text': FileAlt,
+  'code': Code,
+
+  // All other previously found missing icons in the first batch
+  'id-card': UserIcon,
+  'map-marker-alt': MapPin,
+  'wallet': Wallet,
+  'paperclip': Paperclip,
+  'history': History,
+  'users-cog': Users,
+  'user-tie': Briefcase,
+  'shield-check': ShieldCheck,
+
 };
 
 // --- Error Boundary ---
@@ -176,7 +205,7 @@ const getDetailedDiff = (oldObj: any, newObj: any, labels: Record<string, string
     const newVal = newObj[key] === undefined || newObj[key] === null || newObj[key] === '' ? 'Vazio' : String(newObj[key]);
     
     if (oldVal !== newVal) {
-      changes.push(`${labels[key]}: "${oldVal}" â†’ "${newVal}"`);
+      changes.push(`${labels[key]}: "${oldVal}" → "${newVal}"`);
       diff.push({ field: labels[key], oldValue: oldVal, newValue: newVal });
     }
   });
@@ -953,8 +982,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, [currentUser?.tema]);
 
   useEffect(() => {
-    document.title = `SenseiRM - ${systemSettings.companyName}`;
-  }, [systemSettings.companyName]);
+    document.title = `SenseiRM - ${(appName || systemSettings.companyName)}`;
+  }, [(appName || systemSettings.companyName)]);
 
   const login = async (email: string, pass: string) => {
     try {
@@ -1470,7 +1499,7 @@ const AttachmentsManager = ({ attachments = [], onUpdate, canEdit }: { attachmen
                     {att.name}
                   </a>
                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                    {formatSize(att.size)} â€¢ {new Date(att.uploadedAt).toLocaleDateString()}
+                    {formatSize(att.size)} • {new Date(att.uploadedAt).toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -1524,17 +1553,17 @@ const Sidebar = () => {
 
       <div className={`w-64 bg-slate-900 h-screen flex flex-col fixed left-0 top-0 text-slate-300 shadow-xl z-[90] transition-transform duration-300 hidden lg:flex`}>
         <div className="p-6 border-b border-slate-800 flex items-center gap-3">
-          {systemSettings.appLogo ? (
-            <img src={systemSettings.appLogo} alt="SenseiRM" className="w-10 h-10 rounded-lg object-contain bg-white/10 p-1" />
+          {(appLogo || systemSettings.appLogo) ? (
+            <img src={appLogo || systemSettings.appLogo} alt="SenseiRM" className="w-10 h-10 rounded-lg object-contain bg-white/10 p-1" />
           ) : (
             // VIS-04: Fallback usa inicial da empresa em vez do texto fixo 'SEN'
             <div className="bg-primary w-10 h-10 rounded-lg text-white flex items-center justify-center font-black text-xl tracking-tighter shadow-lg">
-              {systemSettings.companyName?.charAt(0)?.toUpperCase() || 'S'}
+              {(appName || systemSettings.companyName)?.charAt(0)?.toUpperCase() || 'S'}
             </div>
           )}
           <div>
             <h1 className="text-white leading-none"><SenseiLogo className="text-lg" /></h1>
-            <span className="text-[10px] text-slate-500 uppercase tracking-widest">{systemSettings.companyName}</span>
+            <span className="text-[10px] text-slate-500 uppercase tracking-widest">{(appName || systemSettings.companyName)}</span>
           </div>
         </div>
         <nav className="flex-1 overflow-y-auto py-4">
@@ -4392,7 +4421,7 @@ const TasksPage = () => {
           valNew = sectors.find(s => s.id === valNewRaw)?.nome || valNewRaw;
         }
 
-        changes.push(`${labels[key]}: "${valOld}" â†’ "${valNew}"`);
+        changes.push(`${labels[key]}: "${valOld}" → "${valNew}"`);
       }
     });
 
@@ -4405,7 +4434,7 @@ const TasksPage = () => {
       if (!ost) {
         changes.push(`Subtarefa adicionada: "${nst.title}"`);
       } else if (ost.completed !== nst.completed) {
-        changes.push(`Subtarefa "${nst.title}": ${ost.completed ? 'Concluída â†’ Pendente' : 'Pendente â†’ Concluída'}`);
+        changes.push(`Subtarefa "${nst.title}": ${ost.completed ? 'Concluída → Pendente' : 'Pendente → Concluída'}`);
       }
     });
 
@@ -4579,7 +4608,7 @@ const TasksPage = () => {
         fromStatus: task.status,
         toStatus: status,
         action: `Movido via Kanban`,
-        changes: [`Status: "${task.status}" â†’ "${status}"`],
+        changes: [`Status: "${task.status}" → "${status}"`],
         justification: 'Movimentação rápida pelo quadro Kanban',
         userId: currentUser?.id || 'sys',
         userName: currentUser?.nome || 'Sistema'
@@ -4659,7 +4688,7 @@ const TasksPage = () => {
         <div className={`absolute left-0 top-0 bottom-0 w-2 ${t.prioridade === TaskPriority.CRITICAL ? 'bg-red-600' : t.prioridade === TaskPriority.HIGH ? 'bg-orange-500' : 'bg-blue-400'}`} />
         <div className="flex justify-between items-start pl-3 mb-4">
           <div>
-             <span className="text-xs font-black text-slate-500 uppercase tracking-widest">{t.taskNumber} â€¢ {t.tipo}</span>
+             <span className="text-xs font-black text-slate-500 uppercase tracking-widest">{t.taskNumber} • {t.tipo}</span>
              <h4 className="text-lg font-extrabold text-slate-800 leading-tight mt-1">{t.titulo}</h4>
           </div>
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -6071,13 +6100,13 @@ const ConfiguracoesPage = () => {
                  </div>
                  <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-2xl border border-slate-100 dark:border-slate-800">
                     <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Nome da Empresa</label>
-                    <input name="companyName" key={systemSettings.companyName} required defaultValue={systemSettings.companyName} placeholder="Sua Empresa" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base text-slate-800 dark:text-slate-200" />
+                    <input name="companyName" key={(appName || systemSettings.companyName)} required defaultValue={(appName || systemSettings.companyName)} placeholder="Sua Empresa" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base text-slate-800 dark:text-slate-200" />
                  </div>
                  <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-2xl border border-slate-100 dark:border-slate-800">
                     <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Logo do Sistema</label>
                     <div className="flex items-center gap-4">
                       {systemSettings.appLogo && (
-                        <img src={systemSettings.appLogo} alt="Logo" className="w-12 h-12 rounded-lg object-contain bg-white border border-slate-200 dark:border-slate-700 p-1" />
+                        <img src={appLogo || systemSettings.appLogo} alt="Logo" className="w-12 h-12 rounded-lg object-contain bg-white border border-slate-200 dark:border-slate-700 p-1" />
                       )}
                       <input type="file" name="appLogo" accept="image/*" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base text-slate-800 dark:text-slate-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all cursor-pointer" />
                     </div>
@@ -6426,7 +6455,7 @@ const ConfiguracoesPage = () => {
                  </div>
                  <div className="space-y-1">
                     <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">Senha</label>
-                    <input name="pass" type="password" required defaultValue={emailSettings.pass} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
+                    <input name="pass" type="password" required defaultValue={emailSettings.pass} placeholder="••••••••" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 bg-white focus:bg-white outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base" />
                  </div>
                  <div className="space-y-1 md:col-span-2 flex items-center gap-3 bg-slate-50 p-4 md:p-6 rounded-xl md:rounded-2xl border border-slate-100">
                     <input name="secure" type="checkbox" id="secure" defaultChecked={emailSettings.secure} className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary" />
@@ -6993,7 +7022,7 @@ const AuditoriaPage = () => {
                       <span className="text-xs font-bold text-slate-700">{log.userName}</span>
                       <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 font-mono">
                         <span>{new Date(log.timestamp).toLocaleDateString()}</span>
-                        <span>â€¢</span>
+                        <span>•</span>
                         <span>{new Date(log.timestamp).toLocaleTimeString()}</span>
                       </div>
                     </div>
@@ -7071,8 +7100,8 @@ const SobrePage = () => {
         
         <div className="relative z-10 space-y-8">
           <div className="flex items-center justify-center gap-4">
-            {systemSettings.appLogo ? (
-              <img src={systemSettings.appLogo} alt="SenseiRM" className="w-12 h-12 sm:w-16 sm:h-16 object-contain drop-shadow-2xl" />
+            {(appLogo || systemSettings.appLogo) ? (
+              <img src={appLogo || systemSettings.appLogo} alt="SenseiRM" className="w-12 h-12 sm:w-16 sm:h-16 object-contain drop-shadow-2xl" />
             ) : (
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary rounded-3xl flex items-center justify-center shadow-xl rotate-3">
                 <Icon name="users" className="text-white text-2xl sm:text-3xl" />
@@ -7241,7 +7270,7 @@ const SobrePage = () => {
       {/* Footer Micro-Label */}
       <div className="text-center pt-8">
         <p className="text-[9px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.5em]">
-          Â© 2026 NelMac Sistemas â€¢ Todos os direitos reservados
+          Â© 2026 NelMac Sistemas • Todos os direitos reservados
         </p>
       </div>
     </div>
@@ -7264,8 +7293,8 @@ const LoginPage = () => {
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-primary/5 rounded-full blur-[150px]" />
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[4rem] shadow-2xl p-8 sm:p-14 z-10 text-center border border-slate-100 dark:border-slate-800">
-        {systemSettings.appLogo ? (
-          <img src={systemSettings.appLogo} alt="SenseiRM" className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-8 sm:mb-10 object-contain drop-shadow-xl" />
+        {(appLogo || systemSettings.appLogo) ? (
+          <img src={appLogo || systemSettings.appLogo} alt="SenseiRM" className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-8 sm:mb-10 object-contain drop-shadow-xl" />
         ) : (
           <div className="inline-block p-5 sm:p-7 bg-primary rounded-[2rem] sm:rounded-2xl mb-8 sm:mb-10 shadow-primary/20">
             <Icon name="users-cog" className="text-4xl sm:text-5xl text-white" />
@@ -7274,7 +7303,7 @@ const LoginPage = () => {
         <h2 className="text-slate-900 dark:text-slate-50 mb-2">
           <SenseiLogo className="text-3xl sm:text-4xl" />
         </h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-8 sm:mb-12 uppercase tracking-widest">{systemSettings.companyName}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-8 sm:mb-12 uppercase tracking-widest">{(appName || systemSettings.companyName)}</p>
         <form onSubmit={handleLogin} className="space-y-6 sm:space-y-8 text-left">
           <input 
             name="email" 
@@ -7288,7 +7317,7 @@ const LoginPage = () => {
             type="password" 
             required 
             className="w-full px-5 sm:px-7 py-4 sm:py-5 rounded-2xl sm:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 dark:text-slate-50 outline-none focus:border-primary focus:bg-white dark:focus:bg-slate-900 font-bold transition-all shadow-inner text-sm sm:text-base" 
-            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" 
+            placeholder="••••••••" 
           />
           {error && (
             <div className="p-4 bg-red-50 border-2 border-red-100 rounded-2xl flex items-center gap-3 text-red-600">

@@ -474,6 +474,14 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Public Settings for Login Screen
+app.get('/api/public-settings', (req, res) => {
+  res.json({
+    companyName: (db.systemSettings as any)?.companyName || (db.systemSettings as any)?.appSlogan || 'CRM Ecosystem',
+    appLogo: db.systemSettings?.appLogo || ''
+  });
+});
+
 // Auth
 app.post('/api/auth/login', loginLimiter, (req, res) => {
   const { email, pass: incomingPass, senha } = req.body;

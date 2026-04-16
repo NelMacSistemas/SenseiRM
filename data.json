@@ -294,12 +294,12 @@
       "titulo": "Teste Tarefa 1",
       "descricao": "afafasfasfsafasfsa",
       "tipo": "Melhoria",
-      "solicitanteId": "1",
+      "solicitanteId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
       "responsavelId": "1",
       "setorId": "",
       "interessados": "nelsonrsmacedo@gmail.com",
       "prioridade": "Crítica",
-      "status": "Em análise",
+      "status": "Em execução",
       "dataInicio": "2026-04-11",
       "dataConclusaoReal": "2026-05-01",
       "tempoGasto": "",
@@ -398,6 +398,32 @@
           "justification": "Movimentação rápida pelo quadro Kanban",
           "userId": "1",
           "userName": "Administrador"
+        },
+        {
+          "id": "138d9427-91c3-4d7c-b8f5-5e6d496cc40d",
+          "timestamp": "2026-04-16T22:13:31.949Z",
+          "fromStatus": "Em análise",
+          "toStatus": "Em análise",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Solicitante: \"Administrador\" â†’ \"Nelson Macedo\""
+          ],
+          "justification": "Ajuste de parà¢metros técnicos.",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "6233620e-bf0e-461a-9e39-97b31f646d15",
+          "timestamp": "2026-04-16T22:14:35.486Z",
+          "fromStatus": "Em análise",
+          "toStatus": "Em execução",
+          "action": "Movido via Kanban",
+          "changes": [
+            "Status: \"Em análise\" â†’ \"Em execução\""
+          ],
+          "justification": "Movimentação rápida pelo quadro Kanban",
+          "userId": "1",
+          "userName": "Administrador"
         }
       ]
     },
@@ -406,7 +432,7 @@
       "descricao": "ajustes no campo conclusao",
       "tipo": "Solicitação",
       "solicitanteId": "1",
-      "responsavelId": "1",
+      "responsavelId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
       "setorId": "",
       "interessados": "",
       "prioridade": "Média",
@@ -461,6 +487,33 @@
             "Tarefa inicializada com os dados básicos."
           ],
           "justification": "Criação inicial",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "a97f8a5e-615d-4972-8c24-b001de84e32c",
+          "timestamp": "2026-04-16T22:14:52.777Z",
+          "fromStatus": "Aberta",
+          "toStatus": "Aberta",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Solicitante: \"Administrador\" â†’ \"Nelson Macedo\""
+          ],
+          "justification": "Ajuste de parà¢metros técnicos.",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "a2bfa600-f615-4185-a650-8ce399d6a6f5",
+          "timestamp": "2026-04-16T22:15:05.674Z",
+          "fromStatus": "Aberta",
+          "toStatus": "Aberta",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Solicitante: \"Nelson Macedo\" â†’ \"Administrador\"",
+            "Responsável: \"Administrador\" â†’ \"Nelson Macedo\""
+          ],
+          "justification": "Ajuste de parà¢metros técnicos.",
           "userId": "1",
           "userName": "Administrador"
         }
@@ -575,6 +628,126 @@
   ],
   "auditLogs": [
     {
+      "id": "umoyu1phg",
+      "timestamp": "2026-04-16T22:17:30.275Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ejtynsx0y",
+      "timestamp": "2026-04-16T22:15:05.714Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-002 alterada. Alterações: [ID Responsável: \"1\" â†’ \"86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2\"]",
+      "entityId": "e178b8ae-12a5-495b-bfa4-0a9934329e2a",
+      "diff": [
+        {
+          "field": "ID Responsável",
+          "oldValue": "1",
+          "newValue": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "9sverun8a",
+      "timestamp": "2026-04-16T22:14:52.820Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-002 alterada. Nenhuma alteração nos campos principais.",
+      "entityId": "e178b8ae-12a5-495b-bfa4-0a9934329e2a",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "xo4cxqwwu",
+      "timestamp": "2026-04-16T22:14:35.820Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Alterações: [Status: \"Em análise\" â†’ \"Em execução\"]",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [
+        {
+          "field": "Status",
+          "oldValue": "Em análise",
+          "newValue": "Em execução"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "g9kqt6t7q",
+      "timestamp": "2026-04-16T22:13:31.995Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Nenhuma alteração nos campos principais.",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "5foozgdz7",
+      "timestamp": "2026-04-16T22:13:06.864Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "a5lp6wvpc",
+      "timestamp": "2026-04-16T21:29:27.104Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "y4no2jyhn",
+      "timestamp": "2026-04-16T21:27:38.723Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "t4g6lv7ox",
+      "timestamp": "2026-04-16T21:26:40.176Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "9uve2wlfx",
+      "timestamp": "2026-04-16T21:26:03.491Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
       "id": "4l2um5oj1",
       "timestamp": "2026-04-16T20:52:59.977Z",
       "userId": "1",
@@ -591,7 +764,7 @@
       "userName": "Administrador",
       "action": "UPDATE",
       "module": "CLIENTES",
-      "details": "Cliente Nelson Ronaldo Dos Santos Macedo atualizado. Alterações: [Status Base: \"ativo\" â†’ \"bloqueado\"]",
+      "details": "Cliente Nelson Ronaldo Dos Santos Macedo atualizado. Alterações: [Status Base: \"ativo\" → \"bloqueado\"]",
       "entityId": "a33114b0-74f7-4ce4-8619-044fbf0992a2",
       "diff": [
         {
@@ -609,7 +782,7 @@
       "userName": "Administrador",
       "action": "UPDATE",
       "module": "CLIENTES",
-      "details": "Cliente Nelson Ronaldo Dos Santos Macedo atualizado. Alterações: [Status Base: \"bloqueado\" â†’ \"ativo\"]",
+      "details": "Cliente Nelson Ronaldo Dos Santos Macedo atualizado. Alterações: [Status Base: \"bloqueado\" → \"ativo\"]",
       "entityId": "a33114b0-74f7-4ce4-8619-044fbf0992a2",
       "diff": [
         {
@@ -647,7 +820,7 @@
       "userName": "Administrador",
       "action": "UPDATE",
       "module": "CLIENTES",
-      "details": "Cliente Nelson Ronaldo Dos Santos Macedo atualizado. Alterações: [Status Base: \"ativo\" â†’ \"bloqueado\"]",
+      "details": "Cliente Nelson Ronaldo Dos Santos Macedo atualizado. Alterações: [Status Base: \"ativo\" → \"bloqueado\"]",
       "entityId": "a33114b0-74f7-4ce4-8619-044fbf0992a2",
       "diff": [
         {
