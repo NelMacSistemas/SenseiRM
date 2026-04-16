@@ -63,7 +63,7 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:;");
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' ws: wss: https://brasilapi.com.br https://viacep.com.br https://publica.cnpj.ws;");
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   next();
 });
@@ -844,23 +844,33 @@ app.get('/api/lookup/cnpj/:cnpj', authenticateToken, async (req: any, res: any) 
   }
 
   try {
-    console.log(`[LOOKUP] Consultando CNPJ: ${cleanCnpj}`);
+    console.log(`[LOOKUP] Consultando CNPJ via SERVIDOR: ${cleanCnpj}`);
     // Try BrasilAPI first
     const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`, {
-      headers: { 'User-Agent': 'SenseiRM-Proxy/1.0' }
+      headers: { 
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json'
+      },
+      signal: AbortSignal.timeout(15000)
     });
     
     if (response.ok) {
-      const data = await response.json();
-      console.log(`[LOOKUP] CNPJ ${cleanCnpj} encontrado na BrasilAPI.`);
-      return res.json(data);
+        const data = await response.json();
+        console.log(`[LOOKUP] CNPJ ${cleanCnpj} encontrado na BrasilAPI.`);
+        return res.json(data);
     }
     
+    // Log verbose error to file for AI diagnosis
+    const errorBody = await response.text().catch(() => 'N/A');
+    const logEntry = `[${new Date().toISOString()}] CNPJ: ${cleanCnpj} | Provider: BrasilAPI | Status: ${response.status} | Body: ${errorBody.substring(0, 200)}\n`;
+    fs.appendFileSync(path.join(process.cwd(), 'lookup_errors.log'), logEntry);
+
     console.log(`[LOOKUP] BrasilAPI retornou status ${response.status}. Tentando fallback...`);
 
     // Fallback to Publica CNPJ
     const fallback = await fetch(`https://publica.cnpj.ws/cnpj/${cleanCnpj}`, {
-      headers: { 'User-Agent': 'SenseiRM-Proxy/1.0' }
+      headers: { 'User-Agent': 'SenseiRM-Proxy/1.0' },
+      signal: AbortSignal.timeout(15000)
     });
     
     if (fallback.ok) {
@@ -869,10 +879,16 @@ app.get('/api/lookup/cnpj/:cnpj', authenticateToken, async (req: any, res: any) 
       return res.json(data);
     }
 
-    console.log(`[LOOKUP] CNPJ ${cleanCnpj} não localizado em nenhum provedor.`);
-    res.status(404).json({ error: 'CNPJ não localizado' });
-  } catch (err) {
-    console.error('Lookup CNPJ Error:', err);
+    const fallbackBody = await fallback.text().catch(() => 'N/A');
+    const logEntryFallback = `[${new Date().toISOString()}] CNPJ: ${cleanCnpj} | Provider: Publica | Status: ${fallback.status} | Body: ${fallbackBody.substring(0, 200)}\n`;
+    fs.appendFileSync(path.join(process.cwd(), 'lookup_errors.log'), logEntryFallback);
+
+    console.log(`[LOOKUP] CNPJ ${cleanCnpj} não localizado.`);
+    res.status(fallback.status || 404).json({ error: 'CNPJ não localizado', status: fallback.status });
+  } catch (err: any) {
+    const logEntryErr = `[${new Date().toISOString()}] CNPJ: ${cleanCnpj} | CRITICAL ERROR: ${err.message}\n`;
+    fs.appendFileSync(path.join(process.cwd(), 'lookup_errors.log'), logEntryErr);
+    console.error('Lookup CNPJ Error:', err.message);
     res.status(500).json({ error: 'Erro ao conectar aos serviços de consulta' });
   }
 });
@@ -897,26 +913,31 @@ app.get('/api/lookup/cep/:cep', authenticateToken, async (req: any, res: any) =>
       return res.json(data);
     }
 
-    console.log(`[LOOKUP] CEP ${cleanCep} não encontrado na BrasilAPI. Tentando ViaCEP...`);
+    console.log(`[LOOKUP] CEP ${cleanCep} não encontrado na BrasilAPI (Status: ${response.status}). Tentando ViaCEP...`);
 
     const fallback = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`, {
-      headers: { 'User-Agent': 'SenseiRM-Proxy/1.0' }
+      headers: { 'User-Agent': 'SenseiRM-Proxy/1.0' },
+      signal: AbortSignal.timeout(10000)
     });
-    const data = await fallback.json();
-    if (!data.erro) {
-      console.log(`[LOOKUP] CEP ${cleanCep} encontrado no ViaCEP.`);
-      return res.json(data);
+    
+    if (fallback.ok) {
+      const data = await fallback.json();
+      if (!data.erro) {
+        console.log(`[LOOKUP] CEP ${cleanCep} encontrado no ViaCEP.`);
+        return res.json(data);
+      }
     }
     
-    console.log(`[LOOKUP] CEP ${cleanCep} não localizado.`);
+    console.log(`[LOOKUP] CEP ${cleanCep} não localizado (BrasilAPI: ${response.status}, ViaCEP: ${fallback.status})`);
     res.status(404).json({ error: 'CEP não localizado' });
-  } catch (err) {
-    console.error('Lookup CEP Error:', err);
+  } catch (err: any) {
+    console.error('Lookup CEP Error:', err.message);
     res.status(500).json({ error: 'Erro ao conectar aos serviços de consulta' });
   }
 });
 
 app.get('/api/diag/connectivity', authenticateToken, async (req: any, res: any) => {
+  console.log(`[DIAG] Connectivity check requested by user: ${req.user?.nome || 'Unknown'}`);
   const results: any = {
     timestamp: new Date().toISOString(),
     nodeVersion: process.version,

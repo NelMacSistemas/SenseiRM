@@ -2630,7 +2630,7 @@ const ClientsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewOnly, setIsViewOnly] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [activeTab, setActiveTab] = useState<'id' | 'end' | 'cont' | 'fin' | 'crm' | 'anexos' | 'interacoes'>('id');
+  const [activeTab, setActiveTab] = useState<'id' | 'end' | 'cont' | 'fin' | 'crm' | 'anexos' | 'interacoes' | 'diag'>('id');
   const [contactPeople, setContactPeople] = useState<ContactPerson[]>([]);
   const [tipoPessoa, setTipoPessoa] = useState<'Física' | 'Jurídica'>('Jurídica');
   const [searchTerm, setSearchTerm] = useState('');
@@ -2819,15 +2819,15 @@ const ClientsPage = () => {
         const allOk = results.tests.every((t: any) => t.ok);
         if (!allOk) {
           toast({ 
-            title: 'Falha de Conexão', 
-            message: 'O servidor está com dificuldades para acessar a internet. Ative o "Modo de Compatibilidade".', 
+            title: 'Bloqueio Detectado', 
+            message: 'O servidor está sem acesso à internet. Use o Modo de Compatibilidade.', 
             type: 'warning' 
           });
-          setIsProxyMode(false);
         } else {
-          toast({ title: 'Tudo OK!', message: 'O servidor está conectado corretamente à internet.', type: 'success' });
-          setIsProxyMode(true);
+          toast({ title: 'Diagnóstico Concluído', message: 'Servidor conectado!', type: 'success' });
         }
+      } else {
+        toast({ title: 'Falha no Servidor', message: `Erro ${response.status}: Não foi possível iniciar o diagnóstico.`, type: 'error' });
       }
     } catch (err) {
       toast({ title: 'Erro de Diagnóstico', message: 'Não foi possível comunicar com o servidor de diagnóstico.', type: 'error' });
@@ -2840,88 +2840,82 @@ const ClientsPage = () => {
     if (cleanCnpj === lastCnpjSearched.current) return;
     lastCnpjSearched.current = cleanCnpj;
     setLoadingCnpj(true);
+    
+    // Mostramos apenas UM toast de busca no início de todo o processo
     toast({ message: `Buscando dados do CNPJ ${formatDocumento(cleanCnpj)}...`, type: 'info' });
     
-    // Internal track for the dual-mode logic within a single pass
     let currentLookupMode = isProxyMode ? 'proxy' : 'browser';
     let data = null;
 
     try {
-      // --- PHASE 1: Try current mode ---
+      // --- FASE 1: TENTATIVA VIA PROXY SERVIDOR ---
       if (currentLookupMode === 'proxy') {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`/api/lookup/cnpj/${cleanCnpj}`, {
-          signal,
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`/api/lookup/cnpj/${cleanCnpj}`, {
+            signal,
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
 
-        if (response.ok) {
-          data = await response.json();
-        } else {
-          throw new Error('SERVER_FIREWALL_OR_FAIL');
-        }
-      } else {
-        // Direct browser mode logic
-        const resBrasil = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`, { signal });
-        if (resBrasil.ok) {
-          data = await resBrasil.json();
-        } else {
-          const resPublica = await fetch(`https://publica.cnpj.ws/cnpj/${cleanCnpj}`, { signal });
-          if (resPublica.ok) {
-            const temp = await resPublica.json();
-            data = {
-              razao_social: temp.razao_social,
-              nome_fantasia: temp.estabelecimento?.nome_fantasia,
-              estabelecimento: temp.estabelecimento
-            };
+          if (response.ok) {
+            data = await response.json();
+          } else {
+            console.warn(`[Lookup] Servidor retornou status ${response.status}`);
           }
+        } catch (e) {
+          console.error("[Lookup] Erro na requisição via servidor:", e);
         }
       }
 
-      // --- CRITICAL FALLBACK (PHASE 2) ---
-      // If phase 1 failed and we were in proxy mode, try browser mode immediately
-      if (!data && currentLookupMode === 'proxy') {
-        toast({ title: 'Bloqueio Detectado', message: 'Servidor falhou. Tentando via Navegador...', type: 'warning' });
-        setIsProxyMode(false); // Permanently switch for next times
-        currentLookupMode = 'browser';
-        
-        const resBrasil = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`, { signal });
-        if (resBrasil.ok) {
-          data = await resBrasil.json();
-        } else {
-          const resPublica = await fetch(`https://publica.cnpj.ws/cnpj/${cleanCnpj}`, { signal });
-          if (resPublica.ok) {
-            const temp = await resPublica.json();
-            data = {
-              razao_social: temp.razao_social,
-              nome_fantasia: temp.estabelecimento?.nome_fantasia,
-              estabelecimento: temp.estabelecimento
-            };
+      // --- FASE 2: FALLBACK IMEDIATO VIA NAVEGADOR (CROSS-ORIGIN) ---
+      // Se não temos dados (seja por falha do servidor ou modo navegador já ativo)
+      if (!data) {
+        if (currentLookupMode === 'proxy') {
+           setIsProxyMode(false);
+           currentLookupMode = 'browser';
+           console.log("[Lookup] Ativando fallback para o navegador...");
+        }
+
+        try {
+          const resBrasil = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`, { 
+            signal,
+            referrerPolicy: "no-referrer"
+          });
+          if (resBrasil.ok) {
+            data = await resBrasil.json();
+          } else {
+            const resPublica = await fetch(`https://publica.cnpj.ws/cnpj/${cleanCnpj}`, { 
+              signal,
+              referrerPolicy: "no-referrer"
+            });
+            if (resPublica.ok) {
+              const temp = await resPublica.json();
+              data = {
+                razao_social: temp.razao_social,
+                nome_fantasia: temp.estabelecimento?.nome_fantasia,
+                estabelecimento: temp.estabelecimento
+              };
+            }
           }
+        } catch (e) {
+           console.error("[Lookup] Erro na busca direta via navegador:", e);
         }
       }
 
+      // --- FASE 3: PROCESSAMENTO DOS RESULTADOS ---
       if (data) {
         setNomeRazaoSocial(data.razao_social || data.nome || '');
         setNomeFantasia(data.nome_fantasia || data.estabelecimento?.nome_fantasia || '');
         const ie = data.estabelecimento?.inscricoes_estaduais?.[0]?.inscricao_estadual;
         setInscricaoEstadual(ie || '');
-        toast({ title: 'CNPJ Localizado', message: `Dados preenchidos via ${currentLookupMode === 'proxy' ? 'Servidor' : 'Navegador'}.`, type: 'success' });
+        toast({ title: 'CNPJ Localizado', message: `Sucesso via ${currentLookupMode === 'proxy' ? 'Servidor' : 'Navegador'}.`, type: 'success' });
       } else {
-        toast({ title: 'Não Localizado', message: 'Nenhuma informação encontrada nos bancos públicos.', type: 'warning' });
+        toast({ title: 'Não Localizado', message: `Dados não encontrados via ${currentLookupMode === 'proxy' ? 'SERVIDOR' : 'NAVEGADOR'}. Verifique o número.`, type: 'warning' });
       }
     } catch (err: any) {
       if (err.name === 'AbortError') return;
-      console.error("Erro final na busca de CNPJ:", err);
-      
-      // If we never tried browser mode, try it now as a last resort catch
-      if (currentLookupMode === 'proxy') {
-        setIsProxyMode(false);
-        lastCnpjSearched.current = ''; // Allow retry
-        fetchCnpjData(cleanCnpj); // Keep this just in case, but the linear logic above should catch most
-      } else {
-        toast({ title: 'Erro de Busca', message: 'Falha total ao conectar com os servidores de CNPJ.', type: 'error' });
-      }
+      console.error("[Lookup] Erro crítico final:", err);
+      toast({ title: 'Falha de Conexão', message: `Erro ao buscar (${currentLookupMode === 'proxy' ? 'SERVIDOR' : 'NAVEGADOR'}): ${err.message || 'Bloqueio de Rede'}.`, type: 'error' });
     } finally {
       setLoadingCnpj(false);
     }
@@ -2937,40 +2931,38 @@ const ClientsPage = () => {
     let data = null;
 
     try {
+      // --- FASE 1: PROXY ---
       if (currentLookupMode === 'proxy') {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`/api/lookup/cep/${cleanCep}`, {
-          signal,
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (response.ok) {
-          data = await response.json();
-        } else {
-          throw new Error('SERVER_CEP_FAIL');
-        }
-      } else {
-        const resBrasil = await fetch(`https://brasilapi.com.br/api/cep/v1/${cleanCep}`, { signal });
-        if (resBrasil.ok) {
-          data = await resBrasil.json();
-        } else {
-          const resVia = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`, { signal });
-          const temp = await resVia.json();
-          if (!temp.erro) data = temp;
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`/api/lookup/cep/${cleanCep}`, {
+            signal,
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (response.ok) {
+            data = await response.json();
+          }
+        } catch (e) {
+          console.error("[CEP] Erro no servidor:", e);
         }
       }
 
-      // --- FALLBACK ---
-      if (!data && currentLookupMode === 'proxy') {
-        setIsProxyMode(false);
-        currentLookupMode = 'browser';
-        const resBrasil = await fetch(`https://brasilapi.com.br/api/cep/v1/${cleanCep}`, { signal });
-        if (resBrasil.ok) {
-          data = await resBrasil.json();
-        } else {
-          const resVia = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`, { signal });
-          const temp = await resVia.json();
-          if (!temp.erro) data = temp;
-        }
+      // --- FASE 2: FALLBACK ---
+      if (!data) {
+         if (currentLookupMode === 'proxy') setIsProxyMode(false);
+         currentLookupMode = 'browser';
+         try {
+           const resBrasil = await fetch(`https://brasilapi.com.br/api/cep/v1/${cleanCep}`, { signal });
+           if (resBrasil.ok) {
+             data = await resBrasil.json();
+           } else {
+             const resVia = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`, { signal });
+             const temp = await resVia.json();
+             if (!temp.erro) data = temp;
+           }
+         } catch (e) {
+           console.error("[CEP] Erro no navegador:", e);
+         }
       }
 
       if (data) {
@@ -2984,13 +2976,8 @@ const ClientsPage = () => {
       }
     } catch (err: any) {
       if (err.name === 'AbortError') return;
-      if (currentLookupMode === 'proxy') {
-        setIsProxyMode(false);
-        lastCepSearched.current = '';
-        fetchCepData(cleanCep);
-      } else {
-        toast({ title: 'Falha na Busca', message: 'Não foi possível localizar o endereço.', type: 'error' });
-      }
+      console.error("[CEP] Erro crítico:", err);
+      toast({ title: 'Falha na Busca', message: 'Não foi possível localizar o endereço.', type: 'error' });
     } finally {
       setLoadingCep(false);
     }
@@ -3198,8 +3185,7 @@ const ClientsPage = () => {
     { id: 'fin', label: 'Financeiro', icon: 'wallet' },
     { id: 'crm', label: 'CRM & Gov', icon: 'shield-alt' },
     { id: 'anexos', label: 'Anexos', icon: 'paperclip' },
-    { id: 'interacoes', label: 'Interações', icon: 'history' },
-    { id: 'diag', label: 'Diagnóstico', icon: 'activity' }
+    { id: 'interacoes', label: 'Interações', icon: 'history' }
   ] as const;
 
   const currentTabIndex = clientTabs.findIndex(t => t.id === activeTab);
@@ -3315,12 +3301,19 @@ const ClientsPage = () => {
     <button
       type="button"
       onClick={() => setActiveTab(id)}
-      className={`flex items-center gap-3 px-5 py-4 border-b-4 transition-all font-black text-xs uppercase tracking-widest ${activeTab === id ? 'border-primary text-primary bg-primary/5 dark:bg-primary/10' : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'} ${index < currentTabIndex ? 'text-slate-600 dark:text-slate-400' : ''}`}
+      title={label}
+      className={`flex items-center gap-1.5 px-3 py-3.5 border-b-2 transition-all text-[10px] font-black uppercase tracking-wider whitespace-nowrap shrink-0 ${
+        activeTab === id
+          ? 'border-primary text-primary'
+          : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+      }`}
     >
-      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] shadow-sm transform transition-transform ${activeTab === id ? 'bg-primary text-white scale-110 shadow-primary/30' : (index < currentTabIndex ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500')}`}>
-        {index < currentTabIndex ? <Icon name="check" /> : index + 1}
+      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black shrink-0 ${
+        activeTab === id ? 'bg-primary text-white' : (index < currentTabIndex ? 'bg-emerald-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-400')
+      }`}>
+        {index < currentTabIndex ? <Icon name="check" className="text-[8px]" /> : index + 1}
       </div>
-      <Icon name={icon} className={`text-base ${activeTab === id ? 'text-primary' : ''}`} /> {label}
+      <span className="hidden sm:inline">{label}</span>
     </button>
   );
 
@@ -3576,7 +3569,7 @@ const ClientsPage = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 md:p-8 text-slate-800 dark:text-slate-100">
           <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-5xl h-[92vh] max-h-[850px] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
-            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30 dark:bg-slate-800/30">
+            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
                <div>
                  <span className="text-xs font-black text-primary uppercase tracking-[0.2em]">{editingClient ? editingClient.clientCode : 'Novo Cadastro Corporativo'}</span>
                  <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
@@ -3606,7 +3599,7 @@ const ClientsPage = () => {
               className="flex-1 flex flex-col h-full overflow-hidden"
             >
               <fieldset disabled={isViewOnly} className="flex-1 flex flex-col h-full overflow-hidden border-none p-0 m-0">
-               <div data-tab-id="id" className={`${activeTab === 'id' ? 'block' : 'hidden'} flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900 custom-scrollbar pb-24 md:pb-10`}>
+               <div data-tab-id="id" className={`overflow-y-auto p-6 md:p-8 bg-white dark:bg-slate-900 custom-scrollbar pb-24 md:pb-10 ${activeTab === 'id' ? 'flex-1 flex flex-col' : 'hidden'}`}>
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                        <div className="space-y-1">
@@ -3706,7 +3699,7 @@ const ClientsPage = () => {
                  </div>
                </div>
 
-               <div data-tab-id="end" className={`flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900 custom-scrollbar ${activeTab === 'end' ? 'block' : 'hidden'}`}>
+               <div data-tab-id="end" className={`overflow-y-auto p-6 md:p-8 bg-white dark:bg-slate-900 custom-scrollbar pb-24 md:pb-10 ${activeTab === 'end' ? 'flex-1 flex flex-col' : 'hidden'}`}>
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300 pb-20">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                        <div className="space-y-1">
@@ -3768,7 +3761,7 @@ const ClientsPage = () => {
                  </div>
                </div>
 
-               <div data-tab-id="cont" className={`flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900 custom-scrollbar ${activeTab === 'cont' ? 'block' : 'hidden'}`}>
+               <div data-tab-id="cont" className={`overflow-y-auto p-6 md:p-8 bg-white dark:bg-slate-900 custom-scrollbar pb-24 md:pb-10 ${activeTab === 'cont' ? 'flex-1 flex flex-col' : 'hidden'}`}>
                  <div className="space-y-6 animate-in slide-in-from-left-4 duration-300 pb-20">
                     <section className="space-y-6">
                        <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Canais de Contato Institucional</h4>
@@ -3842,7 +3835,7 @@ const ClientsPage = () => {
                  </div>
                </div>
 
-               <div data-tab-id="fin" className={`flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900 custom-scrollbar ${activeTab === 'fin' ? 'block' : 'hidden'}`}>
+               <div data-tab-id="fin" className={`overflow-y-auto p-6 md:p-8 bg-white dark:bg-slate-900 custom-scrollbar pb-24 md:pb-10 ${activeTab === 'fin' ? 'flex-1 flex flex-col' : 'hidden'}`}>
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                        <div className="space-y-4">
@@ -3921,7 +3914,7 @@ const ClientsPage = () => {
                  </div>
                </div>
 
-               <div data-tab-id="crm" className={`flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900 custom-scrollbar ${activeTab === 'crm' ? 'block' : 'hidden'}`}>
+               <div data-tab-id="crm" className={`overflow-y-auto p-6 md:p-8 bg-white dark:bg-slate-900 custom-scrollbar pb-24 md:pb-10 ${activeTab === 'crm' ? 'flex-1 flex flex-col' : 'hidden'}`}>
                  <div className="space-y-6 animate-in slide-in-from-left-4 duration-300">
                     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                        <div className="space-y-1">
@@ -4041,7 +4034,7 @@ const ClientsPage = () => {
                  </div>
                </div>
 
-               <div data-tab-id="anexos" className={`flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900 custom-scrollbar ${activeTab === 'anexos' ? 'block' : 'hidden'}`}>
+               <div data-tab-id="anexos" className={`overflow-y-auto p-6 md:p-8 bg-white dark:bg-slate-900 custom-scrollbar pb-24 md:pb-10 ${activeTab === 'anexos' ? 'flex-1 flex flex-col' : 'hidden'}`}>
                  <div className="space-y-6 animate-in slide-in-from-left-4 duration-300">
                     <section className="space-y-6">
                       <AttachmentsManager 
@@ -4053,7 +4046,7 @@ const ClientsPage = () => {
                  </div>
                </div>
 
-               <div data-tab-id="interacoes" className={activeTab === 'interacoes' ? 'block' : 'hidden'}>
+               <div data-tab-id="interacoes" className={`overflow-y-auto p-6 md:p-8 bg-white dark:bg-slate-900 custom-scrollbar pb-24 md:pb-10 ${activeTab === 'interacoes' ? 'flex-1 flex flex-col' : 'hidden'}`}>
                  <div className="space-y-8 animate-in slide-in-from-left-4 duration-300">
                     <section className="space-y-6">
                        <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest">Registrar Interação</h4>
@@ -4158,60 +4151,6 @@ const ClientsPage = () => {
                  </div>
                </div>
 
-                <div data-tab-id="diag" className={`flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900 custom-scrollbar ${activeTab === 'diag' ? 'block' : 'hidden'}`}>
-                  <div className="space-y-6 animate-in slide-in-from-left-4 duration-300 pb-20">
-                    <div className="bg-slate-50 dark:bg-slate-800/20 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 space-y-4">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Status da Rede</p>
-                          <div className="flex items-center space-x-2">
-                             <div className={`h-2.5 w-2.5 rounded-full {isProxyMode ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-amber-500'} animate-pulse`} />
-                             <span className="font-bold text-slate-700 dark:text-slate-300">
-                               {isProxyMode ? 'Modo Servidor' : 'Modo Navegador'}
-                             </span>
-                          </div>
-                        </div>
-                        <button 
-                          type="button" 
-                          onClick={runDiagnostics} 
-                          disabled={isDiagRunning}
-                          className="px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all flex items-center gap-2"
-                        >
-                          {isDiagRunning ? <Icon name="spinner" className="animate-spin text-primary" /> : <Icon name="activity" />}
-                          {isDiagRunning ? 'Testando...' : 'Testar Conexão'}
-                        </button>
-                      </div>
-
-                      {diagResults && (
-                        <div className="bg-white/50 dark:bg-black/20 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 space-y-2">
-                          {diagResults.tests.map((t, idx) => (
-                            <div key={idx} className="flex justify-between items-center text-[10px] font-mono py-1 border-b border-slate-50 dark:border-slate-800/50 last:border-0 pb-1">
-                              <span className="text-slate-500">{t.name}:</span>
-                              <span className={t.ok ? 'text-emerald-500 font-bold' : 'text-rose-500 font-black'}>
-                                {t.ok ? "CONECTADO" : `FALHA (${t.error || t.status})`}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="p-4 bg-amber-50 dark:bg-amber-900/10 rounded-2xl border border-amber-100 dark:border-amber-800/30">
-                        <label className="flex items-center space-x-3 cursor-pointer">
-                          <input 
-                            type="checkbox" 
-                            className="h-4 w-4 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary" 
-                            checked={!isProxyMode} 
-                            onChange={(e) => setIsProxyMode(!e.target.checked)} 
-                          />
-                          <div>
-                            <p className="text-[10px] font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest">Ativar Modo de Compatibilidade</p>
-                            <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium leading-tight">Use esta opção se o seu servidor não tiver acesso externo (Firewall).</p>
-                          </div>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
             </fieldset>
           </form>
 
