@@ -835,6 +835,130 @@ app.post('/api/audit', authenticateToken, (req: any, res: any) => {
   res.json({ success: true });
 });
 
+app.get('/api/lookup/cnpj/:cnpj', authenticateToken, async (req: any, res: any) => {
+  const { cnpj } = req.params;
+  const cleanCnpj = cnpj.replace(/\D/g, '');
+  
+  if (cleanCnpj.length !== 14) {
+    return res.status(400).json({ error: 'CNPJ inválido' });
+  }
+
+  try {
+    console.log(`[LOOKUP] Consultando CNPJ: ${cleanCnpj}`);
+    // Try BrasilAPI first
+    const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`, {
+      headers: { 'User-Agent': 'SenseiRM-Proxy/1.0' }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log(`[LOOKUP] CNPJ ${cleanCnpj} encontrado na BrasilAPI.`);
+      return res.json(data);
+    }
+    
+    console.log(`[LOOKUP] BrasilAPI retornou status ${response.status}. Tentando fallback...`);
+
+    // Fallback to Publica CNPJ
+    const fallback = await fetch(`https://publica.cnpj.ws/cnpj/${cleanCnpj}`, {
+      headers: { 'User-Agent': 'SenseiRM-Proxy/1.0' }
+    });
+    
+    if (fallback.ok) {
+      const data = await fallback.json();
+      console.log(`[LOOKUP] CNPJ ${cleanCnpj} encontrado na Publica CNPJ.`);
+      return res.json(data);
+    }
+
+    console.log(`[LOOKUP] CNPJ ${cleanCnpj} não localizado em nenhum provedor.`);
+    res.status(404).json({ error: 'CNPJ não localizado' });
+  } catch (err) {
+    console.error('Lookup CNPJ Error:', err);
+    res.status(500).json({ error: 'Erro ao conectar aos serviços de consulta' });
+  }
+});
+
+app.get('/api/lookup/cep/:cep', authenticateToken, async (req: any, res: any) => {
+  const { cep } = req.params;
+  const cleanCep = cep.replace(/\D/g, '');
+
+  if (cleanCep.length !== 8) {
+    return res.status(400).json({ error: 'CEP inválido' });
+  }
+
+  try {
+    console.log(`[LOOKUP] Consultando CEP: ${cleanCep}`);
+    const response = await fetch(`https://brasilapi.com.br/api/cep/v1/${cleanCep}`, {
+      headers: { 'User-Agent': 'SenseiRM-Proxy/1.0' }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log(`[LOOKUP] CEP ${cleanCep} encontrado na BrasilAPI.`);
+      return res.json(data);
+    }
+
+    console.log(`[LOOKUP] CEP ${cleanCep} não encontrado na BrasilAPI. Tentando ViaCEP...`);
+
+    const fallback = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`, {
+      headers: { 'User-Agent': 'SenseiRM-Proxy/1.0' }
+    });
+    const data = await fallback.json();
+    if (!data.erro) {
+      console.log(`[LOOKUP] CEP ${cleanCep} encontrado no ViaCEP.`);
+      return res.json(data);
+    }
+    
+    console.log(`[LOOKUP] CEP ${cleanCep} não localizado.`);
+    res.status(404).json({ error: 'CEP não localizado' });
+  } catch (err) {
+    console.error('Lookup CEP Error:', err);
+    res.status(500).json({ error: 'Erro ao conectar aos serviços de consulta' });
+  }
+});
+
+app.get('/api/diag/connectivity', authenticateToken, async (req: any, res: any) => {
+  const results: any = {
+    timestamp: new Date().toISOString(),
+    nodeVersion: process.version,
+    platform: process.platform,
+    tests: []
+  };
+
+  const testUrl = async (name: string, url: string) => {
+    const start = Date.now();
+    try {
+      const response = await fetch(url, { 
+        headers: { 'User-Agent': 'SenseiRM-Diag/1.0' },
+        signal: AbortSignal.timeout(5000) 
+      });
+      results.tests.push({
+        name,
+        url,
+        status: response.status,
+        ok: response.ok,
+        time: `${Date.now() - start}ms`
+      });
+    } catch (err: any) {
+      results.tests.push({
+        name,
+        url,
+        ok: false,
+        error: err.message,
+        time: `${Date.now() - start}ms`
+      });
+    }
+  };
+
+  await Promise.all([
+    testUrl('BrasilAPI (CNPJ)', 'https://brasilapi.com.br/api/cnpj/v1/00000000000191'),
+    testUrl('ViaCEP', 'https://viacep.com.br/ws/01001000/json/'),
+    testUrl('Publica CNPJ', 'https://publica.cnpj.ws/cnpj/00000000000191'),
+    testUrl('Google (DNS Check)', 'https://www.google.com')
+  ]);
+
+  res.json(results);
+});
+
 // --- Vite Integration ---
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {

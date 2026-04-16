@@ -37,7 +37,7 @@ import {
   ChevronLeft, MoreVertical, X, Calendar, MessageSquare, ExternalLink, HelpCircle,
   Bell, BellOff, Zap, TrendingUp, Target, Briefcase, Star, Award, CheckCircle,
   AlertCircle, PlayCircle, CheckSquare, ListTodo, UserPlus, FilePlus, Building,
-  Sun, Moon, Send, ClipboardList, Cog, BookOpen, BarChart2, Home, MoreHorizontal
+  Sun, Moon, Send, ClipboardList, Cog, BookOpen, BarChart2, Home, MoreHorizontal, Wand2, MessageCircle, Loader2
 } from 'lucide-react';
 
 // Icons from Lucide — mapeamento completo e correto
@@ -116,6 +116,9 @@ const iconMap: Record<string, any> = {
   'book-open': BookOpen,
   'sun': Sun,
   'moon': Moon,
+  'magic': Wand2,
+  'message-circle': MessageCircle,
+  'spinner': Loader2,
 };
 
 // --- Error Boundary ---
@@ -2696,6 +2699,8 @@ const ClientsPage = () => {
   const [interactions, setInteractions] = useState<ClientInteraction[]>([]);
   const [newInteractionType, setNewInteractionType] = useState<'EMAIL' | 'CALL' | 'MEETING' | 'NOTE' | 'WHATSAPP'>('NOTE');
   const [newInteractionDesc, setNewInteractionDesc] = useState('');
+  const lastCnpjSearched = useRef('');
+  const lastCepSearched = useRef('');
 
   // Today for date validations
   const today = new Date().toISOString().split('T')[0];
@@ -2746,6 +2751,10 @@ const ClientsPage = () => {
       setDataUltimaVenda(editingClient.dataUltimaVenda || '');
       setAvaliacaoInterna(editingClient.avaliacaoInterna || 0);
       setCustomData(editingClient.customData || {});
+
+      // Sync search refs to avoid redundant calls for existing data
+      lastCnpjSearched.current = (editingClient.documento || '').replace(/\D/g, '');
+      lastCepSearched.current = (editingClient.cep || '').replace(/\D/g, '');
     } else {
       if (!isModalOpen) setIsViewOnly(false);
       setContactPeople([]);
@@ -2763,6 +2772,10 @@ const ClientsPage = () => {
       setUf('');
       setAttachments([]);
       setInteractions([]);
+
+      // Reset search refs for new registrations
+      lastCnpjSearched.current = '';
+      lastCepSearched.current = '';
 
       // Reset for additional controlled states
       setInscricaoMunicipal('');
@@ -2789,57 +2802,248 @@ const ClientsPage = () => {
     }
   }, [editingClient, isModalOpen]);
 
-  const handleDocumentoBlur = async () => {
-    if (tipoPessoa !== 'Jurídica') return;
-    const cleanCnpj = documento.replace(/\D/g, '');
-    if (cleanCnpj.length === 14) {
-      setLoadingCnpj(true);
-      try {
-        // Try publica.cnpj.ws first for Inscrição Estadual
-        const resPublica = await fetch(`https://publica.cnpj.ws/cnpj/${cleanCnpj}`);
-        if (resPublica.ok) {
-          const data = await resPublica.json();
-          setNomeRazaoSocial(data.razao_social || '');
-          setNomeFantasia(data.estabelecimento?.nome_fantasia || '');
-          const ie = data.estabelecimento?.inscricoes_estaduais?.[0]?.inscricao_estadual;
-          setInscricaoEstadual(ie || '');
+  const [isProxyMode, setIsProxyMode] = useState(true);
+  const [diagResults, setDiagResults] = useState<any>(null);
+  const [isDiagRunning, setIsDiagRunning] = useState(false);
+
+  const runDiagnostics = async () => {
+    setIsDiagRunning(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/diag/connectivity', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const results = await response.json();
+        setDiagResults(results);
+        const allOk = results.tests.every((t: any) => t.ok);
+        if (!allOk) {
+          toast({ 
+            title: 'Falha de Conexão', 
+            message: 'O servidor está com dificuldades para acessar a internet. Ative o "Modo de Compatibilidade".', 
+            type: 'warning' 
+          });
+          setIsProxyMode(false);
         } else {
-          // Fallback to BrasilAPI if rate limited
-          const resBrasil = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`);
-          if (resBrasil.ok) {
-            const data = await resBrasil.json();
-            setNomeRazaoSocial(data.razao_social || '');
-            setNomeFantasia(data.nome_fantasia || '');
-            setInscricaoEstadual('');
-          }
+          toast({ title: 'Tudo OK!', message: 'O servidor está conectado corretamente à internet.', type: 'success' });
+          setIsProxyMode(true);
         }
-      } catch (err) {
-        console.error("Erro ao buscar CNPJ", err);
-      } finally {
-        setLoadingCnpj(false);
       }
+    } catch (err) {
+      toast({ title: 'Erro de Diagnóstico', message: 'Não foi possível comunicar com o servidor de diagnóstico.', type: 'error' });
+    } finally {
+      setIsDiagRunning(false);
     }
   };
 
-  const handleCepBlur = async () => {
-    const cleanCep = cep.replace(/\D/g, '');
-    if (cleanCep.length === 8) {
-      setLoadingCep(true);
-      try {
-        const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
-        const data = await response.json();
-        if (!data.erro) {
-          setLogradouro(data.logradouro || '');
-          setBairro(data.bairro || '');
-          setCidade(data.localidade || '');
-          setUf(data.uf || '');
+  const fetchCnpjData = async (cleanCnpj: string, signal?: AbortSignal) => {
+    if (cleanCnpj === lastCnpjSearched.current) return;
+    lastCnpjSearched.current = cleanCnpj;
+    setLoadingCnpj(true);
+    toast({ message: `Buscando dados do CNPJ ${formatDocumento(cleanCnpj)}...`, type: 'info' });
+    
+    // Internal track for the dual-mode logic within a single pass
+    let currentLookupMode = isProxyMode ? 'proxy' : 'browser';
+    let data = null;
+
+    try {
+      // --- PHASE 1: Try current mode ---
+      if (currentLookupMode === 'proxy') {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/lookup/cnpj/${cleanCnpj}`, {
+          signal,
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          data = await response.json();
+        } else {
+          throw new Error('SERVER_FIREWALL_OR_FAIL');
         }
-      } catch (err) {
-        console.error("Erro ao buscar CEP", err);
-      } finally {
-        setLoadingCep(false);
+      } else {
+        // Direct browser mode logic
+        const resBrasil = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`, { signal });
+        if (resBrasil.ok) {
+          data = await resBrasil.json();
+        } else {
+          const resPublica = await fetch(`https://publica.cnpj.ws/cnpj/${cleanCnpj}`, { signal });
+          if (resPublica.ok) {
+            const temp = await resPublica.json();
+            data = {
+              razao_social: temp.razao_social,
+              nome_fantasia: temp.estabelecimento?.nome_fantasia,
+              estabelecimento: temp.estabelecimento
+            };
+          }
+        }
       }
+
+      // --- CRITICAL FALLBACK (PHASE 2) ---
+      // If phase 1 failed and we were in proxy mode, try browser mode immediately
+      if (!data && currentLookupMode === 'proxy') {
+        toast({ title: 'Bloqueio Detectado', message: 'Servidor falhou. Tentando via Navegador...', type: 'warning' });
+        setIsProxyMode(false); // Permanently switch for next times
+        currentLookupMode = 'browser';
+        
+        const resBrasil = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`, { signal });
+        if (resBrasil.ok) {
+          data = await resBrasil.json();
+        } else {
+          const resPublica = await fetch(`https://publica.cnpj.ws/cnpj/${cleanCnpj}`, { signal });
+          if (resPublica.ok) {
+            const temp = await resPublica.json();
+            data = {
+              razao_social: temp.razao_social,
+              nome_fantasia: temp.estabelecimento?.nome_fantasia,
+              estabelecimento: temp.estabelecimento
+            };
+          }
+        }
+      }
+
+      if (data) {
+        setNomeRazaoSocial(data.razao_social || data.nome || '');
+        setNomeFantasia(data.nome_fantasia || data.estabelecimento?.nome_fantasia || '');
+        const ie = data.estabelecimento?.inscricoes_estaduais?.[0]?.inscricao_estadual;
+        setInscricaoEstadual(ie || '');
+        toast({ title: 'CNPJ Localizado', message: `Dados preenchidos via ${currentLookupMode === 'proxy' ? 'Servidor' : 'Navegador'}.`, type: 'success' });
+      } else {
+        toast({ title: 'Não Localizado', message: 'Nenhuma informação encontrada nos bancos públicos.', type: 'warning' });
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') return;
+      console.error("Erro final na busca de CNPJ:", err);
+      
+      // If we never tried browser mode, try it now as a last resort catch
+      if (currentLookupMode === 'proxy') {
+        setIsProxyMode(false);
+        lastCnpjSearched.current = ''; // Allow retry
+        fetchCnpjData(cleanCnpj); // Keep this just in case, but the linear logic above should catch most
+      } else {
+        toast({ title: 'Erro de Busca', message: 'Falha total ao conectar com os servidores de CNPJ.', type: 'error' });
+      }
+    } finally {
+      setLoadingCnpj(false);
     }
+  };
+
+  const fetchCepData = async (cleanCep: string, signal?: AbortSignal) => {
+    if (cleanCep === lastCepSearched.current) return;
+    lastCepSearched.current = cleanCep;
+    setLoadingCep(true);
+    toast({ message: 'Buscando endereço...', type: 'info' });
+    
+    let currentLookupMode = isProxyMode ? 'proxy' : 'browser';
+    let data = null;
+
+    try {
+      if (currentLookupMode === 'proxy') {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/lookup/cep/${cleanCep}`, {
+          signal,
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          data = await response.json();
+        } else {
+          throw new Error('SERVER_CEP_FAIL');
+        }
+      } else {
+        const resBrasil = await fetch(`https://brasilapi.com.br/api/cep/v1/${cleanCep}`, { signal });
+        if (resBrasil.ok) {
+          data = await resBrasil.json();
+        } else {
+          const resVia = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`, { signal });
+          const temp = await resVia.json();
+          if (!temp.erro) data = temp;
+        }
+      }
+
+      // --- FALLBACK ---
+      if (!data && currentLookupMode === 'proxy') {
+        setIsProxyMode(false);
+        currentLookupMode = 'browser';
+        const resBrasil = await fetch(`https://brasilapi.com.br/api/cep/v1/${cleanCep}`, { signal });
+        if (resBrasil.ok) {
+          data = await resBrasil.json();
+        } else {
+          const resVia = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`, { signal });
+          const temp = await resVia.json();
+          if (!temp.erro) data = temp;
+        }
+      }
+
+      if (data) {
+        setLogradouro(data.street || data.logradouro || '');
+        setBairro(data.neighborhood || data.bairro || '');
+        setCidade(data.city || data.localidade || '');
+        setUf(data.state || data.uf || '');
+        toast({ title: 'Endereço Atualizado', message: `Sucesso via ${currentLookupMode === 'proxy' ? 'Servidor' : 'Navegador'}.`, type: 'success' });
+      } else {
+        toast({ title: 'CEP não encontrado', message: 'Endereço não localizado.', type: 'warning' });
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') return;
+      if (currentLookupMode === 'proxy') {
+        setIsProxyMode(false);
+        lastCepSearched.current = '';
+        fetchCepData(cleanCep);
+      } else {
+        toast({ title: 'Falha na Busca', message: 'Não foi possível localizar o endereço.', type: 'error' });
+      }
+    } finally {
+      setLoadingCep(false);
+    }
+  };
+
+  useEffect(() => {
+    const abortCtrl = new AbortController();
+    const raw = documento.replace(/\D/g, "");
+    
+    if (tipoPessoa === 'Jurídica' && raw.length === 14) {
+      if (validateCNPJ(documento)) {
+        fetchCnpjData(raw, abortCtrl.signal);
+      } else {
+        toast({ title: 'CNPJ Inválido', message: 'O dígito verificador informado não é válido. Verifique o número.', type: 'warning' });
+      }
+    } else if (tipoPessoa === 'Jurídica' && raw.length < 14) {
+      lastCnpjSearched.current = '';
+    } else if (tipoPessoa === 'Física' && raw.length === 11) {
+       if (!editingClient) {
+          toast({ title: 'Aviso', message: 'A busca automática só está disponível para empresas (CNPJ).', type: 'info' });
+       }
+    }
+
+    return () => abortCtrl.abort();
+  }, [documento, tipoPessoa]);
+
+  useEffect(() => {
+    const abortCtrl = new AbortController();
+    const raw = cep.replace(/\D/g, "");
+    
+    if (raw.length === 8) {
+      fetchCepData(raw, abortCtrl.signal);
+    } else if (raw.length < 8) {
+      lastCepSearched.current = '';
+    }
+
+    return () => abortCtrl.abort();
+  }, [cep]);
+
+  const handleDocumentoChange = (val: string) => {
+    const masked = tipoPessoa === 'Jurídica' ? maskCNPJ(val) : maskCPF(val);
+    setDocumento(masked);
+    const raw = masked.replace(/\D/g, "");
+    if (raw.length > 0) {
+      setIsDocumentoValid(tipoPessoa === 'Jurídica' ? validateCNPJ(masked) : validateCPF(masked));
+    } else {
+      setIsDocumentoValid(true);
+    }
+  };
+
+  const handleCepChange = (val: string) => {
+    const masked = maskCEP(val);
+    setCep(masked);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -2994,7 +3198,8 @@ const ClientsPage = () => {
     { id: 'fin', label: 'Financeiro', icon: 'wallet' },
     { id: 'crm', label: 'CRM & Gov', icon: 'shield-alt' },
     { id: 'anexos', label: 'Anexos', icon: 'paperclip' },
-    { id: 'interacoes', label: 'Interações', icon: 'history' }
+    { id: 'interacoes', label: 'Interações', icon: 'history' },
+    { id: 'diag', label: 'Diagnóstico', icon: 'activity' }
   ] as const;
 
   const currentTabIndex = clientTabs.findIndex(t => t.id === activeTab);
@@ -3436,27 +3641,41 @@ const ClientsPage = () => {
                        <div className="space-y-1">
                          <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1 flex justify-between items-center">
                            {tipoPessoa === 'Jurídica' ? 'CNPJ' : 'CPF'}
-                           {loadingCnpj && <Icon name="spinner" className="animate-spin text-primary" />}
                          </label>
-                         <input 
-                            name="documento" 
-                            required 
-                            value={documento} 
-                            onChange={(e) => {
-                               const val = e.target.value;
-                               const masked = tipoPessoa === 'Jurídica' ? maskCNPJ(val) : maskCPF(val);
-                               setDocumento(masked);
-                               const raw = val.replace(/\D/g, "");
-                               if (raw.length > 0) {
-                                 setIsDocumentoValid(tipoPessoa === 'Jurídica' ? validateCNPJ(masked) : validateCPF(masked));
-                               } else {
-                                 setIsDocumentoValid(true);
-                               }
-                             }}
-                            onBlur={handleDocumentoBlur}
-                            placeholder={tipoPessoa === 'Jurídica' ? '00.000.000/0000-00' : '000.000.000-00'} 
-                            className={`w-full px-4 py-3 rounded-2xl border font-bold outline-none focus:border-primary dark:focus:border-primary transition-colors text-slate-800 dark:text-slate-200 ${!isDocumentoValid && documento.length > 0 ? 'border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-400' : 'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50'}`} 
-                         />
+                         <div className="relative">
+                              <input 
+                                name="documento" 
+                                required 
+                                value={documento} 
+                                onChange={(e) => handleDocumentoChange(e.target.value)}
+                                className={`w-full px-4 py-2.5 rounded-xl border ${!isDocumentoValid && documento.length > 0 ? 'border-red-500 bg-red-50' : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50'} transition-all text-slate-700 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-900 outline-none pr-10`}
+                                placeholder={tipoPessoa === 'Jurídica' ? "00.000.000/0000-00" : "000.000.000-00"}
+                              />
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-2">
+                                {loadingCnpj && <Icon name="spinner" className="animate-spin text-primary" />}
+                                {tipoPessoa === 'Jurídica' && (
+                                  <button 
+                                    type="button"
+                                    onClick={() => {
+                                      const raw = documento.replace(/\D/g, "");
+                                      if (raw.length === 14) {
+                                        if (validateCNPJ(documento)) {
+                                          fetchCnpjData(raw);
+                                        } else {
+                                          toast({ title: 'Erro de Dígito', message: 'Este CNPJ é matematicamente inválido.', type: 'error' });
+                                        }
+                                      } else {
+                                        toast({ title: 'Aviso', message: 'Preencha o CNPJ completo para consultar.', type: 'warning' });
+                                      }
+                                    }}
+                                    className="p-1 text-slate-400 hover:text-primary transition-colors"
+                                    title="Tentar buscar dados novamente"
+                                  >
+                                    <Icon name="magic" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
                          {!isDocumentoValid && documento.length > 0 && (
                            <span className="text-[9px] font-bold text-red-500 uppercase tracking-tighter ml-2 animate-pulse">Documento Inválido</span>
                          )}
@@ -3496,8 +3715,7 @@ const ClientsPage = () => {
                          </label>
                          <input 
                            value={cep} 
-                           onChange={(e) => setCep(maskCEP(e.target.value))}
-                           onBlur={handleCepBlur}
+                           onChange={(e) => handleCepChange(e.target.value)}
                            placeholder="00000-000" 
                            className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 font-bold outline-none focus:border-primary dark:focus:border-primary shadow-inner text-slate-800 dark:text-slate-200" 
                          />
@@ -3939,6 +4157,61 @@ const ClientsPage = () => {
                     </section>
                  </div>
                </div>
+
+                <div data-tab-id="diag" className={`flex-1 overflow-y-auto p-6 md:p-10 bg-white dark:bg-slate-900 custom-scrollbar ${activeTab === 'diag' ? 'block' : 'hidden'}`}>
+                  <div className="space-y-6 animate-in slide-in-from-left-4 duration-300 pb-20">
+                    <div className="bg-slate-50 dark:bg-slate-800/20 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 space-y-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Status da Rede</p>
+                          <div className="flex items-center space-x-2">
+                             <div className={`h-2.5 w-2.5 rounded-full {isProxyMode ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-amber-500'} animate-pulse`} />
+                             <span className="font-bold text-slate-700 dark:text-slate-300">
+                               {isProxyMode ? 'Modo Servidor' : 'Modo Navegador'}
+                             </span>
+                          </div>
+                        </div>
+                        <button 
+                          type="button" 
+                          onClick={runDiagnostics} 
+                          disabled={isDiagRunning}
+                          className="px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all flex items-center gap-2"
+                        >
+                          {isDiagRunning ? <Icon name="spinner" className="animate-spin text-primary" /> : <Icon name="activity" />}
+                          {isDiagRunning ? 'Testando...' : 'Testar Conexão'}
+                        </button>
+                      </div>
+
+                      {diagResults && (
+                        <div className="bg-white/50 dark:bg-black/20 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 space-y-2">
+                          {diagResults.tests.map((t, idx) => (
+                            <div key={idx} className="flex justify-between items-center text-[10px] font-mono py-1 border-b border-slate-50 dark:border-slate-800/50 last:border-0 pb-1">
+                              <span className="text-slate-500">{t.name}:</span>
+                              <span className={t.ok ? 'text-emerald-500 font-bold' : 'text-rose-500 font-black'}>
+                                {t.ok ? "CONECTADO" : `FALHA (${t.error || t.status})`}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="p-4 bg-amber-50 dark:bg-amber-900/10 rounded-2xl border border-amber-100 dark:border-amber-800/30">
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            className="h-4 w-4 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary" 
+                            checked={!isProxyMode} 
+                            onChange={(e) => setIsProxyMode(!e.target.checked)} 
+                          />
+                          <div>
+                            <p className="text-[10px] font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest">Ativar Modo de Compatibilidade</p>
+                            <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium leading-tight">Use esta opção se o seu servidor não tiver acesso externo (Firewall).</p>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
             </fieldset>
           </form>
 
@@ -6918,7 +7191,7 @@ const SobrePage = () => {
             {[
               { title: 'Gestão Avançada', desc: 'Filtros dinà¢micos e busca fonética inteligente.', icon: 'search' },
               { title: 'WhatsApp 2.0', desc: 'Comunicação instantà¢nea integrada ao fluxo.', icon: 'message-circle' },
-              { title: 'Importação CSV', desc: 'Migração de dados com mapeamento automático.', icon: 'upload' },
+              { title: 'Assisted Field', desc: 'Campos que automatizam busca de dados.', icon: 'magic' },
               { title: 'Campos Customizáveis', desc: 'Adapte o sistema à sua realidade de negócio.', icon: 'settings' },
               { title: 'Auditoria 360', desc: 'Rastreamento completo de todas as operações.', icon: 'shield' },
               { title: 'High Performance', desc: 'Resposta ultra-rápida com novo motor de cache.', icon: 'zap' },
