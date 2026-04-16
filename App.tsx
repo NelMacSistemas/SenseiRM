@@ -241,18 +241,25 @@ const phoneMask = (value: string) => {
 };
 
 const PhoneInput: React.FC<{
-  name: string;
+  name?: string;
+  value?: string;
   defaultValue?: string;
   required?: boolean;
   placeholder?: string;
   className?: string;
   onChange?: (val: string) => void;
-}> = ({ name, defaultValue, required, placeholder, className, onChange }) => {
-  const [value, setValue] = useState(phoneMask(defaultValue || ""));
+}> = ({ name, value, defaultValue, required, placeholder, className, onChange }) => {
+  const [internalValue, setInternalValue] = useState(phoneMask(defaultValue || value || ""));
+
+  useEffect(() => {
+    if (value !== undefined) {
+      setInternalValue(phoneMask(value));
+    }
+  }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const masked = phoneMask(e.target.value);
-    setValue(masked);
+    setInternalValue(masked);
     if (onChange) onChange(masked);
   };
 
@@ -260,7 +267,7 @@ const PhoneInput: React.FC<{
     <input
       name={name}
       required={required}
-      value={value}
+      value={internalValue}
       onChange={handleChange}
       placeholder={placeholder || "+55 (00) 00000-0000"}
       className={className}

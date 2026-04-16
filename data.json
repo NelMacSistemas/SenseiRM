@@ -575,6 +575,62 @@
   ],
   "auditLogs": [
     {
+      "id": "4l2um5oj1",
+      "timestamp": "2026-04-16T20:52:59.977Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "x1evalp96",
+      "timestamp": "2026-04-16T20:52:34.312Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CLIENTES",
+      "details": "Cliente Nelson Ronaldo Dos Santos Macedo atualizado. Alterações: [Status Base: \"ativo\" â†’ \"bloqueado\"]",
+      "entityId": "a33114b0-74f7-4ce4-8619-044fbf0992a2",
+      "diff": [
+        {
+          "field": "Status Base",
+          "oldValue": "ativo",
+          "newValue": "bloqueado"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "chldopv8k",
+      "timestamp": "2026-04-16T20:52:21.680Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CLIENTES",
+      "details": "Cliente Nelson Ronaldo Dos Santos Macedo atualizado. Alterações: [Status Base: \"bloqueado\" â†’ \"ativo\"]",
+      "entityId": "a33114b0-74f7-4ce4-8619-044fbf0992a2",
+      "diff": [
+        {
+          "field": "Status Base",
+          "oldValue": "bloqueado",
+          "newValue": "ativo"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "s89p5ld01",
+      "timestamp": "2026-04-16T20:52:04.797Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
       "id": "echzf0xwn",
       "timestamp": "2026-04-16T18:55:24.073Z",
       "userId": "1",
