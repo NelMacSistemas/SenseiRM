@@ -37,7 +37,8 @@ import {
   ChevronLeft, MoreVertical, X, Calendar, MessageSquare, ExternalLink, HelpCircle,
   Bell, BellOff, Zap, TrendingUp, Target, Briefcase, Star, Award, CheckCircle,
   AlertCircle, PlayCircle, CheckSquare, ListTodo, UserPlus, FilePlus, Building,
-  Sun, Moon, Send, ClipboardList, Cog, BookOpen, BarChart2, Home, MoreHorizontal, Wand2, MessageCircle, Loader2
+  Sun, Moon, Send, ClipboardList, Cog, BookOpen, BarChart2, Home, MoreHorizontal, Wand2, MessageCircle, Loader2,
+  Wallet, Paperclip, History, UserCog, Eye, Cpu, FolderOpen, Key, ArrowLeft, ArrowRight, Camera, Copy, Save, Code, AlertTriangle as ExclamationTriangle, X as Times, Edit as EditAlt, Mail as Envelope, FileText as FileAlt
 } from 'lucide-react';
 
 // Icons from Lucide — mapeamento completo e correto
@@ -982,8 +983,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, [currentUser?.tema]);
 
   useEffect(() => {
-    document.title = `SenseiRM - ${(appName || systemSettings.companyName)}`;
-  }, [(appName || systemSettings.companyName)]);
+    document.title = `SenseiRM - ${systemSettings.companyName}`;
+  }, [systemSettings.companyName]);
 
   const login = async (email: string, pass: string) => {
     try {
@@ -1553,17 +1554,17 @@ const Sidebar = () => {
 
       <div className={`w-64 bg-slate-900 h-screen flex flex-col fixed left-0 top-0 text-slate-300 shadow-xl z-[90] transition-transform duration-300 hidden lg:flex`}>
         <div className="p-6 border-b border-slate-800 flex items-center gap-3">
-          {(appLogo || systemSettings.appLogo) ? (
-            <img src={appLogo || systemSettings.appLogo} alt="SenseiRM" className="w-10 h-10 rounded-lg object-contain bg-white/10 p-1" />
+          {systemSettings.appLogo ? (
+            <img src={systemSettings.appLogo} alt="SenseiRM" className="w-10 h-10 rounded-lg object-contain bg-white/10 p-1" />
           ) : (
             // VIS-04: Fallback usa inicial da empresa em vez do texto fixo 'SEN'
             <div className="bg-primary w-10 h-10 rounded-lg text-white flex items-center justify-center font-black text-xl tracking-tighter shadow-lg">
-              {(appName || systemSettings.companyName)?.charAt(0)?.toUpperCase() || 'S'}
+              {systemSettings.companyName?.charAt(0)?.toUpperCase() || 'S'}
             </div>
           )}
           <div>
             <h1 className="text-white leading-none"><SenseiLogo className="text-lg" /></h1>
-            <span className="text-[10px] text-slate-500 uppercase tracking-widest">{(appName || systemSettings.companyName)}</span>
+            <span className="text-[10px] text-slate-500 uppercase tracking-widest">{systemSettings.companyName}</span>
           </div>
         </div>
         <nav className="flex-1 overflow-y-auto py-4">
@@ -6100,13 +6101,13 @@ const ConfiguracoesPage = () => {
                  </div>
                  <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-2xl border border-slate-100 dark:border-slate-800">
                     <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Nome da Empresa</label>
-                    <input name="companyName" key={(appName || systemSettings.companyName)} required defaultValue={(appName || systemSettings.companyName)} placeholder="Sua Empresa" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base text-slate-800 dark:text-slate-200" />
+                    <input name="companyName" key={systemSettings.companyName} required defaultValue={systemSettings.companyName} placeholder="Sua Empresa" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base text-slate-800 dark:text-slate-200" />
                  </div>
                  <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-2xl border border-slate-100 dark:border-slate-800">
                     <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Logo do Sistema</label>
                     <div className="flex items-center gap-4">
                       {systemSettings.appLogo && (
-                        <img src={appLogo || systemSettings.appLogo} alt="Logo" className="w-12 h-12 rounded-lg object-contain bg-white border border-slate-200 dark:border-slate-700 p-1" />
+                        <img src={systemSettings.appLogo} alt="Logo" className="w-12 h-12 rounded-lg object-contain bg-white border border-slate-200 dark:border-slate-700 p-1" />
                       )}
                       <input type="file" name="appLogo" accept="image/*" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base text-slate-800 dark:text-slate-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all cursor-pointer" />
                     </div>
@@ -7100,8 +7101,8 @@ const SobrePage = () => {
         
         <div className="relative z-10 space-y-8">
           <div className="flex items-center justify-center gap-4">
-            {(appLogo || systemSettings.appLogo) ? (
-              <img src={appLogo || systemSettings.appLogo} alt="SenseiRM" className="w-12 h-12 sm:w-16 sm:h-16 object-contain drop-shadow-2xl" />
+            {systemSettings.appLogo ? (
+              <img src={systemSettings.appLogo} alt="SenseiRM" className="w-12 h-12 sm:w-16 sm:h-16 object-contain drop-shadow-2xl" />
             ) : (
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary rounded-3xl flex items-center justify-center shadow-xl rotate-3">
                 <Icon name="users" className="text-white text-2xl sm:text-3xl" />
@@ -7280,6 +7281,19 @@ const SobrePage = () => {
 const LoginPage = () => {
   const { login, currentUser, systemSettings } = useApp();
   const [error, setError] = useState('');
+  const [appLogo, setAppLogo] = React.useState('');
+  const [appName, setAppName] = React.useState('SENSEIRM');
+
+  React.useEffect(() => {
+    fetch('/api/public-settings')
+      .then(r => r.json())
+      .then(d => {
+        if (d.appLogo) setAppLogo(d.appLogo);
+        if (d.companyName) setAppName(d.companyName);
+      })
+      .catch(e => console.error(e));
+  }, []);
+
   if (currentUser) return <Navigate to="/dashboard" />;
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -7293,7 +7307,7 @@ const LoginPage = () => {
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-primary/5 rounded-full blur-[150px]" />
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[4rem] shadow-2xl p-8 sm:p-14 z-10 text-center border border-slate-100 dark:border-slate-800">
-        {(appLogo || systemSettings.appLogo) ? (
+        {systemSettings.appLogo ? (
           <img src={appLogo || systemSettings.appLogo} alt="SenseiRM" className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-8 sm:mb-10 object-contain drop-shadow-xl" />
         ) : (
           <div className="inline-block p-5 sm:p-7 bg-primary rounded-[2rem] sm:rounded-2xl mb-8 sm:mb-10 shadow-primary/20">

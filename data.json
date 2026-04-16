@@ -213,7 +213,7 @@
       "documento": "508.743.650-15",
       "inscricaoEstadual": "",
       "dataCadastro": "2026-04-09T21:04:51.589Z",
-      "status": "bloqueado",
+      "status": "inativo",
       "cep": "94859-440",
       "logradouro": "Rua Pedro Cláudio Monassa",
       "numero": "2101",
@@ -240,7 +240,7 @@
       "situacao": "Ativo",
       "motivoBloqueio": "",
       "dataUltimaVenda": "",
-      "avaliacaoInterna": 4,
+      "avaliacaoInterna": 5,
       "attachments": [],
       "interactions": [],
       "customData": {},
@@ -298,8 +298,8 @@
       "responsavelId": "1",
       "setorId": "",
       "interessados": "nelsonrsmacedo@gmail.com",
-      "prioridade": "Crítica",
-      "status": "Em execução",
+      "prioridade": "Alta",
+      "status": "Aguardando terceiro",
       "dataInicio": "2026-04-11",
       "dataConclusaoReal": "2026-05-01",
       "tempoGasto": "",
@@ -308,7 +308,7 @@
         {
           "id": "f98f56b8-789e-4925-b89a-8c8ab2e7681a",
           "title": "testar",
-          "completed": false
+          "completed": true
         },
         {
           "id": "e7044562-0dc4-457e-a057-38797be4c15a",
@@ -332,7 +332,7 @@
       "id": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
       "taskNumber": "TSK-001",
       "dataCriacao": "2026-04-11T21:58:27.316Z",
-      "dataVencimento": "2026-04-15",
+      "dataVencimento": "2026-05-02",
       "logs": [
         {
           "id": "09522e52-e519-42e2-aaf7-b191f70166fa",
@@ -424,6 +424,45 @@
           "justification": "Movimentação rápida pelo quadro Kanban",
           "userId": "1",
           "userName": "Administrador"
+        },
+        {
+          "id": "2c0f3367-0cd0-4d83-84ae-41b73ca7f1eb",
+          "timestamp": "2026-04-16T23:11:49.032Z",
+          "fromStatus": "Em execução",
+          "toStatus": "Em execução",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Prioridade: \"Crítica\" → \"Alta\""
+          ],
+          "justification": "aaaaa aaaaaaa",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "bbe5d236-2ca0-4c45-86ca-feb134c123f5",
+          "timestamp": "2026-04-16T23:14:57.433Z",
+          "fromStatus": "Em execução",
+          "toStatus": "Em execução",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Subtarefa \"testar\": Pendente → Concluída"
+          ],
+          "justification": "sdsdfsdfsdfdsafsafasdfasdfsad",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "8fcad061-2324-4ee3-a8b5-a5669439e87c",
+          "timestamp": "2026-04-16T23:15:15.802Z",
+          "fromStatus": "Em execução",
+          "toStatus": "Aguardando terceiro",
+          "action": "Movido via Kanban",
+          "changes": [
+            "Status: \"Em execução\" → \"Aguardando terceiro\""
+          ],
+          "justification": "Movimentação rápida pelo quadro Kanban",
+          "userId": "1",
+          "userName": "Administrador"
         }
       ]
     },
@@ -436,7 +475,7 @@
       "setorId": "",
       "interessados": "",
       "prioridade": "Média",
-      "status": "Aberta",
+      "status": "Em análise",
       "dataInicio": "2026-04-14",
       "dataConclusaoReal": "",
       "tempoGasto": "",
@@ -516,6 +555,19 @@
           "justification": "Ajuste de parà¢metros técnicos.",
           "userId": "1",
           "userName": "Administrador"
+        },
+        {
+          "id": "07a4412d-934d-4579-b707-9a1b67e3cefd",
+          "timestamp": "2026-04-16T23:12:03.876Z",
+          "fromStatus": "Aberta",
+          "toStatus": "Em análise",
+          "action": "Movido via Kanban",
+          "changes": [
+            "Status: \"Aberta\" → \"Em análise\""
+          ],
+          "justification": "Movimentação rápida pelo quadro Kanban",
+          "userId": "1",
+          "userName": "Administrador"
         }
       ]
     }
@@ -524,8 +576,8 @@
     {
       "id": "0h35nq7wimnrscolt",
       "nome": "Engenharia",
-      "responsavelId": "1",
-      "descricao": "aaa",
+      "responsavelId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "descricao": "aaaasdfsfsfsas\nsf\nasd\nfs\nadfas",
       "dataCriacao": "2026-04-09T18:03:31.601Z"
     },
     {
@@ -589,8 +641,8 @@
     {
       "id": "stmykirc6",
       "nome": "VIP",
-      "descricao": "aadfadsfdasf",
-      "cor": "#10b981",
+      "descricao": "aadfadsfdasfsadfasdfsafasdfas",
+      "cor": "#b79b10",
       "dataCriacao": "2026-04-09T20:06:03.845Z"
     },
     {
@@ -627,6 +679,362 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "bhf6g8d24",
+      "timestamp": "2026-04-16T23:19:40.593Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "k0g1p7sfc",
+      "timestamp": "2026-04-16T23:19:12.288Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Administrador alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "1",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "f5jp01syr",
+      "timestamp": "2026-04-16T23:18:51.392Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CLIENTES",
+      "details": "Cliente Nelson Ronaldo Dos Santos Macedo atualizado. Alterações: [Status Base: \"bloqueado\" → \"inativo\"]",
+      "entityId": "a33114b0-74f7-4ce4-8619-044fbf0992a2",
+      "diff": [
+        {
+          "field": "Status Base",
+          "oldValue": "bloqueado",
+          "newValue": "inativo"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "vint1hfm2",
+      "timestamp": "2026-04-16T23:18:26.026Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CLIENTES",
+      "details": "Cliente Nelson Ronaldo Dos Santos Macedo atualizado. Alterações: [Rating: \"4\" → \"5\"]",
+      "entityId": "a33114b0-74f7-4ce4-8619-044fbf0992a2",
+      "diff": [
+        {
+          "field": "Rating",
+          "oldValue": "4",
+          "newValue": "5"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "a2grnpt2c",
+      "timestamp": "2026-04-16T23:16:58.566Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIG",
+      "details": "Prazos de SLA redefinidos. Nenhuma alteração nos campos principais.",
+      "entityId": "slaSettings",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "yzcgxco8f",
+      "timestamp": "2026-04-16T23:16:56.037Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIG",
+      "details": "Prazos de SLA redefinidos. Alterações: [SLA Alta: \"21\" → \"19\"]",
+      "entityId": "slaSettings",
+      "diff": [
+        {
+          "field": "SLA Alta",
+          "oldValue": "21",
+          "newValue": "19"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "l3t2idlgg",
+      "timestamp": "2026-04-16T23:16:41.854Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIG",
+      "details": "Categoria \"VIP\" atualizada. Alterações: [Descrição: \"aadfadsfdasf\" → \"aadfadsfdasfsadfasdfsafasdfas\" | Cor: \"#10b981\" → \"#b79b10\"]",
+      "entityId": "stmykirc6",
+      "diff": [
+        {
+          "field": "Descrição",
+          "oldValue": "aadfadsfdasf",
+          "newValue": "aadfadsfdasfsadfasdfsafasdfas"
+        },
+        {
+          "field": "Cor",
+          "oldValue": "#10b981",
+          "newValue": "#b79b10"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "x67ep6b2e",
+      "timestamp": "2026-04-16T23:16:41.787Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIG",
+      "details": "Categoria \"VIP\" atualizada. Alterações: [Descrição: \"aadfadsfdasf\" → \"aadfadsfdasfsadfasdfsafasdfas\" | Cor: \"#10b981\" → \"#b79b10\"]",
+      "entityId": "stmykirc6",
+      "diff": [
+        {
+          "field": "Descrição",
+          "oldValue": "aadfadsfdasf",
+          "newValue": "aadfadsfdasfsadfasdfsafasdfas"
+        },
+        {
+          "field": "Cor",
+          "oldValue": "#10b981",
+          "newValue": "#b79b10"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "3ml3volqu",
+      "timestamp": "2026-04-16T23:16:26.663Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "SETORES",
+      "details": "Setor \"Engenharia\" atualizado. Alterações: [Descrição: \"aaa\" → \"aaaasdfsfsfsas\nsf\nasd\nfs\nadfas\" | Gestor: \"1\" → \"86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2\"]",
+      "entityId": "0h35nq7wimnrscolt",
+      "diff": [
+        {
+          "field": "Descrição",
+          "oldValue": "aaa",
+          "newValue": "aaaasdfsfsfsas\nsf\nasd\nfs\nadfas"
+        },
+        {
+          "field": "Gestor",
+          "oldValue": "1",
+          "newValue": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "jm135zb9w",
+      "timestamp": "2026-04-16T23:15:50.326Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIG",
+      "details": "Configurações do Sistema atualizadas. Alterações: [Nome da Empresa: \"by NelMac Sistemas\" → \"ZecaAmaral\"]",
+      "entityId": "systemSettings",
+      "diff": [
+        {
+          "field": "Nome da Empresa",
+          "oldValue": "by NelMac Sistemas",
+          "newValue": "ZecaAmaral"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "fnp7hn6a0",
+      "timestamp": "2026-04-16T23:15:38.280Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Administrador alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "1",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "bfj97weqj",
+      "timestamp": "2026-04-16T23:15:36.829Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Administrador alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "1",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "onk73opzq",
+      "timestamp": "2026-04-16T23:15:35.204Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Administrador alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "1",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "nmudm2aqq",
+      "timestamp": "2026-04-16T23:15:32.921Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Administrador alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "1",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "mt1x98j92",
+      "timestamp": "2026-04-16T23:15:15.828Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Alterações: [Status: \"Em execução\" → \"Aguardando terceiro\"]",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [
+        {
+          "field": "Status",
+          "oldValue": "Em execução",
+          "newValue": "Aguardando terceiro"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "izuhtdklb",
+      "timestamp": "2026-04-16T23:14:57.557Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Nenhuma alteração nos campos principais.",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "cpxtmwlm1",
+      "timestamp": "2026-04-16T23:14:19.698Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CLIENTES",
+      "details": "Cliente GRUPPEN SERVICOS DE INFORMATICA LTDA atualizado. Nenhuma alteração nos campos principais.",
+      "entityId": "201eaa0d-6ee9-42be-b5f8-08692a179203",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "sl8ka09ys",
+      "timestamp": "2026-04-16T23:13:47.859Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "tnixizqna",
+      "timestamp": "2026-04-16T23:13:05.991Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "35xki9zmp",
+      "timestamp": "2026-04-16T23:12:04.210Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-002 alterada. Alterações: [Status: \"Aberta\" → \"Em análise\"]",
+      "entityId": "e178b8ae-12a5-495b-bfa4-0a9934329e2a",
+      "diff": [
+        {
+          "field": "Status",
+          "oldValue": "Aberta",
+          "newValue": "Em análise"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "qmvyn7yc2",
+      "timestamp": "2026-04-16T23:11:49.075Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Alterações: [Prioridade: \"Crítica\" → \"Alta\" | Vencimento: \"2026-04-15\" → \"2026-05-02\"]",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [
+        {
+          "field": "Prioridade",
+          "oldValue": "Crítica",
+          "newValue": "Alta"
+        },
+        {
+          "field": "Vencimento",
+          "oldValue": "2026-04-15",
+          "newValue": "2026-05-02"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "g72pbgc5m",
+      "timestamp": "2026-04-16T23:10:58.286Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "r4kxslt62",
+      "timestamp": "2026-04-16T23:10:40.713Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "i962kijuz",
+      "timestamp": "2026-04-16T23:07:13.327Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
     {
       "id": "umoyu1phg",
       "timestamp": "2026-04-16T22:17:30.275Z",
@@ -2803,7 +3211,7 @@
   "slaSettings": {
     "Baixa": 72,
     "Média": 48,
-    "Alta": 21,
+    "Alta": 19,
     "Crítica": 4
   },
   "emailSettings": {
@@ -2815,7 +3223,7 @@
     "secure": false
   },
   "systemSettings": {
-    "companyName": "by NelMac Sistemas",
+    "companyName": "ZecaAmaral",
     "appLogo": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHEAAACDCAIAAAA1RmOVAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAEXRFWHRTb2Z0d2FyZQBTbmlwYXN0ZV0Xzt0AAAAXdEVYdFVzZXIgQ29tbWVudABTY3JlZW5zaG9093UNRwAAIABJREFUeJztfXV4VEf3/8y9676bZOMbV+ICCQQpFqy0UNwpFC9SoPJWqdACpdC+pZQWWlwKFHeCBwlxd9fdbJJ1u/L7Y0O6QEIjC+/3+T35PPvH3rtj97NzZ86cOecMBPRw0AurAvlfN+D/Q/Ryan30cmp99HJqffRyan30cmp99HJqffRyan30cmp99HJqffRyan30cmp99HJqffRyan30cmp9oIDi+L9uQytYDrZxP7xvG+LXmJGPG0wvTkzjscPXve03e7w0Kduk0b6aFnYSr7Sf8jycJfFxTDthu786DYx0HhztM200R/LvfzNH4uQzbbTz4CjHgRHtJmDaCSXxcTx35x61uFt4pf009rs1vtPHoAxaXWLa87/q5S1MexsamyX096i9nYIbjB2VQ+dz+36+FKVSahNTCw9dwDS659OErJgZvGwa38u1/MJtaz5DJ/BK+ynTVkQXcOlCXru/ahvk99Zsujb3I6ataMiuzztKRhfyhuz6nGkrvDb3o3trNumk8vaTiXh0Abejd+Kl4pX2U51ULgzwStv8p76xGSIIlc0kMRyQpGUak0pTdy/NeXCUY0yoPKfYqFRb/spxdYj+zyKERk1cu0VT0/BM+ZZlamqk4uigjO37VeW1L/3BnsYr7af6JoWhWWHSaCECHePC+21Y4TNttGUCga8b21msrml49NnPAIHh6+YxbARtvzJsBOFr5wEEPvrsv+qaBrazWODrZpndZ/rofhtWOA4Ihwg0qbWGZoW+SfGKns0C/xtZCqFS3ccOdh83OGztXACh+aZdZOCwP76O2/o+SyxSVdalb91H53H7b17blqv/5rV0Pjd96z5VRR1LLIrb+v6wPV/bRQa2/gxh2Hvz3McNdh87GKFSX/1DteFVcwohAiEkTFj9o0x1VT2CIG5jBiJUCgBA4OPOEPFtw/y5bk6AJJXlNeUXb4v6eLXlFfXxKr94W1leA0iS6+ZkG+bPsOELfNwAAAiV4jZmIIJAdVV9/aNMwoRBCCH83/QYyksql89jM5l0lVqneXpSZopFDrGhRcevlJ29WXcvzX3soJDlMygMevmF2xUXbrMd7YT+HuFr56ds3i1LzQPkc+WSAEBgFx4Yvm5+7Z3k5rzSigt3UAbNfezgwIWTMn46VHHhjk7eQpKkfWwoUyx6JjebzeRyWFqdXqnUvKQHBy+DUycH25nTRwYFetAZNK1W/+Bh9onTt5qbVa31sRghK2chNFrBwXM6qTx//1mjQu03ZzxJEKWnEtK372PYCIKXTov58t3H3+xqt3yHmLCojxc1JGVn/XJEL28GJPB8c5j/7PG5e06WnkogcRxA6DdrXNCSqZa5hELupAmvxfbrw2Ix9HpjTm7ZwSNX6urblxl6CCvP+95eLtu/XzV0SGTCrZQHj3KYDNrsmaM8PZwfp+RrtXqWvY1NkHf19YchS6eZNFp5VhEgiJbCCkAQ4e/NU1XWKkuqMa2+LjGV5+7iP2scgeN8L9fc3SfNhQcufMuo1PhOHyt9nJn8zS6zWOoyLCb606W5e/4u+fuamVDfGWMi179ddOwShUmvS0zTNchtbQUbPl04eeKQxyn5d+5lYDg+fcrw/rHBKan5TU/+bCvCmpzyuKzVK6bExPRBUeT+g6zjJ29cuZ6UeD9r4oTBVColNb2AKbZxiovI+O9hZUmV38xxuNGkKKwgcbyloIzAiYj1b+sbW5TlNYQJkyZnc1wd3F8fAhEk57fj5vKDlkwV+LpX33iY9v2fhNGEMmju4wb3+2JZ7u6TRUcukBiOUFDPCcP8Z72e+fORyiuJrsNj6hLTDLKmOTNHRUf6L1+97diJhNKyWkcHmyGDI8R2QjaL8Sg512j8l3VwV2HNUdzR0TYoyPPUmTsGo2n2jFEzpo5g0Gm5+WXHTiSMHhlDoVBwgxGl08URgaWnEwoOnvOdPsZr4jAAIYHhBfvPpv94IGD+BPdxQxAaFdPqs389Vn3jEWkhvZIkWX3jUfbOY5hWj9Co7mMHB86bkLH9QP7+MwSGAwi9Jg73nT624OD50r+viSMCUTodNxgpFMrokTFHjyfk5pfR6dQpbw19d9kkCOC1hMfBQV5OjrZWZMAMa3LqYG+jVuv3Hrj4+Zd76AzaogVvTJ08DMeJouJqDofJ47JU5bVl528FL5smiY8rPX2j+NjlkBUz/We/DiAkMKz4r8v5+88EzJ9gG+YPANDJmmUpOSROtJVP4oQsJUcnawIA2IX5B7w9Mf/A2aK/LhMmDEDoP/v1kBUzi/+6XHo6QRIfF7xsWtn5W6ryWj6fzWYxi4qrcZyYM2PUiiVvcbnsb7fs37Hrb41Wb//cPNZzWHOOIggCRSCG4Wcv3GOzGevXzPho/WyDwVRdI4UQwTAcNxjz952hMhn9NiwHEBSfvEoSRNiaOZjBWHLiGonjVdcfOA2M5Hu4SJOyAAAkToCn5n6yjWKeh4uiqKLq+gMSJyCKeL01ImjJ1PTtB0pOXpXEx/XdsDzvz1P5+84AksRMdIhAOp26Yslb7y6bpNHqN289dPjoNVdXewSBOI5bkQEzrMlpTa2MTqf5+UoqKuvPnLvL53PeeXv8+jUzsnJKZI3NGq0eAABIMnvXMRzDAt+eCAAoPZ2A0mleE4ZLH2Upy2vaEZ5eDBIAALiujl4TR2TtOFLy9zW3UQMDF0zM3vVX3p6T5lWvWqNrbGxZ8+5UL09nhVLz6++nTpy6SZCkv6+ETqO9jKnfmu9+fUNT4oPMxQvfjBsQotcbDx6+8ue+C2w2IzTY+/TZOxjW2iNIgszfe7r0zI2A+RMko+LqH2QAkjSL/VQOi8bnsp3FKJ2GMmgMGwGCohxnewAAx9keQVGGjQBl0BAale0spvG5VA4LAIBQKYAk6x9kuMUPCHh7QunZm/l7T5NE6/+DYfips3c83B2pVMqPPx878td1g8E0cEDo4oVvJj7IrG9osiIDZlizn2q1+j17z7s4i3/csrq0rKamtjHA382E4UePXz93MdFytiFMWOGRiwiVEv3JksKjF9vuC/097aOD7MIDik9eRVCKy7AYKpftP39C8te/+s+fQOWyXYbFVF57gBsM/nPeQCioqI+3plZqzus2dpDfzHG5e/4uPHyBMGFtZZIkee5iopvEYea0+JnT4qMjA52cbL08nO8/ytqz77zW/PZYFVaW+WWNLavWbR89Mmb40GgbG156ZtHX3+1NfJBFEM++1YTRlPfH3yiNGrjwLU2tzHwTUlCESkGoFIhAiCIojQohpDDpAAAKkw4hRGlUiCIQQcw3EQpqzkjlsgPmT8jdczJ3zwnyubrUat2mrYcSH2SNGzPAydG2pla2/+Cly9ceYhgBXgK6ySnb0Y7G5ypKq4jnhDscJ85fun/+0v1/LYQkyKydxwgMcx8zuHvN+KcoDM/edSzntxPPaA7/SUCSdxMz7iZmvLgchEble7kaW1SaOlm3G9MdTiGCxG56j2krrLyaqJO2Mx6RGF557b6hWfnvZZFkdcIjl6Ex3WiGJTC9ofr6w44IfQZ0IU8yoj980sctwRLbSOL7a6XNCfP/83x/7yS6wymFSbePCoIoEvj2xDbhBqFREBTFDSaSICAFdRwU+eiTnwwtL1z5QQAAJDBcJ23CTSYAIa434HoDgNCk0lGYBGYwkgRpaFECCA0tSpIgMYMB1xtMah2uNwIIMJ0eQIibMJ20ySz2A0C+WHigC7j9vnrXeXA0ieEQQVA6lcBxwtg6/kIUQWk0jpsTyqBj3R1qYff8TnxnjDWvxNveEVEf774blsvTC7J+OUJhs2K/W60sqcr46ZC+sfn57FQ20zY8QOAlobAYAAKIICRBABJABCJ0GiAI874pQqciFBTXG81CKMqgERhOGEwAAJROBQhCGIwkQVqWYNLqFcWVsvS8djepGLbC0JUzeV6uDz7cjmm0wcum24T5JX2+oymn2JyA5WjbZ8EkRWlV4eEL3aDFjG5yalEApLKZuNFEGE224QFhq2YrSqtSN//B93YNXztf19CYsmnPs4MAhFEfveM5YTiNx+5R1R3AqFSXnk5I/vZ38PTLSxfyIj5YwHKwTft+r6K4MmL9fL63JGP7AVlaHkKjojSqSaPr5OjxYvRUhyKO7DN4x6dcd6eGR5naWpmyrNp3+lhxZGDJyWvyrELfWa/b9w2uS0zD9Ya2LA6xoVEfL6awGD1ufPtA6TRRoLcsNVdd/c+GFV3Ii/12Nd9L8uiz/6oqamM3rhYFeqd8t1ueWYjSqJEfLAhdPbuloKwnU1MbeipLuY7sL/CRcJzFOb/+pZM1NabnP/zkxyE7Po36eHHqpj23l345ZNfnkR+9k7ppj17eYs7CcXEwS/gkjjfnl5Wcuo7pO9x27jwoDJrXxBFCP3eIogiVwnFxAKB1lmfYCCI+WMBxdbi1eINRqYn6eLE4IvDW8q+asosBADQex2viCAqL4TJigDQl1wot6WH+snO32E5igbekz+LJ2b8c1TcpmrKLby37KvKjd0LenZH585F7qzdFfrwodOXM9G0HDC1KAAB8sgElTc69s2pjp8SDzqH8/J1BP31k3zfYsha6gBe6ciZTLLq3epNRpQ15dwbXzenWsq/MYyhDxO+zeLK2vrGluLL8/C2rNKOn775O1lx3L7Uxq9Bv5ji+j1tjRgGm1esam1Xl1R6vv2Yb7AtIEqGgkvg4oZ87hcVk2dswbYVOAyMBAEV/XTYvTK3yJAAAwoQxbIWOsWEAgIaHmXQhVxzZJ2D+m04DI6WPsxAU9Z4cz/dyTd+2T55VBABg2ArD180XRwQ++mJH8V9XLMeKnsAKOmncYNTUyapvJgUtmcJ1dZAl5+AGo7Ze3lJY4Tt9jOuwGIG3O0KhcFwcHGJCuK4OhhaVfXQQAKD62gN5VmGX9SYdA0Ig9PNwHhwNAJBnFbmNHujx+hCuxAkiCN9T4hAbSuWwkr7cKc8sBCRJ47LD1s4VR/ZJWPhpS2HFC8xeuoruvPsonYYbTW39CyIQoqi2TnZ31XcxX68MXjEj8+fDJpWmKbvowvgVz2f3mTKqo5KpVAqfx257bU0mTKHUWCoKUBThctlUCgoAIAhSqdKYLJb2ltDWya7/eKDDirjsoGXTRAGed9d8p62TIVQKieP/CPkQojRqt1nuMqfi6CC3+DhZRn7l5XuECUMoqPOQaLuIwPKLd5tzi1M37Y54f0HE+29n/nhQ155k+mJ4ujstXzKRyaSbL5VK7cbN++RN/wy4Njb8BXPHeXo4AQBUKu0vv50qLqnuai1MW2HIyllCf4+U73a3FJSLgnzcxgyUpebW3npMYDhCpUhGxdmF+ldcuSd9nN3VwkFXOUVoVP85b0hG9reLCJBnFqoqaiksRuA7k+xC/dnO9ndXfStLzXv0+c8Dt38Yvm5e6pY/9fIWKpvlO3Mc21lsLuF5gxxL8Pmc/jHBXC7LfEmSpLxJsXHz/rYETCY9LNQnLMQHACCXKw4eudJRUTQ+N3DBRJajXWu9tbLiY5dMGh3DRhC+bp5deMCd1ZtaCspIgghaNFkysr8sIlCalGVUathO4sD5E0R9vJn2No3p+UQH78EL0DVOCaOppajCaWAkXcTne7mqK+twI9aSXyby97QJ8maKRTpZU3Ne6bVZHwzbu3H8pV0EhkMEUrkshEJpe7bKK/c6WR2EcM7MURcvP0jPLOraYwHAsOFL4uPYTq2cEhgWtGgySZAIBdXJmq/O/lAnbQIQMMUiUR8v3GBsyS/DjRiEkO/lShfxMZ2hpbCiG4SCbrz7WTsOVyc8lIyI7bN4MmHCau+mpG7+o+R0QtDiqQO3ffD4q19bCst1suY7K74WRwVBBEEZNJfX+raZPalrpJby/78CQrhiyVvr/vNzS4v631NbANcbWgrLTOpW2wi9vKX6ZhKuN5IEIU3O0UmbIIQCP/foT5e2FFXeW7dFUViB6w1OAyP7LJ5Sdjqh8tqD5rzSLtXYhi5zSuJEU06xqrIWN2Hh6+ahDHrVtfuNafmPPv1v6Jo5Ee8vSPn295aiCmVZjbKsBgAAKWjN7ccURusQadLozIJU5xEW5jNiaPTJ07cJogvqTq20qeTv622rNUxvUFc3kNg/u088L9eI999WV9Wl/bDPrF1zGR4T+u7MqusP8vaeMam6b6jSzb0Tk0qbu+dk9Y2kvl8scx3RHwCgkzVlbNuva2yO/XY1jc/9JylBYmqdUalu/ag0lluhnQGXw5rwxmAH+65tcJI4YWirVKnG1DrL5T+Nz439do1Orkjb2kqo64jYfhtW1NxKyvn9RE8IBT1ZR+F6Y8aPByACQ1fN4nu5mreIVeW1jv3D449syf3jb7OwRWWz/Oe+wXGxN+dSltdUX3/YmfIxDAcQUFAUABAR5hs/vN+fB7qgK+K6OY46trXN9lxd3ZC/70yr5T+EgW9PpPE4NTeTnAZFAgCYdiL3cYNLTlxN39ah+NV59HRtmvXLUUOz0ibUT+jvYb4jTc4GADjFtZrZo3Qa7ck8DgCACNJmHPlilJbVqDW68FBfCCGEcMG8cbfvpuJdWHRBiPzzFtK4LIfY0DaRs6WwHAAg8HUzW7CSJFly8lpP9HuW6CmnuMFYcOg85e/roAOiECrVJtiHxm1V6xmalTxPl86UrFBqDh296usj4bCZAAA7O8GH62Zv2X6kkw3TNjQ+/monXdBqwG5UaeRZRYSpAzMeEmA6ffdm+edhhT0+woQZTS+alGtuJllesp/IjP+KzOySA4cuL100wXwZGxM8Jr6sk3lxnaH2TkonE1sXPeYUArqAZ2kh/mwFTIYkfkCbr4K6uuH5bcEOQYKdv58eMig8wN8dAECjUSa+OaSTsz9dyAtZOdNsGwAA0MmaK68kYroOt0P08hZDi9IqyoeecsqyE4WunsPzdCFwHAAAAaRymBBFjQq1eWMIoVAEPm5UNtOcXlMrrbyS2PnyDQbjL7+d+uaLRTweGwDgYC/q5IhKF/Ik8QPYTq3rN5NGJ44OIjDM3Egan0PiuEmta20kiirLqjO27de2t2XZVfSIUzqf23/LOsKEpW7aY1CoAAD2fYNDV82uvHQv/+BZcxoqh+U/9822eV9VXmNSd83t7mFSzq27aa+PiTPPbZ2b4YBJrW1IyuI+Ne+fbqvaf9Z4yei4wiMHGpKyzA8SvHx6/y3r7q781vwgPUF3OYWAaScasGUdXcC7veJrdVU9AEAY4OkzZVTl5XtJX/5imTZx7WbLyxfopdqFUqk5ffZOv6hA+66IqDppU+bPhzv6NenLX0iS8Jk6Wp5Z2JRbAgB49MWOwT9/PPDn/9xf971WKu/JINBNmZ/jbB/54ULChLURahvm1/fzZY3p+Rk/HbRMidKo9v1CXEf2N38cYkLRJ2qnziMpOe/6zeQuZUGZdPu+wS7DYswfcXQQQnvKGSXz58Oy1Ny+Xywzm2Zqqhtur/iG0JsiP1zIcXboagst0eV+ynKwdRszyD4ykCCI5G92qasbBL7uzkOiPd8cVv8gI3vnUUOzEkIoGRXn8lpfiCIIjWob4kflcczZ1ZV1dfe6PB2bTNjvf54bOjjCsdMmuEw7keebwziureyYnshSJE5U30yqvHzP0KzM3nksaOm02I2rS08n1Nx63FJUkbxxV9h7c6M+WtiQklNx8a62vrGrTQVd7acQRcLXzgt/by7PyzV390lleS2VzYz8cGHoqlkmtTZ1826zztRleEzkh+8gdJq+SWFUqCCFQmUxWj8clqUo3nnU1TV+s2k/2WmZH0FRGp9D47LNH4RGMypV+iYFQqdFfvSOy/AYAICusTl1826TRhe6albkhwupbKayvDZ390melyT8vXnha+dBtDtN7Wo/hbjegBtNmlqZVtpkXn3iBiOm1cuzCnGDCaXTJPEDoj5enL3rr4L9Z8wqXuGxK2ajRgCAoUUpjgjsqPSKyvrN2w7RqFQAQIO0SaF4Suy9eSf1/Y938p6syvR6Y1WNtKOi1DUNd1d9RxfxzZcmlUaeXUQYTQgF9ZvzRszXqyhMRuWVRNxglGcV8tydWpdYJKmTNmnqpEyxCNcZQEcrmReia5ySOJ71y9HGjIKm/FJtnQwAgGl06T/sE/p71CWmoXSa++tDAua+kfHTweJjlwkMBwAQJkyeVWhZiG2wb0flN0ib/jpxo6NfMQw/e/5uJ5tKGE3P1Nt6H8ML9p/FDcbAhZNQOq3s7M2sHYcb0/Ka88vMpiuaOlna1r0if8+6xDSyW1bUXR5PNXWy4hNX2y5JkmwpqmgpqgAAeIx/LWDuG3l7z5SebvVTEgV6tUmmZhgUKvPm/ssGQqUI/NzplhoyAEwaXVNuCYFhRUcv4jqD//wJuNFUduZG2blblsmasovNW//dg3UeD0LoMjwm6uPFGT8dLD19ncQJiCDeU+Ij1s1H6TSAQARFSZIkcVxRWv1qlowsR7sBW9bzPZ0hikIICRwHBIkbjKnf/1n81xUSJ0rPJKBMetR/FmFaXfX1h50fqf8VPeUUoVL4Xq52EYF9Fk3J3vVX8bHLZkI9JwzzmTo69fs/6xLTJPEDvCeNLDl1veLSPUyjcx0Ra87LFIsgipKEdTQXAACIokyxjfm7uro+Yf7HFDbTbXSc14ThxSeuVl5JdBwQ7jN1NGHCSk8lkDhRfOwySqdFfbyEaSeSpeYqSqqsokbpKacuQ2NCVs5k2gnTtu4tPXnNbLDoPSXeZ+rooiMXS04nSEbESuLjCo9eKjhwtlUb/UQ3LIkfUHs31awbtApsw/wl8QNaLwhSL28B8pbc3Sdxg8l97GBtnazk7+uAIP1mvY5QKUXHLhMYVrD/jEmjDV87TydryvzpUJfWzR2hp5yKgrwF3hK9vLnqcqKZUP/Zr4eunJWyaU/pmRuSkf0jPliQt/d00ZGLbep9os0fx91l0H//o6mVdnW12i6oHBbbScwQ8p/U8sQlAyeKjlyEKBLx4UIAYcnpBJIkIz9YgNKo+QfOERhedTkxbNVsgbebqI/3/wlO8/edobIY0uQco1qDUCmebw7zn/tmyne7S0/fkMT3j/hgQdHRS/l/nrK0OZal5Jg0WiqbBSBgiPiMJ+KOFWHUaGUW1mS4wZj/5ykKgx7xwQJAkqWnEgBJBi2dhukMpacTjGrN469+FUcF5u8/Y5Xau2nbQ2Uz6XwurjdiGl3tnWRFcSUAwGvCcJ+powv2ny05cdVt9ED/eROKT1zN/f1ZpwVDi0ova2bZ21IYdJIgCBNmxQ+m1bcUlWf9fKT+4dOm+ySQpeQACL0nxZvU2rKzN3GdwWfKKBLDm3JLFEUVtXdSMK0eIgjTRmCOMNBtTrvVTyGM/nQp28mu+OS1ttWbTZC33+zxDY8yNfWNXpNG+s0aV3IqoejIxXat4ktP35Cl57PENpCCUhg0touDuqoeNxjpAq5dmD9JkDV3khEqxTbYl2EjaMorUVc3cF0dhP6eenlLY1YhieFOg6IAAI0Z+YYWFUqncVwcNNX1mMFIYri2Qa6qqHm+UpIgCw+eJ3Giz6JJFBZDU9+oKK0KXjGDxufIn0hOLAdb70kj1TXSBx/+0B1mzPR0w06aymFPfXwUIAiJ4+Q/VlMIRBASJ0iSACTI+Olg7p6Tndki5Xm49P1i+eMvdypKKiUjB8Rt+wAAcGbkAgqD0X/TWmGAZ/GJK0mf7+i3YbnXpPjmvNL7H2zFTdj4S7sAAHdWbay+/pDvJYn+bGnSFzuUZf9u5wNRJHDBW6ErZwEIIEQgipAEQT7Rc0MIIYoCkjwWNbXNNqCr6E4/Nak1+QfP8zxdcn473q59IYnj2gZ5J40gKUw6hUGDCAQAQBQxuzxBBAUIglBQhIKabVgghWK+BAgCUfhPMgAgAikMGoXZKcNrEidyfj9RdvYmRNvxO+G42PdZNElZWt1tQkG356iUTbsRCoobjO3qGVEU9fJw4nJYzS2qyqqGF4jTdAHPb874TtLxAlCYDP+541O+22No7jBQD4RQ4movFHBVam15RX273ruamobG9HwC65Fjbzc5JTEc76DikCCvVSsmS1wdqBTUYDRl5ZTu+PVkWXnd8ykZIn7MNyttwwK6p1KzBIHjToOiaDzOw09+ajNyt4SHu+PyJW8F9/Gk06gmDK+sqv/x5+OZ2SXPp+y5Iao1fXghhLH9grZtWWlrI/xxx/GVa388dPTq0CGRm75earZutARDxI/6eDHPS3L/gx/aLKhwnQHT6vRNChLDSJPJqNYSBKGXKwAAermCIAijWkuaTIQJ1zcpMK3un4x6w/33t/K9XKM+XvS8cObp4bTp66VDh0QeOnJ15doff/rluK2NcNuWlTH9gmAnt2K6AmtyKhJy58wclZ5ZNG3OZ+cvJkplzW4SBxaTHhTkNX3KcNRCbcoQ8UNWzWLYCW8v/UrXIIcINLuNS1Nza24nZ2w/oKlrVJbXlp1OMCpU6T/sBQCk/7DXqFCVnU5Qltdqqhsyth+ouZ3cmJ5vLhAiiE7adGvJBoaNIHT1HEtaURSZMWVEUJAXi0l3c3OQyprPXUicNuezjMziOTNGiYRPKVmsAqvG7nCwcZM4HDh0RaczuDiL16+ZPnXSsEa54uLl+3H9Q6lP1FGtPdTDJXXzH5paqe+s1w0KtVHV/aWUUaUxtKh8Z72uqW9M3fIH190p6uPFbbRSqZS4AaEXL91vlCumThq2fs10F2exTmfYf+iyu5uDg4ONFZ78aViTU7FYpFCqG+UtHA5z44ZFo+NjNBr9yrXbjp+8SaWiAgEHAEAX8GK+WSkK9nm8YaeypCpm42r76KCsn4+YQxmidBqFzeyUwECSFDYTpdMAADqpPHPHYfvooNhv1yhLqh9/sUMU7BOzcZXZCEUg4FJQ5K+/b65cu02j0Y+Oj9m4YRGHw2yUKxRKzcuI3WFNTrVaPZPBCPB3P7r/y+iogKKS6vmDuuIrAAAOIklEQVSLvklNK6TTaQhENFo9jc8JWzuX5WCX8PYn+qaWiA8XigI9E9dtacwsIAmSymYFvD2RYSNoMFt8Q4gy6E9r2iHKoJs3o+sfZzFE/MAFE6lsFkmQ8szCe+s2C/08Ij5aqG9WJrz9CVNsE7ZuHo3P0Wr0CIow6NTUtML5i74pKqmOjgo4uv/LwAA3FpOuac+FsoewJqe1dY0EQXz9+TveXs5JyXmfbtidV1DBYNAGxAaXVdTpdAauq6NNsM/jr381tqiCl03neTgnrv9enl0EzPEN18+3iwxI2fibqqIGQCj095DED0AsvJcRCiqJHyAM8AQQqitqkzf+bhvuH75+PtNWCABoyi5OfP97nptz8PLpRoU6+ZtdNkHeXFdHrU5fXl43IDaEwaDlFVR8umF3UnKet5fzV5+9g+P4//3YHfLLVx/S6bSmZtWWbYezskuEAu7yJW8NGRR+7EQCjhMAgSa11qTURH2yxCbYO2P7gaY2QtfNd+wflvzVr7LUPJIg2c7iqI/e4bjYPzUOkCTbWRz14UKOsz1JkI1peY+/2uUQGxq2bj6jldaijO37RX28oz5ZbFJpTWotQCCOE8dOJgwZFL58yVtCATcru2TLtsNNzSo6nXbp6qP6l8Bpj314nwaNSlm5fPKCea8bDEaFUm0j4huMps0/HD7x9w0cJ2xCfKM/XQpIwHG1v7HgU7OxApXNCl8/3yE29OqM9WaxiS7kjTy0WVlWLc8s9J//5omYGebCJz08nPfnaZtgX76X69UZ680OgHQhL/7o9w0PM1O3/GHWGQoDvYbt+UpT00CS4PFXO+WZhSiKTJo49P33ZtBpVLlcwedz6HTanr3nftpx3GglWz5LWDm2HE4Q9x9m37qd2tDQVFUjvXo9afMPhxPvZ5qXUix7G//Z4wmj8c6q78yuiXQ+N2jZdJtQ30ef/KQqr2XYCAR+7rHfrtZJm5K/3sW0FTj0D7OMLVeT8LDg0HnbUD/vyfGK4krCiBmaFbL0PK+3RvDcnOTZRbjeqJc11z/IkMTHcZzFZedu6hrkJEnm5JZevZ5UUyurrZffvZexdfuRM+fv4l0xZu88Xsp2W05eWU5e+0aNOmlTyre7m7KLGCK+bUSAZER/vrckZePvTTklPA+X8PXzeR4ujRkFGdv2aRvafyu1dbKkz3eEvTc39ts1yrLqtC1/NueWpm7eE/WfRZEfLaq8mtiYlteUW5zy3e9RHy2yzFheUVde0c5yzup41RFCDQqlqqoOoVJ8Z46L/Wa125iB9z/YKkvNJQnCcUC467AYrptTwaFzZkJpfA60mPfN9ngAAJ1UXnDoHNfNyXVYjOOAcJIgGlPz7n+w1X1MXOzG1b4zxyFUirqq3qCwmndwl/C/iboKIWSI+BQWQ9fYoiipNo8MlZfvydLzS45fUZfXQgQ6DYrymjSy8PD5tlyFh897TRrpNCgKIlBdUVty4oosPb/y8l0AAEmSipJqbWMLhcVgiPgvY8XZebyKrfbngRtN+QfOqmuk0uTstpld19h8ddo6AAFJkE6DooKXTau4eDd759G2XFm/HCVJMnjZNABh7e3HSV/sIEnwj2BAkvfWbBJH9am+8Qi3dqjILuGVcmoX6s91cxJ4S9RV9crS6tzSE88kIEkSkMB1ZP+wNXMqLt7N33vaUu1GYHje3jMAgKgPF6bRqVVXnw231Jie36YBEHhLuBInuzB/eWY71igvFa80lnz/zWs5LvYog15x8U67CRAa1XVk/76fLS07dyt7xxHsOY8/wmiSpebSbQXBy6Zp6qSqyrqOthLC1823DfHlSBwLDp6z8mP8G15pP625/ZgkiLp77RwiAQCw6eM9bO83NB4n+7e/MrbtbzcNAIDA8Ixt+yGCDNr+kUGhTpj/cVvUHUvU3U/jebrU3u2a1apV8Eo5zfjxQOHh85q69jXQPE8XGpdtaFaWnLz2r0WVnLzmMzmeLuDyPJzb5bT4xNW6xLR2Q4q9bFh5HdUTUDks99eHGJpaam49/tdzeVA6zXlINF3ELz93yyomF1bE/yFO/79B75lc1kcvp9ZHL6fWRy+n1kcvp9ZHL6fWRy+n1keP7flpVKe4cCqXg6m11beSSJygctkuQ/uZ1FpZaq55ewOhUu37Bpm3jNqgqWmQJueYv7McbG3D/FEatfziHfI5kyEKk24XEciwFZrU2pqbj1qNLyHke7qIAr0AgkgfZ7VF+W4Dw4bvEBsGUbQxNU9V1Y4qGqII21EsCvTkeUlwvb65oLw5t+RfAgt3Dj3llMpihK2dJ/B2w/WGm0u/rL+fzhKLBmxeqyyvSVy/1cwplcUIWjTFPibEMmP5hTuy1FwzQaJAr76fLaULeVXXH2LYs5vDND43aPEU+34hRqX6yrR1ipIq0Gp09obPlFEAwjvvbnyeU7dRA6M+XQIhLDt7M3H998+33KFfSPDy6bah/mbfIqNSU3svJWP7AVVFT8/vs9p6H2XQg5dOa85tx6qrDaVnbtQ/SDd/V1c3dNV7hspmuo0eaPZ2ZtgInAdHv8Dx3GvSSLNm2mVoP46L/TM2nTQ+t++GFVxXB22DvCrhIcNG4DQg3H30QGOLKunLnT0MdWk1Tgkctwnydhsz6AUx7loKys1Be0iS7MYiHaKoQ2xY8fEr2ga567B+LIcO/XnFkX1EgV6Y3oCgKIXFcB3ZP++PU5YJAhe8xZU4NueV3ln1raqiFkDoNiqOJuAW/3W557FDrcZp+YU7nuNf83hjqLahQ8NH3+ljXIfHAACMKu3NRZ93oxa+l6tNqJ/xXqr31A6DAEAECZj/JiDJ6huPKAy6y9B+jnERpX9ftxwrneLCSZKsuvGotf+SZMWlznpd/iusNu9n7zzaXFBuE+TtMW5IR2koLAZdyKcL+XRBd6zpFCWVdAHXcUC4ZPRAvoeLvknRbmfne7mK+wabHY2lKTkAAIGXRBTo9VQiBAEAkPizp6taBVbj1NCkyPzpICDBP15fzyFn98lLk1ZfmrQ6Yf4n3agi/8BZkiRdh8eGrphBAiDPLFC3F6XSZXgMlc1CaVTziVIAAJa9jV1EoKWfqzQpC0LoOCC87RxE21B/rpUOl7amTlqaklOV8FAyskNOOa4OdhEB5u86aVNz/jM2ANCxfxhuNAIAcKOpMS3/GZNlZWlN/YMMxwHhAABDi7L2TornhGHPVMGwEdhHByMUVFMjNZ/hCymowFviNCiy8OhFfWOrCXXO7pOuI/qLI/sM2flZxaW7DBuB+5hBdCEveeNvPY/cZU1ODS2qkr+viyMCnz8E0wy/GWP9Zow1fy+/cCdx3WZLTx+IwME7WvuvTtZ8adIabf1TEhJhMlVeuSeODkJpVGVptTQ553lOhf6eAl83kiAS3//eHDSaymWNPr5NFOgl9Pesu5faWr5U/vjrX0NWzBD6eZiHBdxoqr+f3rZF2BP0lFNMZ8jfe4Yu5GF6AyDJhkcZqVv+YDnYGhXqNkYwvaHo+OXaxFTLjIqSqrahTFFSlbXzGMUiTgqm07cFIjSpNEXHr9TeS1XXNGjqGuF3u6lspjyrUF3bUHDoAtPuvtnTHQBgPsIjb98ZXG9oc3UgTKbkb3/nuTs/E9eq9vZjZVm1fd9goa87pjfI0gsa0/OsstfSq+e3PnrX+9ZHL6fWx8uymXB3c5j81lAfL5fCoqq2CHsDB4RWVjUAACCE3l4uk996zcPdqbCo2pwAQjhn1uioyICIcL/QEB8cJ6TSZgBASJDXuLFxEeF+YSE+Wq1B3qQAAISH+iIIVKm1AAAKBQ0L8dVo9QaL3da+UQEoiioszoUWCrgzpo4I6uNZW9uo1XUh/nJX8VL6KZVKmTdrzJ176VJZ88plk9vujxrRevYWm8WYPnn4jVspSoVm0YLx5pskSd68ldrSrMRM2I2byRWV9eb77u6OMlnz9YTHCbdSap+c8TJiWPT4sXFm/yBXF/Hb88YKLdYRdDrtvVXTBg8KR58EM6JS0Y1fLn6YlFtcUjNuzAC0W0GOOomXYjNBkqRKoxOLhUXF1SWl7bgoEySp0erEYlFOXllufnnb/arqBjeJvd5gMndnMxCIMJg0HpeF4XhlZavWymg02djwnJ3tKqsavD1d0KdjVk0YP+jchUQURezFotq6RgAAgiA1tY32YmFlVX1lVcPz5wNaES/l78Jx4uSpmyiKDn8tcuTwvs9bLur1hlNn79KplJHD+w57LfLFlo0oioiEPHt7GzsLDaxWq69vaPL0cKJSKX0CPTKz/4lRzmYzh78WlfggE0Lo7tYaB81gMO07eNFoxGL6Bg0fGoUgL9GY8qVwSqdTY/sF3b6TduDIVT8fCYfDfCYBl8uOCPO5eSdt/6HLAX5urBf68OoNxtT0ghu3ki1PKCRJMi2jKDTEZ8L4wWkZhZZHasb1D9EbDHNnjQnwdx8+NNp800bEGzIoPPFB5tHj1yWu9mi3YrF1Ei/l3TcaMZIEc2eNQhAkJ69M9cRHr/6JOblOp2cy6LNnxFOplPTMYo0FIxqNHj7diTAMi47wd3UWEwSZkl5QXl4HAGhqVjY1KYqKql4bEvHhJzv5PI7Z2wFBEAd70X8+/02p1EAIly+eyGIxtFq9vElpDkqNYXhRcTXWxdjrXcLLkvmpFIqdWABIUGthcSYUcJufKNxoVIpYLMRx4hkPJQadBhGos5iXuRwWn88GAJAkaGlRmf8ALoelNxghhGwWo7lFxeEw9XojhuEIgnDYTJVaa7a95nJZRoPJ8GQF5WAvolDQBmlzRyfPWAW96yjro1fmtz56ObU+ejm1Pno5tT56ObU+ejm1Pno5tT7+H/VVpiO/tca0AAAAAElFTkSuQmCC"
   },
   "notifications": []
