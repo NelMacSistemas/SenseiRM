@@ -1971,7 +1971,7 @@ const CalendarView = () => {
           className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-primary transition-all min-w-[150px]"
         >
           <option value="">Todos Responsáveis</option>
-          {users.map(u => <option key={u.id} value={u.id}>{u.nome}</option>)}
+          {users.filter(u => u.status !== EntityStatus.INACTIVE && u.status !== EntityStatus.BLOCKED).map(u => <option key={u.id} value={u.id}>{u.nome}</option>)}
         </select>
 
         <select 
@@ -5009,7 +5009,7 @@ const TasksPage = () => {
                       <div className="space-y-1">
                         <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Responsável (Owner)</label>
                         <select value={responsavelId} onChange={(e) => setResponsavelId(e.target.value)} className="w-full px-4 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold text-primary">
-                          {users.map(u => <option key={u.id} value={u.id} className="dark:bg-slate-900">{u.nome}</option>)}
+                          {users.filter(u => u.status !== EntityStatus.INACTIVE && u.status !== EntityStatus.BLOCKED).map(u => <option key={u.id} value={u.id} className="dark:bg-slate-900">{u.nome}</option>)}
                         </select>
                       </div>
                       <div className="space-y-1">
@@ -5278,8 +5278,9 @@ const TasksPage = () => {
 
 
 const UsersPage = () => {
-  const { users, addUser, updateUser, currentUser, hasPermission, roles } = useApp();
+  const { users, addUser, updateUser, currentUser, hasPermission, roles, tasks, sectors } = useApp();
   const { toast } = useToast();
+  const confirmDialog = useConfirm();
   const location = useLocation();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -5348,6 +5349,32 @@ const UsersPage = () => {
       possuiWhatsapp: hasWhatsapp,
       senha: formData.get('senha')
     };
+    if (editingUser && editingUser.status !== 'inativo' && u.status === 'inativo') {
+      const hasPendingTasks = tasks.some(t => (t.responsavelId === u.id || t.solicitanteId === u.id) && t.status !== TaskStatus.COMPLETED && t.status !== TaskStatus.CANCELED);
+      const activeSector = sectors.find(s => s.responsavelId === u.id);
+      
+      let errorMsg = '';
+      if (hasPendingTasks && activeSector) {
+        errorMsg = `O usuário não pode ser inativado pois está vinculado a tarefas pendentes e é responsável pelo setor "${activeSector.nome}".`;
+      } else if (hasPendingTasks) {
+        errorMsg = 'O usuário não pode ser inativado pois está vinculado a tarefas pendentes.';
+      } else if (activeSector) {
+        errorMsg = `O usuário não pode ser inativado pois é responsável pelo setor "${activeSector.nome}".`;
+      }
+      
+      if (errorMsg) {
+        confirmDialog.confirm({
+          title: 'Inativação Bloqueada',
+          message: errorMsg,
+          confirmLabel: 'Entendi',
+          isDestructive: true,
+          hideCancel: true,
+          onConfirm: () => {}
+        });
+        return;
+      }
+    }
+
     if (canManageUsers) {
       u.roleId = modalRoleId;
     }
@@ -7393,6 +7420,12 @@ const MailListPage = () => {
       // Validation: Must have the required contact info
       if (type === 'email' && !c.emailPrincipal) return false;
       if (type === 'whatsapp' && !c.telefoneSecundario && !c.telefonePrincipal) return false;
+
+      // Business Rule: Do not show inactive or blocked clients
+      if (c.status === EntityStatus.INACTIVE || c.status === EntityStatus.BLOCKED) return false;
+
+      // Business Rule: Do not show inactive or blocked clients
+      if (c.status === EntityStatus.INACTIVE || c.status === EntityStatus.BLOCKED) return false;
 
       const matchesSearch = c.nomeRazaoSocial.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
                             (c.emailPrincipal?.toLowerCase() || '').includes(debouncedSearchTerm.toLowerCase()) ||

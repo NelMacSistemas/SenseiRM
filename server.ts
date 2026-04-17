@@ -496,7 +496,7 @@ app.post('/api/auth/login', loginLimiter, (req, res) => {
 
   // Ensure case-insensitive email matching
   const targetEmail = (email || '').toLowerCase();
-  const user = db.users.find((u: any) => (u.email || '').toLowerCase() === targetEmail && u.status === 'ativo');
+  const user = db.users.find((u: any) => (u.email || '').toLowerCase() === targetEmail && u.status !== 'inativo' && u.status !== 'bloqueado');
   
   if (user) {
     console.log(`User found: ${user.nome}. Comparing password...`);
@@ -523,15 +523,15 @@ app.post('/api/auth/login', loginLimiter, (req, res) => {
         res.json({ token, user: userWithoutPass });
       } else {
         console.warn(`Password mismatch for user: ${user.nome}`);
-        res.status(401).json({ error: 'Credenciais inválidas ou usuário inativo' });
+        res.status(401).json({ error: 'Credenciais inválidas ou usuário inativo/bloqueado' });
       }
     } catch (err) {
       console.error(`Error during password comparison for ${email}:`, err);
       res.status(500).json({ error: 'Erro interno no servidor durante a autenticação' });
     }
   } else {
-    console.warn(`User not found or inactive for email: ${email}. Total users in memory: ${db.users.length}`);
-    res.status(401).json({ error: 'Credenciais inválidas ou usuário inativo' });
+    console.warn(`User not found, inactive or blocked for email: ${email}. Total users in memory: ${db.users.length}`);
+    res.status(401).json({ error: 'Credenciais inválidas ou usuário inativo/bloqueado' });
   }
 });
 
@@ -659,13 +659,32 @@ app.post('/api/sync', authenticateToken, apiLimiter, (req: any, res: any) => {
   } else if (action === 'UPDATE') {
     const index = (db as any)[type].findIndex((item: any) => item.id === payload.id);
     if (index !== -1) {
+      const oldItem = (db as any)[type][index];
+      
+      if (type === 'users' && payload.status === 'inativo' && oldItem.status !== 'inativo') {
+        const hasPendingTasks = db.tasks.some((t: any) => (t.responsavelId === payload.id || t.solicitanteId === payload.id) && t.status !== 'Concluída' && t.status !== 'Cancelada');
+        const activeSector = db.sectors.find((s: any) => s.responsavelId === payload.id);
+        
+        let errorMsg = '';
+        if (hasPendingTasks && activeSector) {
+          errorMsg = `O usuário não pode ser inativado pois está vinculado a tarefas pendentes e é responsável pelo setor "${activeSector.nome}".`;
+        } else if (hasPendingTasks) {
+          errorMsg = 'O usuário não pode ser inativado pois está vinculado a tarefas pendentes.';
+        } else if (activeSector) {
+          errorMsg = `O usuário não pode ser inativado pois é responsável pelo setor "${activeSector.nome}".`;
+        }
+
+        if (errorMsg) {
+          return res.status(400).json({ error: errorMsg });
+        }
+      }
+
       if (type === 'users' && payload.senha && !/^\$2[aby]\$/.test(payload.senha.substring(0, 4))) {
         payload.senha = bcrypt.hashSync(payload.senha, 10);
       } else if (type === 'users' && !payload.senha) {
-        payload.senha = (db as any)[type][index].senha; // Keep old password if not provided
+        payload.senha = oldItem.senha; // Keep old password if not provided
       }
       
-      const oldItem = (db as any)[type][index];
       (db as any)[type][index] = payload;
       
       if (type === 'tasks') {
