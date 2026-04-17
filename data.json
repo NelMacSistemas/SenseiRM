@@ -534,7 +534,7 @@
     {
       "id": "0h35nq7wimnrscolt",
       "nome": "Engenharia",
-      "responsavelId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "responsavelId": "1",
       "descricao": "aaaasdfsfsfsas\nsf\nasd\nfs\nadfas",
       "dataCriacao": "2026-04-09T18:03:31.601Z"
     },
@@ -555,7 +555,7 @@
     {
       "id": "fafpu8kfqmnrxn05h",
       "nome": "Comercial",
-      "responsavelId": "1",
+      "responsavelId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
       "descricao": "asdfdsadfsf",
       "dataCriacao": "2026-04-09T20:31:31.205Z"
     },
@@ -637,6 +637,62 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "z7r9y82dr",
+      "timestamp": "2026-04-17T02:26:21.057Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "n4a60v2nd",
+      "timestamp": "2026-04-17T02:24:42.453Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "SETORES",
+      "details": "Setor \"Engenharia\" atualizado. Alterações: [Gestor: \"86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2\" → \"1\"]",
+      "entityId": "0h35nq7wimnrscolt",
+      "diff": [
+        {
+          "field": "Gestor",
+          "oldValue": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+          "newValue": "1"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "gebwgymqh",
+      "timestamp": "2026-04-17T02:24:07.661Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "SETORES",
+      "details": "Setor \"Comercial\" atualizado. Alterações: [Gestor: \"1\" → \"86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2\"]",
+      "entityId": "fafpu8kfqmnrxn05h",
+      "diff": [
+        {
+          "field": "Gestor",
+          "oldValue": "1",
+          "newValue": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ko99tn1sj",
+      "timestamp": "2026-04-17T02:23:27.232Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
     {
       "id": "q2hekl1nl",
       "timestamp": "2026-04-17T02:08:40.435Z",
