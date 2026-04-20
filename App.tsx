@@ -512,7 +512,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
 interface ConfirmOptions {
   title?: string;
-  message: string;
+  message: string | React.ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
@@ -538,6 +538,10 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setOptions(opts);
   }, []);
 
+  const close = useCallback(() => {
+    setOptions(null);
+  }, []);
+
   const handleConfirm = () => {
     if (options) {
       options.onConfirm();
@@ -549,7 +553,7 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setOptions(null);
   };
 
-  const value = useMemo(() => ({ confirm }), [confirm]);
+  const value = useMemo(() => ({ confirm, close }), [confirm, close]);
 
   return (
     <ConfirmContext.Provider value={value}>
@@ -580,7 +584,13 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
               </div>
             </div>
             <div className="p-6">
-              <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed">{options.message}</p>
+              {typeof options.message === 'string' ? (
+                <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed whitespace-pre-wrap">{options.message}</p>
+              ) : (
+                <div className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
+                  {options.message}
+                </div>
+              )}
             </div>
             <div className="p-6 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
               <button 
@@ -674,6 +684,8 @@ interface AppState {
   hasPermission: (module: keyof UserPermissions, action: keyof Permission) => boolean;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
+  pendingInactivationUser: User | null;
+  setPendingInactivationUser: (u: User | null) => void;
 }
 
 const SenseiLogo = ({ className = "" }: { className?: string }) => (
@@ -765,6 +777,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [systemSettings, setSystemSettings] = useState<SystemSettings>({ companyName: 'CRM Ecosystem', appLogo: '' });
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [pendingInactivationUser, setPendingInactivationUser] = useState<User | null>(null);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -1282,9 +1295,11 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     hasPermission,
     theme,
     toggleTheme,
-    isLoading
+    isLoading,
+    pendingInactivationUser,
+    setPendingInactivationUser
   }), [
-    currentUser, users, roles, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, systemSettings, clientCategories, customFields, notifications, apiSync, hasPermission, theme, isLoading
+    currentUser, users, roles, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, systemSettings, clientCategories, customFields, notifications, apiSync, hasPermission, theme, isLoading, pendingInactivationUser
   ]);
 
   return (
@@ -1695,6 +1710,122 @@ const BottomNavigation = () => {
         </div>
       )}
     </>
+  );
+};
+
+const InactivationAssistant = () => {
+  const { pendingInactivationUser, setPendingInactivationUser, sectors, tasks, updateUser } = useApp();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  if (!pendingInactivationUser) return null;
+
+  const userSectors = sectors.filter(s => s.responsavelId === pendingInactivationUser.id);
+  const userTasks = tasks.filter(t => 
+    (t.responsavelId === pendingInactivationUser.id || t.solicitanteId === pendingInactivationUser.id) && 
+    t.status !== TaskStatus.COMPLETED && t.status !== TaskStatus.CANCELED
+  );
+
+  const hasPendencies = userSectors.length > 0 || userTasks.length > 0;
+
+  const handleFinalize = () => {
+    if (hasPendencies) {
+      toast({ title: 'Pendências Ativas', message: 'Ainda existem pendências para este usuário que precisam ser reatribuídas.', type: 'warning' });
+      return;
+    }
+    
+    // Normalize status in local update
+    const updatedUser = { ...pendingInactivationUser, status: EntityStatus.INACTIVE };
+    updateUser(updatedUser);
+    setPendingInactivationUser(null);
+    toast({ title: 'Inativação Concluída', message: `Usuário ${pendingInactivationUser.nome} inativado com sucesso!`, type: 'success' });
+  };
+
+  return (
+    <div className="fixed bottom-6 right-6 z-[200] w-96 max-w-[90vw] animate-in slide-in-from-right-10 duration-500">
+      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-100 dark:border-slate-800 flex flex-col overflow-hidden">
+        <div className="bg-slate-900 dark:bg-slate-800 p-6 text-white flex justify-between items-center transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/10">
+              <Icon name="user-cog" className="text-primary" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Fase de Inativação</p>
+              <h3 className="font-black text-sm tracking-tight">{pendingInactivationUser.nome}</h3>
+            </div>
+          </div>
+          <button onClick={() => setPendingInactivationUser(null)} className="hover:bg-white/10 p-2 rounded-xl transition-colors">
+            <Icon name="x" className="text-white/50" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4 max-h-[50vh] overflow-y-auto custom-scrollbar bg-slate-50/50 dark:bg-slate-900/50">
+          {!hasPendencies ? (
+            <div className="text-center py-6 space-y-4">
+              <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto animate-bounce shadow-inner">
+                <Icon name="check" className="text-2xl" />
+              </div>
+              <p className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest">Reatribuição Concluída!</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Todas as pendências foram resolvidas. O usuário pode agora ser inativado com segurança.</p>
+            </div>
+          ) : (
+            <>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold leading-relaxed italic border-l-2 border-primary/30 pl-3">
+                Navegue pelo sistema e reatribua os itens abaixo para liberar a inativação deste perfil.
+              </p>
+              
+              {userSectors.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                    <Icon name="building" className="w-3 h-3" /> Setores ({userSectors.length})
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {userSectors.map(s => (
+                      <button 
+                        key={s.id} 
+                        onClick={() => navigate('/configuracoes', { state: { activeTab: 'setores', sectorId: s.id } })}
+                        className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition-all shadow-sm"
+                      >
+                        {s.nome}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {userTasks.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                    <Icon name="clipboard-list" className="w-3 h-3" /> Tarefas Pendentes ({userTasks.length})
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {userTasks.map(t => (
+                      <button 
+                        key={t.id} 
+                        onClick={() => navigate('/tarefas', { state: { taskId: t.id } })}
+                        className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition-all shadow-sm"
+                      >
+                        {t.taskNumber}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="p-6 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+          <button 
+            onClick={handleFinalize}
+            disabled={hasPendencies}
+            className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all flex items-center justify-center gap-3 active:scale-95 ${hasPendencies ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed' : 'bg-primary text-white hover:brightness-110 shadow-primary/30'}`}
+          >
+            {hasPendencies ? <><Icon name="clock" className="animate-spin" /> Aguardando Reatribuição</> : <><Icon name="check" /> Finalizar Inativação</>}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -2233,8 +2364,8 @@ const Dashboard = () => {
     const clientsBlocked = clients.filter(c => c.status === EntityStatus.BLOCKED || c.situacao === 'Bloqueado para venda').length;
 
     // Indicadores de USUàRIOS
-    const usersActive = users.filter(u => u.status === EntityStatus.ACTIVE).length;
-    const usersInactive = users.filter(u => u.status === EntityStatus.INACTIVE).length;
+    const usersActive = users.filter(u => String(u.status).toLowerCase() === EntityStatus.ACTIVE).length;
+    const usersInactive = users.filter(u => String(u.status).toLowerCase() === EntityStatus.INACTIVE).length;
     const usersAdmin = users.filter(u => u.roleId === 'admin').length;
     const usersStandard = users.filter(u => u.roleId !== 'admin').length;
 
@@ -5278,7 +5409,7 @@ const TasksPage = () => {
 
 
 const UsersPage = () => {
-  const { users, addUser, updateUser, currentUser, hasPermission, roles, tasks, sectors } = useApp();
+  const { users, addUser, updateUser, currentUser, hasPermission, roles, tasks, sectors, setPendingInactivationUser } = useApp();
   const { toast } = useToast();
   const confirmDialog = useConfirm();
   const location = useLocation();
@@ -5350,31 +5481,23 @@ const UsersPage = () => {
       senha: formData.get('senha')
     };
     if (editingUser && editingUser.status !== 'inativo' && u.status === 'inativo') {
-      const hasPendingTasks = tasks.some(t => (t.responsavelId === u.id || t.solicitanteId === u.id) && t.status !== TaskStatus.COMPLETED && t.status !== TaskStatus.CANCELED);
-      const activeSector = sectors.find(s => s.responsavelId === u.id);
+      const pendingResponsibleTasks = tasks.filter(t => t.responsavelId === u.id && t.status !== TaskStatus.COMPLETED && t.status !== TaskStatus.CANCELED);
+      const pendingRequestTasks = tasks.filter(t => t.solicitanteId === u.id && t.status !== TaskStatus.COMPLETED && t.status !== TaskStatus.CANCELED);
+      const activeSectors = sectors.filter(s => s.responsavelId === u.id);
       
-      let errorMsg = '';
-      if (hasPendingTasks && activeSector) {
-        errorMsg = `O usuário não pode ser inativado pois está vinculado a tarefas pendentes e é responsável pelo setor "${activeSector.nome}".`;
-      } else if (hasPendingTasks) {
-        errorMsg = 'O usuário não pode ser inativado pois está vinculado a tarefas pendentes.';
-      } else if (activeSector) {
-        errorMsg = `O usuário não pode ser inativado pois é responsável pelo setor "${activeSector.nome}".`;
-      }
-      
-      if (errorMsg) {
-        confirmDialog.confirm({
-          title: 'Inativação Bloqueada',
-          message: errorMsg,
-          confirmLabel: 'Entendi',
-          isDestructive: true,
-          hideCancel: true,
-          onConfirm: () => {}
+      if (pendingResponsibleTasks.length > 0 || pendingRequestTasks.length > 0 || activeSectors.length > 0) {
+        setPendingInactivationUser(u);
+        setIsModalOpen(false);
+        toast({ 
+          title: 'Inativação Bloqueada', 
+          message: 'Ativamos o Assistente de Inativação no canto inferior para acompanhar as pendências.', 
+          type: 'warning' 
         });
         return;
       }
-    }
-
+            
+      }
+    
     if (canManageUsers) {
       u.roleId = modalRoleId;
     }
@@ -5957,6 +6080,22 @@ const ConfiguracoesPage = () => {
   const [currentPageCategories, setCurrentPageCategories] = useState(1);
   const [currentPageCustomFields, setCurrentPageCustomFields] = useState(1);
   const itemsPerPage = 6;
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+      if (location.state?.sectorId) {
+        const sector = sectors.find(s => s.id === location.state.sectorId);
+        if (sector) {
+          setEditingSector(sector);
+          setIsSectorModalOpen(true);
+        }
+      }
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, sectors, navigate, location.pathname]);
 
   const canAccessConfig = hasPermission('configuracoes', 'acesso');
   const canAccessMalaDireta = hasPermission('malaDireta', 'acesso');
@@ -7794,6 +7933,7 @@ const MainLayout = () => {
     <div className="flex bg-slate-50 dark:bg-slate-950 min-h-screen">
       <Sidebar />
       <BottomNavigation />
+      <InactivationAssistant />
       <div className="flex-1 lg:ml-64 min-h-screen flex flex-col w-full">
         <Header title={titles[Object.keys(titles).find(k => location.pathname.startsWith(k)) || ''] || <SenseiLogo className="text-xl" />} />
         <main className="flex-1 lg:pb-16 w-full max-w-[100vw] overflow-x-hidden">

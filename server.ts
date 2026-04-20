@@ -662,19 +662,25 @@ app.post('/api/sync', authenticateToken, apiLimiter, (req: any, res: any) => {
       const oldItem = (db as any)[type][index];
       
       if (type === 'users' && payload.status === 'inativo' && oldItem.status !== 'inativo') {
-        const hasPendingTasks = db.tasks.some((t: any) => (t.responsavelId === payload.id || t.solicitanteId === payload.id) && t.status !== 'Concluída' && t.status !== 'Cancelada');
-        const activeSector = db.sectors.find((s: any) => s.responsavelId === payload.id);
+        const pendingResponsibleTasks = db.tasks.filter((t: any) => t.responsavelId === payload.id && t.status !== 'Concluída' && t.status !== 'Cancelada');
+        const pendingRequestTasks = db.tasks.filter((t: any) => t.solicitanteId === payload.id && t.status !== 'Concluída' && t.status !== 'Cancelada');
+        const activeSectors = db.sectors.filter((s: any) => s.responsavelId === payload.id);
         
-        let errorMsg = '';
-        if (hasPendingTasks && activeSector) {
-          errorMsg = `O usuário não pode ser inativado pois está vinculado a tarefas pendentes e é responsável pelo setor "${activeSector.nome}".`;
-        } else if (hasPendingTasks) {
-          errorMsg = 'O usuário não pode ser inativado pois está vinculado a tarefas pendentes.';
-        } else if (activeSector) {
-          errorMsg = `O usuário não pode ser inativado pois é responsável pelo setor "${activeSector.nome}".`;
-        }
+        if (pendingResponsibleTasks.length > 0 || pendingRequestTasks.length > 0 || activeSectors.length > 0) {
+          let errorMsg = 'O usuário não pode ser inativado pois possui as seguintes pendências:';
+          
+          if (activeSectors.length > 0) {
+            errorMsg += `\n- Responsável pelo(s) setor(es): ${activeSectors.map((s: any) => `"${s.nome}"`).join(', ')}`;
+          }
+          
+          if (pendingResponsibleTasks.length > 0) {
+            errorMsg += `\n- Responsável por ${pendingResponsibleTasks.length} tarefa(s) pendente(s)`;
+          }
+          
+          if (pendingRequestTasks.length > 0) {
+            errorMsg += `\n- Solicitante de ${pendingRequestTasks.length} tarefa(s) pendente(s)`;
+          }
 
-        if (errorMsg) {
           return res.status(400).json({ error: errorMsg });
         }
       }

@@ -30,7 +30,7 @@
       "celular": "+55 (51) 98146-7081",
       "possuiWhatsapp": true,
       "roleId": "user",
-      "senha": "$2b$10$1JaJEnzwfVv61zWFIjub6eKzoGmpyOgnQuHnZAl/nJOPimtSetc2u"
+      "senha": "$2b$10$iJmCF2MBTRD9ASWvyz.m6u3Rg5YRWXJKN2CAF.ycC1W.zZzqtYsQ."
     }
   ],
   "roles": [
@@ -252,7 +252,7 @@
       "titulo": "Teste Tarefa 1",
       "descricao": "afafasfasfsafasfsa",
       "tipo": "Melhoria",
-      "solicitanteId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "solicitanteId": "1",
       "responsavelId": "1",
       "setorId": "",
       "interessados": "nelsonrsmacedo@gmail.com",
@@ -290,7 +290,7 @@
       "id": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
       "taskNumber": "TSK-001",
       "dataCriacao": "2026-04-11T21:58:27.316Z",
-      "dataVencimento": "2026-05-02",
+      "dataVencimento": "2026-04-30",
       "logs": [
         {
           "id": "09522e52-e519-42e2-aaf7-b191f70166fa",
@@ -421,6 +421,45 @@
           "justification": "Movimentação rápida pelo quadro Kanban",
           "userId": "1",
           "userName": "Administrador"
+        },
+        {
+          "id": "4e9929b6-9892-4efc-a359-6de4c11bccd7",
+          "timestamp": "2026-04-20T23:13:38.789Z",
+          "fromStatus": "Aguardando terceiro",
+          "toStatus": "Aguardando terceiro",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Solicitante: \"Nelson Macedo\" → \"Administrador\""
+          ],
+          "justification": "Ajuste de parà¢metros técnicos.",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "7c9b6c24-156b-49fc-a8d5-c6065ce92116",
+          "timestamp": "2026-04-20T23:39:13.732Z",
+          "fromStatus": "Aguardando terceiro",
+          "toStatus": "Aguardando terceiro",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Responsável: \"Administrador\" → \"Nelson Macedo\""
+          ],
+          "justification": "Ajuste de parà¢metros técnicos.",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "97f0d97d-9c8b-451f-a4b4-6c3c84e054db",
+          "timestamp": "2026-04-20T23:43:59.637Z",
+          "fromStatus": "Aguardando terceiro",
+          "toStatus": "Aguardando terceiro",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Responsável: \"Nelson Macedo\" → \"Administrador\""
+          ],
+          "justification": "Ajuste de parà¢metros técnicos.",
+          "userId": "1",
+          "userName": "Administrador"
         }
       ]
     },
@@ -429,7 +468,7 @@
       "descricao": "ajustes no campo conclusao",
       "tipo": "Solicitação",
       "solicitanteId": "1",
-      "responsavelId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "responsavelId": "1",
       "setorId": "",
       "interessados": "",
       "prioridade": "Média",
@@ -526,6 +565,45 @@
           "justification": "Movimentação rápida pelo quadro Kanban",
           "userId": "1",
           "userName": "Administrador"
+        },
+        {
+          "id": "3eb912bd-64cc-4189-a5ff-1d905b3527b0",
+          "timestamp": "2026-04-20T23:13:11.445Z",
+          "fromStatus": "Em análise",
+          "toStatus": "Em análise",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Responsável: \"Nelson Macedo\" → \"Administrador\""
+          ],
+          "justification": "Ajuste de parà¢metros técnicos.",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "0dadf540-79a9-40da-b26c-02f9cf22975b",
+          "timestamp": "2026-04-20T23:39:19.666Z",
+          "fromStatus": "Em análise",
+          "toStatus": "Em análise",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Solicitante: \"Administrador\" → \"Nelson Macedo\""
+          ],
+          "justification": "Ajuste de parà¢metros técnicos.",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "2c901270-245c-4eef-bd92-8c3ecc183a54",
+          "timestamp": "2026-04-20T23:43:53.577Z",
+          "fromStatus": "Em análise",
+          "toStatus": "Em análise",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Solicitante: \"Nelson Macedo\" → \"Administrador\""
+          ],
+          "justification": "Ajuste de parà¢metros técnicos.",
+          "userId": "1",
+          "userName": "Administrador"
         }
       ]
     }
@@ -555,7 +633,7 @@
     {
       "id": "fafpu8kfqmnrxn05h",
       "nome": "Comercial",
-      "responsavelId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "responsavelId": "1",
       "descricao": "asdfdsadfsf",
       "dataCriacao": "2026-04-09T20:31:31.205Z"
     },
@@ -637,6 +715,374 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "1ved4goub",
+      "timestamp": "2026-04-20T23:44:34.583Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "v6o8z9wgw",
+      "timestamp": "2026-04-20T23:44:32.509Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Nelson Macedo alterado. Alterações: [Status da Conta: \"inativo\" → \"ativo\"]",
+      "entityId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "diff": [
+        {
+          "field": "Status da Conta",
+          "oldValue": "inativo",
+          "newValue": "ativo"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "u790icyjm",
+      "timestamp": "2026-04-20T23:44:12.591Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Nelson Macedo alterado. Alterações: [Status da Conta: \"ativo\" → \"inativo\"]",
+      "entityId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "diff": [
+        {
+          "field": "Status da Conta",
+          "oldValue": "ativo",
+          "newValue": "inativo"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "n7o0ucncb",
+      "timestamp": "2026-04-20T23:44:06.523Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "SETORES",
+      "details": "Setor \"Engenharia\" atualizado. Alterações: [Gestor: \"86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2\" → \"1\"]",
+      "entityId": "0h35nq7wimnrscolt",
+      "diff": [
+        {
+          "field": "Gestor",
+          "oldValue": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+          "newValue": "1"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "aflrh9wtn",
+      "timestamp": "2026-04-20T23:43:59.670Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Alterações: [ID Responsável: \"86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2\" → \"1\"]",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [
+        {
+          "field": "ID Responsável",
+          "oldValue": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+          "newValue": "1"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ft40ij5mq",
+      "timestamp": "2026-04-20T23:43:53.638Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-002 alterada. Nenhuma alteração nos campos principais.",
+      "entityId": "e178b8ae-12a5-495b-bfa4-0a9934329e2a",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "13qi48x9k",
+      "timestamp": "2026-04-20T23:43:44.787Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "SETORES",
+      "details": "Setor \"TI\" atualizado. Alterações: [Gestor: \"86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2\" → \"1\"]",
+      "entityId": "l2eotp4cimnrt1u7k",
+      "diff": [
+        {
+          "field": "Gestor",
+          "oldValue": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+          "newValue": "1"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "bsxzq7912",
+      "timestamp": "2026-04-20T23:43:20.511Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "pk0j91rwh",
+      "timestamp": "2026-04-20T23:41:09.975Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "d1rljn4ja",
+      "timestamp": "2026-04-20T23:39:34.555Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "SETORES",
+      "details": "Setor \"TI\" atualizado. Alterações: [Gestor: \"1\" → \"86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2\"]",
+      "entityId": "l2eotp4cimnrt1u7k",
+      "diff": [
+        {
+          "field": "Gestor",
+          "oldValue": "1",
+          "newValue": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "uxbjhkkl5",
+      "timestamp": "2026-04-20T23:39:29.327Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "SETORES",
+      "details": "Setor \"Engenharia\" atualizado. Alterações: [Gestor: \"1\" → \"86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2\"]",
+      "entityId": "0h35nq7wimnrscolt",
+      "diff": [
+        {
+          "field": "Gestor",
+          "oldValue": "1",
+          "newValue": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ue2bw01ml",
+      "timestamp": "2026-04-20T23:39:19.692Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-002 alterada. Nenhuma alteração nos campos principais.",
+      "entityId": "e178b8ae-12a5-495b-bfa4-0a9934329e2a",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "lcd7ggpyn",
+      "timestamp": "2026-04-20T23:39:13.761Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Alterações: [ID Responsável: \"1\" → \"86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2\"]",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [
+        {
+          "field": "ID Responsável",
+          "oldValue": "1",
+          "newValue": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "4clxrnmxu",
+      "timestamp": "2026-04-20T23:39:02.138Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Nelson Macedo alterado. Alterações: [Status da Conta: \"inativo\" → \"ativo\"]",
+      "entityId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "diff": [
+        {
+          "field": "Status da Conta",
+          "oldValue": "inativo",
+          "newValue": "ativo"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "3gvgmvujq",
+      "timestamp": "2026-04-20T23:38:00.913Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "8d4knen21",
+      "timestamp": "2026-04-20T23:37:46.002Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "nia19zuwj",
+      "timestamp": "2026-04-20T23:37:43.454Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "06w014rec",
+      "timestamp": "2026-04-20T23:16:44.588Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ez24qu3j8",
+      "timestamp": "2026-04-20T23:13:54.953Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Nelson Macedo alterado. Alterações: [Status da Conta: \"ativo\" → \"inativo\"]",
+      "entityId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "diff": [
+        {
+          "field": "Status da Conta",
+          "oldValue": "ativo",
+          "newValue": "inativo"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "n2xx1o5wz",
+      "timestamp": "2026-04-20T23:13:38.823Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Alterações: [Vencimento: \"2026-05-02\" → \"2026-04-30\"]",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [
+        {
+          "field": "Vencimento",
+          "oldValue": "2026-05-02",
+          "newValue": "2026-04-30"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "4rhtwg61m",
+      "timestamp": "2026-04-20T23:13:11.770Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-002 alterada. Alterações: [ID Responsável: \"86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2\" → \"1\"]",
+      "entityId": "e178b8ae-12a5-495b-bfa4-0a9934329e2a",
+      "diff": [
+        {
+          "field": "ID Responsável",
+          "oldValue": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+          "newValue": "1"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "nunmsh35n",
+      "timestamp": "2026-04-20T23:12:44.107Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "SETORES",
+      "details": "Setor \"Comercial\" atualizado. Alterações: [Gestor: \"86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2\" → \"1\"]",
+      "entityId": "fafpu8kfqmnrxn05h",
+      "diff": [
+        {
+          "field": "Gestor",
+          "oldValue": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+          "newValue": "1"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "kr367uk5m",
+      "timestamp": "2026-04-20T23:12:10.358Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "lihyffxyl",
+      "timestamp": "2026-04-20T22:58:19.019Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ovogggu4q",
+      "timestamp": "2026-04-20T22:46:22.904Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "kvea0shmo",
+      "timestamp": "2026-04-20T22:44:43.150Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
     {
       "id": "75isqrmmy",
       "timestamp": "2026-04-20T21:40:35.009Z",
