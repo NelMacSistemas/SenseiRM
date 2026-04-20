@@ -638,6 +638,26 @@
   ],
   "auditLogs": [
     {
+      "id": "75isqrmmy",
+      "timestamp": "2026-04-20T21:40:35.009Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "sw8gwopts",
+      "timestamp": "2026-04-20T21:09:18.669Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
       "id": "z7r9y82dr",
       "timestamp": "2026-04-17T02:26:21.057Z",
       "userId": "1",
