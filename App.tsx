@@ -655,6 +655,7 @@ interface AppState {
   addRole: (role: Role) => void;
   updateRole: (role: Role) => void;
   deleteRole: (id: string) => void;
+  deleteRoleWithReassign: (roleId: string, reassignMap: Record<string, string>) => void;
   addClient: (client: Client) => void;
   updateClient: (client: Client) => void;
   deleteClient: (id: string) => void;
@@ -1182,6 +1183,24 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'CONFIGURACOES', `Função removida: ${target?.name}`, id);
   };
 
+  const deleteRoleWithReassign = (roleId: string, reassignMap: Record<string, string>) => {
+    // First reassign all affected users
+    const roleName = roles.find(r => r.id === roleId)?.name || roleId;
+    Object.entries(reassignMap).forEach(([userId, newRoleId]) => {
+      const userToUpdate = users.find(u => u.id === userId);
+      if (!userToUpdate) return;
+      const newRoleName = roles.find(r => r.id === newRoleId)?.name || newRoleId;
+      const updated = { ...userToUpdate, roleId: newRoleId };
+      setUsers(prev => prev.map(u => u.id === userId ? updated : u));
+      apiSync('users', 'UPDATE', updated);
+      auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'USUARIOS', `Perfil de ${userToUpdate.nome} alterado de "${roleName}" para "${newRoleName}" antes da exclusão do perfil.`, userId);
+    });
+    // Then delete the role
+    setRoles(prev => prev.filter(r => r.id !== roleId));
+    apiSync('roles', 'DELETE', { id: roleId });
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'CONFIGURACOES', `Perfil "${roleName}" excluído após reassociação de usuários.`, roleId);
+  };
+
   const addClient = (c: Client) => {
     setClients(prev => [...prev, c]);
     apiSync('clients', 'ADD', c);
@@ -1400,6 +1419,8 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const hasPermission = useCallback((module: keyof UserPermissions, action: keyof Permission) => {
     if (!currentUser) return false;
+    // Admin always has full access — bypasses RBAC matrix
+    if (currentUser.roleId === 'admin') return true;
     const role = roles.find(r => r.id === currentUser.roleId);
     if (!role) return false;
 
@@ -1416,7 +1437,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     currentUser, users, roles, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, systemSettings, systemPolicies, clientCategories, customFields, notifications,
     markNotificationAsRead, clearNotifications,
     login, logout, updateUser, addUser, deleteUser,
-    addRole, updateRole, deleteRole,
+    addRole, updateRole, deleteRole, deleteRoleWithReassign,
     addClient, updateClient, deleteClient,
     addCustomField, updateCustomField, deleteCustomField,
     addTask, updateTask, deleteTask, 
@@ -5950,11 +5971,13 @@ const TemplatesTab = () => {
 };
 
 const RolesTab = () => {
-  const { roles, addRole, updateRole, deleteRole, hasPermission } = useApp();
+  const { roles, addRole, updateRole, deleteRole, deleteRoleWithReassign, users, hasPermission, currentUser } = useApp();
   const { confirm } = useConfirm();
   const { toast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
+  const [reassignMap, setReassignMap] = useState<Record<string, string>>({});
   const [modalPerms, setModalPerms] = useState<UserPermissions>({
     dashboard: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
     clientes: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
@@ -6140,8 +6163,33 @@ const RolesTab = () => {
                     <Icon name="copy" />
                   </button>
                 )}
-                {canDelete && r.id !== 'admin' && r.id !== 'user' && (
-                  <button onClick={() => confirm({ title: 'Excluir Função', message: 'Deseja excluir esta função?', onConfirm: () => deleteRole(r.id) })} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-3 rounded-2xl transition-colors bg-white/50 shadow-sm">
+                {canDelete && r.id !== 'admin' && (
+                  <button
+                    onClick={() => {
+                      // Safety: cannot delete the role you are currently using
+                      if (currentUser?.roleId === r.id) {
+                        toast({ title: 'Operação Bloqueada', message: 'Você não pode excluir o perfil ao qual está vinculado. Primeiro altere seu próprio perfil.', type: 'error' });
+                        return;
+                      }
+                      const affected = users.filter(u => u.roleId === r.id);
+                      if (affected.length > 0) {
+                        // Open reassignment modal
+                        const initial: Record<string, string> = {};
+                        const fallback = roles.find(ro => ro.id !== r.id)?.id || '';
+                        affected.forEach(u => { initial[u.id] = fallback; });
+                        setReassignMap(initial);
+                        setDeleteTarget(r);
+                      } else {
+                        confirm({
+                          title: 'Excluir Perfil',
+                          message: `Confirma a exclusão do perfil "${r.name}"? Esta ação não pode ser desfeita.`,
+                          onConfirm: () => deleteRole(r.id)
+                        });
+                      }
+                    }}
+                    className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-3 rounded-2xl transition-colors bg-white/50 shadow-sm"
+                    title="Excluir Perfil"
+                  >
                     <Icon name="trash" />
                   </button>
                 )}
@@ -6233,6 +6281,86 @@ const RolesTab = () => {
                 <button type="submit" className="w-full sm:w-auto px-8 py-2 md:py-3 rounded-2xl bg-primary text-white font-bold hover:brightness-110 transition-all uppercase text-[10px] tracking-widest shadow-lg shadow-primary/30">Salvar Função</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Role Deletion — Reassignment Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-red-50 dark:bg-red-950/30">
+              <span className="text-xs font-black text-red-500 uppercase tracking-widest">Ação Irreversível</span>
+              <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mt-1">Excluir Perfil: "{deleteTarget.name}"</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+                Os usuários abaixo estão vinculados a este perfil. Selecione um novo perfil para cada um antes de confirmar a exclusão.
+              </p>
+            </div>
+            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+              {/* Apply all at once selector */}
+              <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
+                <span className="text-xs font-black text-slate-500 uppercase tracking-widest shrink-0">Aplicar a todos:</span>
+                <select
+                  className="flex-1 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-slate-100 font-bold text-sm outline-none focus:border-primary"
+                  onChange={e => {
+                    const val = e.target.value;
+                    if (!val) return;
+                    setReassignMap(prev => Object.fromEntries(Object.keys(prev).map(k => [k, val])));
+                  }}
+                  defaultValue=""
+                >
+                  <option value="">Selecionar para todos...</option>
+                  {roles.filter(r => r.id !== deleteTarget.id).map(r => (
+                    <option key={r.id} value={r.id}>{r.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {users.filter(u => u.roleId === deleteTarget.id).map(u => (
+                <div key={u.id} className="flex items-center gap-4 p-4 border border-slate-100 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-800/50">
+                  <img src={u.foto || `https://picsum.photos/seed/${u.id}/200`} className="w-10 h-10 rounded-xl object-cover shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-black text-slate-800 dark:text-slate-100 text-sm truncate">{u.nome}</p>
+                    <p className="text-xs text-slate-400 truncate">{u.email}</p>
+                  </div>
+                  <select
+                    value={reassignMap[u.id] || ''}
+                    onChange={e => setReassignMap(prev => ({ ...prev, [u.id]: e.target.value }))}
+                    className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 dark:text-slate-100 font-bold text-sm outline-none focus:border-primary"
+                  >
+                    <option value="">Selecionar perfil...</option>
+                    {roles.filter(r => r.id !== deleteTarget.id).map(r => (
+                      <option key={r.id} value={r.id}>{r.name}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+            <div className="p-6 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3 bg-slate-50/50 dark:bg-slate-900/50">
+              <button
+                onClick={() => { setDeleteTarget(null); setReassignMap({}); }}
+                className="px-8 py-3 rounded-2xl border-2 border-slate-200 dark:border-slate-700 font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm uppercase tracking-widest"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  const affected = users.filter(u => u.roleId === deleteTarget.id);
+                  const allAssigned = affected.every(u => reassignMap[u.id]);
+                  if (!allAssigned) {
+                    toast({ title: 'Atenção', message: 'Todos os usuários devem ter um novo perfil selecionado.', type: 'warning' });
+                    return;
+                  }
+                  deleteRoleWithReassign(deleteTarget.id, reassignMap);
+                  toast({ title: 'Perfil Excluído', message: `O perfil "${deleteTarget.name}" foi excluído e os usuários foram reassociados.`, type: 'success' });
+                  setDeleteTarget(null);
+                  setReassignMap({});
+                }}
+                className="px-8 py-3 rounded-2xl bg-red-500 text-white font-black text-sm uppercase tracking-widest hover:bg-red-600 transition-all shadow-lg shadow-red-500/30"
+              >
+                Confirmar Exclusão
+              </button>
+            </div>
           </div>
         </div>
       )}
