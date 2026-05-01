@@ -295,3 +295,14 @@ export interface SystemSettings {
   appSlogan: string;
   appLogo: string;
 }
+
+export interface SystemPolicy {
+  maxUploadSizeMB: number;
+  loginAttempts: number;
+  lockoutDurationMin: number;
+  minPasswordLength: number;
+  requireUppercase: boolean;
+  requireLowercase: boolean;
+  requireNumber: boolean;
+  requireSpecial: boolean;
+}

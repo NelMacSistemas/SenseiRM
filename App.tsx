@@ -775,6 +775,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [slaSettings, setSlaSettings] = useState<SLASettings>({ Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
   const [emailSettings, setEmailSettings] = useState<EmailSettings>({ provider: 'SMTP', host: '', port: 587, user: '', pass: '', secure: false });
   const [systemSettings, setSystemSettings] = useState<SystemSettings>({ companyName: 'CRM Ecosystem', appLogo: '' });
+  const [systemPolicies, setSystemPolicies] = useState<SystemPolicy>({ maxUploadSizeMB: 10, loginAttempts: 5, lockoutDurationMin: 30, minPasswordLength: 8, requireUppercase: true, requireLowercase: true, requireNumber: true, requireSpecial: true });
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [pendingInactivationUser, setPendingInactivationUser] = useState<User | null>(null);
@@ -1272,6 +1273,22 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Configurações do Sistema atualizadas. ${diffResult.text}`, 'systemSettings', diffResult.diff);
   };
 
+  const updateSystemPolicies = (policies: SystemPolicy) => {
+    const diffResult = getDetailedDiff(systemPolicies, policies, { 
+      maxUploadSizeMB: 'Tam. Máx Upload', 
+      loginAttempts: 'Tentativas Login', 
+      lockoutDurationMin: 'Bloqueio (min)',
+      minPasswordLength: 'Comprimento Senha',
+      requireUppercase: 'Requer Maiúscula',
+      requireLowercase: 'Requer Minúscula',
+      requireNumber: 'Requer Número',
+      requireSpecial: 'Requer Símbolo'
+    });
+    setSystemPolicies(policies);
+    apiSync('systemPolicies', 'SET', policies);
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Políticas de Segurança atualizadas. ${diffResult.text}`, 'systemPolicies', diffResult.diff);
+  };
+
   const hasPermission = useCallback((module: keyof UserPermissions, action: keyof Permission) => {
     if (!currentUser) return false;
     const role = roles.find(r => r.id === currentUser.roleId);
@@ -1281,7 +1298,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, [currentUser, roles]);
 
   const contextValue = useMemo(() => ({
-    currentUser, users, roles, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, systemSettings, clientCategories, customFields, notifications,
+    currentUser, users, roles, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, systemSettings, systemPolicies, clientCategories, customFields, notifications,
     markNotificationAsRead, clearNotifications,
     login, logout, updateUser, addUser, deleteUser,
     addRole, updateRole, deleteRole,
@@ -1290,7 +1307,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     addTask, updateTask, deleteTask, 
     addSector, updateSector, deleteSector,
     addClientCategory, updateClientCategory, deleteClientCategory,
-    addMailHistory, addTemplate, updateTemplate, deleteTemplate, updateSLASettings, updateEmailSettings, updateSystemSettings,
+    addMailHistory, addTemplate, updateTemplate, deleteTemplate, updateSLASettings, updateEmailSettings, updateSystemSettings, updateSystemPolicies,
     updateSync: apiSync,
     hasPermission,
     theme,
@@ -1299,7 +1316,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     pendingInactivationUser,
     setPendingInactivationUser
   }), [
-    currentUser, users, roles, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, systemSettings, clientCategories, customFields, notifications, apiSync, hasPermission, theme, isLoading, pendingInactivationUser
+    currentUser, users, roles, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, systemSettings, systemPolicies, clientCategories, customFields, notifications, apiSync, hasPermission, theme, isLoading, pendingInactivationUser
   ]);
 
   return (
@@ -6102,6 +6119,7 @@ const ConfiguracoesPage = () => {
 
   const tabs = [
     ...(canAccessConfig ? [{ id: 'sistema', label: 'Sistema', icon: 'settings' }] : []),
+    ...(canAccessConfig ? [{ id: 'politicas', label: 'Políticas', icon: 'shield' }] : []),
     ...(canAccessConfig ? [{ id: 'roles', label: 'Funções (RBAC)', icon: 'users-cog' }] : []),
     ...(canAccessConfig ? [{ id: 'setores', label: 'Setores', icon: 'building' }] : []),
     ...(canAccessConfig ? [{ id: 'categorias', label: 'Categorias', icon: 'tag' }] : []),
@@ -6280,6 +6298,85 @@ const ConfiguracoesPage = () => {
                  </div>
                  <button type="submit" className="md:col-span-2 py-4 md:py-5 bg-primary text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-base md:text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1 flex items-center justify-center gap-2 md:gap-3">
                    <Icon name="save" /> Salvar Configurações do Sistema
+                 </button>
+              </form>
+           </div>
+        )}
+
+        {activeTab === 'politicas' && canAccessConfig && (
+           <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-[2rem] md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.5rem] md:rounded-[2rem] bg-primary/10 text-primary flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
+                  <Icon name="shield" />
+                </div>
+                <div>
+                  <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-50 tracking-tight">Políticas de Segurança</h3>
+                  <p className="text-xs md:text-sm text-slate-400 dark:text-slate-500 font-medium mt-1">Defina parâmetros de segurança e regras de acesso.</p>
+                </div>
+              </div>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const data = new FormData(e.currentTarget);
+                updateSystemPolicies({
+                  maxUploadSizeMB: Number(data.get('maxUploadSizeMB')),
+                  loginAttempts: Number(data.get('loginAttempts')),
+                  lockoutDurationMin: Number(data.get('lockoutDurationMin')),
+                  minPasswordLength: Number(data.get('minPasswordLength')),
+                  requireUppercase: data.get('requireUppercase') === 'on',
+                  requireLowercase: data.get('requireLowercase') === 'on',
+                  requireNumber: data.get('requireNumber') === 'on',
+                  requireSpecial: data.get('requireSpecial') === 'on'
+                });
+                success('Políticas de segurança atualizadas!');
+              }} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                 <div className="space-y-4 md:col-span-2">
+                   <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest pt-4">Restrições de Upload e Login</h4>
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <div className="space-y-1 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+                        <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Tamanho Máx. Upload (MB)</label>
+                        <input type="number" name="maxUploadSizeMB" required defaultValue={systemPolicies.maxUploadSizeMB} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm" />
+                     </div>
+                     <div className="space-y-1 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+                        <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Tentativas de Login</label>
+                        <input type="number" name="loginAttempts" required defaultValue={systemPolicies.loginAttempts} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm" />
+                     </div>
+                     <div className="space-y-1 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+                        <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Duração do Bloqueio (min)</label>
+                        <input type="number" name="lockoutDurationMin" required defaultValue={systemPolicies.lockoutDurationMin} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm" />
+                     </div>
+                   </div>
+                 </div>
+
+                 <div className="space-y-4 md:col-span-2">
+                   <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest pt-4">Complexidade de Senha</h4>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div className="space-y-1 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+                        <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Comprimento Mínimo</label>
+                        <input type="number" name="minPasswordLength" required defaultValue={systemPolicies.minPasswordLength} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm" />
+                     </div>
+                     <div className="flex flex-wrap gap-4 p-4 md:p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 items-center">
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                          <input type="checkbox" name="requireUppercase" defaultChecked={systemPolicies.requireUppercase} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                          <span className="text-xs font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">Requerer Maiúsculas</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                          <input type="checkbox" name="requireLowercase" defaultChecked={systemPolicies.requireLowercase} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                          <span className="text-xs font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">Requerer Minúsculas</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                          <input type="checkbox" name="requireNumber" defaultChecked={systemPolicies.requireNumber} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                          <span className="text-xs font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">Requerer Números</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                          <input type="checkbox" name="requireSpecial" defaultChecked={systemPolicies.requireSpecial} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                          <span className="text-xs font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">Símbolos Especiais</span>
+                        </label>
+                     </div>
+                   </div>
+                 </div>
+
+                 <button type="submit" className="md:col-span-2 py-4 md:py-5 bg-primary text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-base md:text-lg shadow-xl hover:brightness-110 transition-all hover:-translate-y-1 flex items-center justify-center gap-2 md:gap-3">
+                   <Icon name="save" /> Salvar Políticas de Segurança
                  </button>
               </form>
            </div>

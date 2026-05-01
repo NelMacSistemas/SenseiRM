@@ -30,7 +30,7 @@
       "celular": "+55 (51) 98146-7081",
       "possuiWhatsapp": true,
       "roleId": "user",
-      "senha": "$2b$10$cOMzYP6cMglh9NocCj8ejOw6mp7Alc.iNW1LrEIAh7OGdvKJ0vsk2"
+      "senha": "$2b$10$EFks3QzwiM87KplcgYXbjOHOk0YaiOnra3cPSfYF7.2WHF27x8Uqe"
     }
   ],
   "roles": [
@@ -715,6 +715,200 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "9tb27usyk",
+      "timestamp": "2026-05-01T01:33:28.492Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "eiy80de6u",
+      "timestamp": "2026-05-01T01:14:28.524Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "s26vonvfe",
+      "timestamp": "2026-05-01T01:14:19.550Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "2ofd11nz5",
+      "timestamp": "2026-05-01T01:13:57.910Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "kdscqb0e1",
+      "timestamp": "2026-05-01T01:12:53.500Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "we9z40exi",
+      "timestamp": "2026-05-01T01:11:24.177Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ve3hhs0ho",
+      "timestamp": "2026-05-01T01:10:52.022Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Nelson Macedo alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "mar7sg5sl",
+      "timestamp": "2026-05-01T01:10:39.275Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "qwn2xcxur",
+      "timestamp": "2026-05-01T00:18:44.475Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "roldxks87",
+      "timestamp": "2026-04-30T23:46:11.885Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Administrador alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "1",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "byvj66bkq",
+      "timestamp": "2026-04-30T23:46:11.150Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Administrador alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "1",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "heihnjtph",
+      "timestamp": "2026-04-30T23:46:10.619Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Administrador alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "1",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "krmcax0rt",
+      "timestamp": "2026-04-30T23:46:10.113Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Administrador alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "1",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ngg5kskj8",
+      "timestamp": "2026-04-30T23:46:09.385Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Administrador alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "1",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "clxa70fjz",
+      "timestamp": "2026-04-30T23:46:07.991Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Administrador alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "1",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "vt2m93rqj",
+      "timestamp": "2026-04-30T23:45:52.616Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "v4yug3lup",
+      "timestamp": "2026-04-30T21:39:18.068Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "evhzr4ih2",
+      "timestamp": "2026-04-30T21:07:26.211Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
     {
       "id": "6rj111nej",
       "timestamp": "2026-04-21T12:17:43.420Z",
