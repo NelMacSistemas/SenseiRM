@@ -336,6 +336,17 @@ let db = {
     companyName: 'CRM Ecosystem',
     appLogo: ''
   },
+  systemPolicies: {
+    maxUploadSizeMB: 10,
+    loginAttempts: 5,
+    lockoutDurationMin: 30,
+    minPasswordLength: 8,
+    requireUppercase: true,
+    requireLowercase: true,
+    requireNumber: true,
+    requireSpecial: true,
+    version: Date.now()
+  },
   notifications: [],
 };
 
@@ -385,6 +396,7 @@ if (fs.existsSync(DATA_FILE)) {
       db.slaSettings = parsed.slaSettings || { ...db.slaSettings };
       db.emailSettings = parsed.emailSettings || { ...db.emailSettings };
       db.systemSettings = parsed.systemSettings || { ...db.systemSettings };
+      db.systemPolicies = { ...db.systemPolicies, ...(parsed.systemPolicies || {}) };
       db.clientCategories = Array.isArray(parsed.clientCategories) ? parsed.clientCategories : [];
       db.customFields = Array.isArray(parsed.customFields) ? parsed.customFields : [];
       db.notifications = Array.isArray(parsed.notifications) ? parsed.notifications : [];
@@ -573,10 +585,12 @@ app.get('/api/data', authenticateToken, apiLimiter, (req: any, res: any) => {
 
   const role = db.roles.find((r: any) => r.id === user.roleId);
   // SEG-06: isAdmin determinado por permissões completas, não por ID hardcoded
-  const isAdmin = Object.values(role?.permissions || {}).every((p: any) =>
-    p.acesso && p.leitura && p.incluir && p.editar && p.excluir
-  );
+  const isAdmin = user.roleId === 'admin';
   const perms: any = role?.permissions || {};
+  // DEBUG LOG
+  try {
+    fs.appendFileSync(path.join(__dirname, 'debug.log'), `[${new Date().toISOString()}] /api/data called. isAdmin=${isAdmin}. db.systemPolicies=${JSON.stringify(db.systemPolicies)}\n`);
+  } catch (e) {}
 
   // Filter data based on permissions
   const safeUsers = db.users
@@ -595,6 +609,7 @@ app.get('/api/data', authenticateToken, apiLimiter, (req: any, res: any) => {
     templates: (isAdmin || perms.configuracoes?.acesso) ? db.templates : [],
     customFields: (isAdmin || perms.configuracoes?.acesso) ? db.customFields : [],
     slaSettings: (isAdmin || perms.configuracoes?.acesso) ? db.slaSettings : {},
+    systemPolicies: db.systemPolicies,
     emailSettings: isAdmin ? db.emailSettings : {}, // Only admin sees email settings
     systemSettings: {
       companyName: (db.systemSettings as any)?.companyName || (db.systemSettings as any)?.appSlogan || 'CRM Ecosystem',
@@ -618,9 +633,7 @@ app.post('/api/sync', authenticateToken, apiLimiter, (req: any, res: any) => {
 
   const role = db.roles.find((r: any) => r.id === user.roleId);
   // SEG-06: isAdmin é determinado pelas permissões completas, não pelo ID hardcoded
-  const isAdmin = Object.values(role?.permissions || {}).every((p: any) =>
-    p.acesso && p.leitura && p.incluir && p.editar && p.excluir
-  );
+  const isAdmin = user.roleId === 'admin';
   const perms: any = role?.permissions || {};
 
   // Map collection types to permission modules
@@ -634,7 +647,8 @@ app.post('/api/sync', authenticateToken, apiLimiter, (req: any, res: any) => {
     'templates': 'configuracoes',
     'slaSettings': 'configuracoes',
     'emailSettings': 'configuracoes',
-    'systemSettings': 'configuracoes'
+    'systemSettings': 'configuracoes',
+    'systemPolicies': 'configuracoes'
   };
 
   const module = typeToModule[type];

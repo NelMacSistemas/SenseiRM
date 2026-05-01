@@ -19,7 +19,7 @@ import {
   parseISO 
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { User, Client, ContactPerson, AuditEntry, MailHistory, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory, Attachment, Notification, MailTemplate, ClientInteraction, Subtask, Comment, CustomField, Role } from './types';
+import { User, Client, ContactPerson, AuditEntry, MailHistory, EntityStatus, TaskStatus, TaskPriority, UserPermissions, Permission, TaskType, SLASettings, TaskLog, Sector, Task, ClientCategory, Attachment, Notification, MailTemplate, ClientInteraction, Subtask, Comment, CustomField, Role, SystemPolicy, SystemSettings } from './types';
 import { INITIAL_USER, THEMES } from './constants';
 import { auditService } from './services/auditService';
 
@@ -234,7 +234,7 @@ const CLIENT_LABELS = {
 const USER_LABELS = {
   nome: 'Nome',
   email: 'E-mail',
-  perfil: 'Perfil',
+  roleId: 'Perfil',
   status: 'Status da Conta',
   celular: 'Celular',
   possuiWhatsapp: 'WhatsApp Ativo'
@@ -680,6 +680,8 @@ interface AppState {
   updateEmailSettings: (settings: EmailSettings) => void;
   systemSettings: SystemSettings;
   updateSystemSettings: (settings: SystemSettings) => void;
+  systemPolicies: SystemPolicy;
+  updateSystemPolicies: (policies: SystemPolicy) => void;
   updateSync: (type: string, action: 'ADD' | 'UPDATE' | 'DELETE' | 'SET', payload: any) => Promise<void>;
   hasPermission: (module: keyof UserPermissions, action: keyof Permission) => boolean;
   theme: 'light' | 'dark';
@@ -761,7 +763,40 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         usuarios: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
         configuracoes: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
         auditoria: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
-        calendario: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true }
+        calendario: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_sistema: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_politicas: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_rbac: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_setores: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_categorias: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_campos: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_sla: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_email: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_templates: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true }
+      }
+    },
+    {
+      id: 'user',
+      name: 'Usuário Padrão',
+      description: 'Acesso básico ao sistema',
+      permissions: {
+        dashboard: { acesso: true, leitura: true, incluir: false, editar: false, excluir: false },
+        clientes: { acesso: true, leitura: true, incluir: true, editar: false, excluir: false },
+        malaDireta: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        tarefas: { acesso: true, leitura: true, incluir: true, editar: true, excluir: false },
+        usuarios: { acesso: true, leitura: true, incluir: false, editar: false, excluir: false },
+        configuracoes: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        auditoria: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        calendario: { acesso: true, leitura: true, incluir: true, editar: true, excluir: false },
+        config_sistema: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_politicas: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_rbac: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_setores: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_categorias: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_campos: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_sla: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_email: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_templates: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false }
       }
     }
   ]);
@@ -774,8 +809,20 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [templates, setTemplates] = useState<MailTemplate[]>([]);
   const [slaSettings, setSlaSettings] = useState<SLASettings>({ Baixa: 15, Média: 7, Alta: 3, Crítica: 1 });
   const [emailSettings, setEmailSettings] = useState<EmailSettings>({ provider: 'SMTP', host: '', port: 587, user: '', pass: '', secure: false });
-  const [systemSettings, setSystemSettings] = useState<SystemSettings>({ companyName: 'CRM Ecosystem', appLogo: '' });
-  const [systemPolicies, setSystemPolicies] = useState<SystemPolicy>({ maxUploadSizeMB: 10, loginAttempts: 5, lockoutDurationMin: 30, minPasswordLength: 8, requireUppercase: true, requireLowercase: true, requireNumber: true, requireSpecial: true });
+  const [systemSettings, setSystemSettings] = useState<SystemSettings>(() => {
+    try {
+      const stored = localStorage.getItem('senseirm_system_settings');
+      if (stored) return JSON.parse(stored);
+    } catch (e) {}
+    return { companyName: 'CRM Ecosystem', appLogo: '' };
+  });
+  const [systemPolicies, setSystemPolicies] = useState<SystemPolicy>(() => {
+    try {
+      const stored = localStorage.getItem('senseirm_system_policies');
+      if (stored) return JSON.parse(stored);
+    } catch (e) {}
+    return { maxUploadSizeMB: 10, loginAttempts: 5, lockoutDurationMin: 30, minPasswordLength: 8, requireUppercase: true, requireLowercase: true, requireNumber: true, requireSpecial: true };
+  });
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [pendingInactivationUser, setPendingInactivationUser] = useState<User | null>(null);
@@ -930,7 +977,61 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         const data = await res.json();
         // Batch updates to minimize triggers
         if (data.users && data.users.length > 0) setUsers(data.users);
-        if (data.roles && data.roles.length > 0) setRoles(data.roles);
+        if (data.roles && data.roles.length > 0) {
+          // Ensure we don't lose default roles if they are not in the database
+          const hasAdmin = data.roles.some((r: any) => r.id === 'admin');
+          const hasUser = data.roles.some((r: any) => r.id === 'user');
+          const finalRoles = [...data.roles];
+          if (!hasAdmin) finalRoles.push({
+            id: 'admin',
+            name: 'Administrador',
+            description: 'Acesso total ao sistema',
+            permissions: {
+              dashboard: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+              clientes: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+              malaDireta: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+              tarefas: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+              usuarios: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+              configuracoes: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+              auditoria: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+              calendario: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_sistema: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_politicas: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_rbac: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_setores: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_categorias: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_campos: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_sla: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_email: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true },
+        config_templates: { acesso: true, leitura: true, incluir: true, editar: true, excluir: true }
+            }
+          });
+          if (!hasUser) finalRoles.push({
+            id: 'user',
+            name: 'Usuário Padrão',
+            description: 'Acesso básico ao sistema',
+            permissions: {
+              dashboard: { acesso: true, leitura: true, incluir: false, editar: false, excluir: false },
+              clientes: { acesso: true, leitura: true, incluir: true, editar: false, excluir: false },
+              malaDireta: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+              tarefas: { acesso: true, leitura: true, incluir: true, editar: true, excluir: false },
+              usuarios: { acesso: true, leitura: true, incluir: false, editar: false, excluir: false },
+              configuracoes: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+              auditoria: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+              calendario: { acesso: true, leitura: true, incluir: true, editar: true, excluir: false },
+        config_sistema: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_politicas: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_rbac: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_setores: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_categorias: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_campos: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_sla: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_email: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+        config_templates: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false }
+            }
+          });
+          setRoles(finalRoles);
+        }
         setClients(data.clients || []);
         setTasks(data.tasks || []);
         setSectors(data.sectors || []);
@@ -938,6 +1039,14 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         setCustomFields(data.customFields || []);
         setHistory(data.history || []);
         setTemplates(data.templates || []);
+        if (data.systemPolicies && typeof data.systemPolicies === 'object' && Object.keys(data.systemPolicies).length > 0) {
+          console.log('[DEBUG] Setting systemPolicies:', data.systemPolicies);
+          setSystemPolicies(data.systemPolicies);
+          // toast({ title: 'Debug', message: 'Policies loaded: ' + JSON.stringify(data.systemPolicies).substring(0, 50), type: 'info' });
+        } else {
+          // toast({ title: 'Debug Error', message: 'Policies empty in API', type: 'error' });
+          console.warn('[DEBUG] systemPolicies missing or empty in API response');
+        }
         setAuditLogs(data.auditLogs || []);
         if (data.slaSettings) setSlaSettings(data.slaSettings);
         if (data.emailSettings) setEmailSettings(data.emailSettings);
@@ -1273,7 +1382,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Configurações do Sistema atualizadas. ${diffResult.text}`, 'systemSettings', diffResult.diff);
   };
 
-  const updateSystemPolicies = (policies: SystemPolicy) => {
+  const updateSystemPolicies = async (policies: SystemPolicy) => {
     const diffResult = getDetailedDiff(systemPolicies, policies, { 
       maxUploadSizeMB: 'Tam. Máx Upload', 
       loginAttempts: 'Tentativas Login', 
@@ -1285,7 +1394,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       requireSpecial: 'Requer Símbolo'
     });
     setSystemPolicies(policies);
-    apiSync('systemPolicies', 'SET', policies);
+    await apiSync('systemPolicies', 'SET', policies);
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'CONFIG', `Políticas de Segurança atualizadas. ${diffResult.text}`, 'systemPolicies', diffResult.diff);
   };
 
@@ -1293,6 +1402,12 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (!currentUser) return false;
     const role = roles.find(r => r.id === currentUser.roleId);
     if (!role) return false;
+
+    // Se o módulo granular de configuração não estiver definido, herda do módulo principal 'configuracoes'
+    if (module.startsWith('config_') && !role.permissions[module]) {
+      return !!role.permissions.configuracoes?.[action];
+    }
+
     // Data-driven RBAC: check the permission matrix
     return !!role.permissions[module]?.[action];
   }, [currentUser, roles]);
@@ -1630,7 +1745,7 @@ const Sidebar = () => {
             )}
             <div className="overflow-hidden">
               <p className="text-white text-sm font-semibold truncate">{currentUser?.nome}</p>
-              <p className="text-xs text-slate-500 uppercase tracking-tighter">{roles.find(r => r.id === currentUser?.roleId)?.name}</p>
+              <p className="text-xs text-slate-500 uppercase tracking-tighter">{roles.find(r => r.id === currentUser?.roleId)?.name || 'Usuário'}</p>
             </div>
           </div>
           <button onClick={logout} className="w-full flex items-center justify-center gap-2 py-2 bg-slate-700 hover:bg-slate-50/50 dark:bg-slate-800/30/20 hover:text-red-400 transition-all rounded-lg text-sm font-bold">
@@ -5843,7 +5958,16 @@ const RolesTab = () => {
     usuarios: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
     configuracoes: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
     auditoria: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
-    calendario: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false }
+    calendario: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_sistema: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_politicas: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_rbac: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_setores: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_categorias: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_campos: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_sla: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_email: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_templates: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false }
   });
 
   const canEdit = hasPermission('configuracoes', 'editar');
@@ -5851,21 +5975,31 @@ const RolesTab = () => {
   const canInclude = hasPermission('configuracoes', 'incluir');
 
   const openModal = (role: Role | null) => {
+    const empty = {
+    dashboard: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    clientes: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    malaDireta: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    tarefas: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    usuarios: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    configuracoes: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    auditoria: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    calendario: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_sistema: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_politicas: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_rbac: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_setores: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_categorias: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_campos: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_sla: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_email: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
+    config_templates: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false }
+  };
     if (role) {
       setEditingRole(role);
-      setModalPerms(role.permissions);
+      setModalPerms({ ...empty, ...role.permissions });
     } else {
       setEditingRole(null);
-      setModalPerms({
-        dashboard: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
-        clientes: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
-        malaDireta: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
-        tarefas: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
-        usuarios: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
-        configuracoes: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
-        auditoria: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false },
-        calendario: { acesso: false, leitura: false, incluir: false, editar: false, excluir: false }
-      });
+      setModalPerms(empty);
     }
     setIsModalOpen(true);
   };
@@ -5906,6 +6040,12 @@ const RolesTab = () => {
     }
     
     (newPerms as any)[modKey] = mod;
+
+    // Se for um sub-módulo de configuração e qualquer permissão for ativada, ativa o acesso ao menu principal
+    if (modKey.startsWith('config_') && newVal) {
+      newPerms.configuracoes = { ...newPerms.configuracoes, acesso: true };
+    }
+
     setModalPerms(newPerms);
   };
 
@@ -5918,6 +6058,11 @@ const RolesTab = () => {
       editar: val,
       excluir: val
     };
+
+    if (modKey.startsWith('config_') && val) {
+      newPerms.configuracoes = { ...newPerms.configuracoes, acesso: true };
+    }
+
     setModalPerms(newPerms);
   };
 
@@ -5928,6 +6073,15 @@ const RolesTab = () => {
     { key: 'tarefas', label: 'Tarefas' },
     { key: 'usuarios', label: 'Usuários' },
     { key: 'configuracoes', label: 'Configurações' },
+    { key: 'config_sistema', label: 'Sistema' },
+    { key: 'config_politicas', label: 'Políticas' },
+    { key: 'config_rbac', label: 'RBAC' },
+    { key: 'config_setores', label: 'Setores' },
+    { key: 'config_categorias', label: 'Categorias' },
+    { key: 'config_campos', label: 'Campos Personalizados' },
+    { key: 'config_sla', label: 'Regras SLA' },
+    { key: 'config_email', label: 'E-mail' },
+    { key: 'config_templates', label: 'Templates' },
     { key: 'auditoria', label: 'Auditoria' },
     { key: 'calendario', label: 'Calendário' }
   ];
@@ -6022,9 +6176,9 @@ const RolesTab = () => {
 
               <div className="space-y-4">
                 <h4 className="text-xs font-black text-primary border-l-4 border-primary pl-3 uppercase tracking-widest pt-4">Matriz de Permissões</h4>
-                <div className="w-full overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-[2rem] bg-slate-50/50 dark:bg-slate-800/30 dark:bg-slate-800/30 custom-scrollbar">
+                <div className="w-full overflow-auto max-h-[500px] border border-slate-200 dark:border-slate-800 rounded-[2rem] bg-slate-50/50 dark:bg-slate-800/30 dark:bg-slate-800/30 custom-scrollbar">
                   <table className="w-full text-left border-collapse min-w-[600px]">
-                    <thead className="bg-slate-100/50 dark:bg-slate-800/50">
+                    <thead className="sticky top-0 bg-slate-100 dark:bg-slate-900 z-10">
                       <tr>
                         <th className="px-4 py-3 text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800">Módulo</th>
                         {types.map(t => (
@@ -6034,12 +6188,12 @@ const RolesTab = () => {
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {modules.map(m => {
-                        const mod = modalPerms[m.key as keyof UserPermissions];
+                        const mod = modalPerms[m.key as keyof UserPermissions] || { acesso: false, leitura: false, incluir: false, editar: false, excluir: false };
                         return (
                           <tr key={m.key} className="hover:bg-white dark:hover:bg-slate-800 transition-colors group/row">
                             <td className="px-4 py-3">
                               <div className="flex items-center justify-between">
-                                <span className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-tighter">{m.label}</span>
+                                <span className={`text-sm font-black uppercase tracking-tighter ${m.key.startsWith('config_') ? 'ml-8 text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-300'}`}>{m.label}</span>
                                 <div className="flex gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
                                   <button type="button" onClick={() => setModuleAll(m.key, true)} className="p-1 text-primary hover:bg-primary/10 rounded-lg text-[9px] font-black uppercase tracking-tighter">Tudo</button>
                                   <button type="button" onClick={() => setModuleAll(m.key, false)} className="p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-[9px] font-black uppercase tracking-tighter">Limpar</button>
@@ -6082,7 +6236,7 @@ const RolesTab = () => {
 };
 
 const ConfiguracoesPage = () => {
-  const { currentUser, updateUser, slaSettings, updateSLASettings, sectors, addSector, updateSector, deleteSector, users, clientCategories, addClientCategory, updateClientCategory, deleteClientCategory, customFields, addCustomField, updateCustomField, deleteCustomField, hasPermission, systemSettings, updateSystemSettings } = useApp();
+  const { currentUser, updateUser, slaSettings, updateSLASettings, sectors, addSector, updateSector, deleteSector, users, clientCategories, addClientCategory, updateClientCategory, deleteClientCategory, customFields, addCustomField, updateCustomField, deleteCustomField, hasPermission, systemSettings, updateSystemSettings, systemPolicies, updateSystemPolicies } = useApp();
   const { success } = useToast();
   const [activeTab, setActiveTab] = useState('aparencia');
   const [editingSector, setEditingSector] = useState<Sector | null>(null);
@@ -6096,6 +6250,20 @@ const ConfiguracoesPage = () => {
   const [currentPageSectors, setCurrentPageSectors] = useState(1);
   const [currentPageCategories, setCurrentPageCategories] = useState(1);
   const [currentPageCustomFields, setCurrentPageCustomFields] = useState(1);
+  const [localPolicies, setLocalPolicies] = useState(systemPolicies);
+  const [localSettings, setLocalSettings] = useState(systemSettings);
+  useEffect(() => { 
+    setLocalPolicies(systemPolicies);
+    localStorage.setItem('senseirm_system_policies', JSON.stringify(systemPolicies));
+  }, [systemPolicies]);
+  useEffect(() => { 
+    setLocalSettings(systemSettings);
+    localStorage.setItem('senseirm_system_settings', JSON.stringify(systemSettings));
+  }, [systemSettings]);
+  useEffect(() => { 
+    setLocalPolicies(systemPolicies);
+    localStorage.setItem('senseirm_system_policies', JSON.stringify(systemPolicies));
+  }, [systemPolicies]);
   const itemsPerPage = 6;
   const location = useLocation();
   const navigate = useNavigate();
@@ -6116,17 +6284,26 @@ const ConfiguracoesPage = () => {
 
   const canAccessConfig = hasPermission('configuracoes', 'acesso');
   const canAccessMalaDireta = hasPermission('malaDireta', 'acesso');
+  const canAccessSistema = hasPermission('config_sistema', 'acesso');
+  const canAccessPoliticas = hasPermission('config_politicas', 'acesso');
+  const canAccessRoles = hasPermission('config_rbac', 'acesso');
+  const canAccessSetores = hasPermission('config_setores', 'acesso');
+  const canAccessCategorias = hasPermission('config_categorias', 'acesso');
+  const canAccessCampos = hasPermission('config_campos', 'acesso');
+  const canAccessSLA = hasPermission('config_sla', 'acesso');
+  const canAccessEmail = hasPermission('config_email', 'acesso');
+  const canAccessTemplates = hasPermission('config_templates', 'acesso');
 
   const tabs = [
-    ...(canAccessConfig ? [{ id: 'sistema', label: 'Sistema', icon: 'settings' }] : []),
-    ...(canAccessConfig ? [{ id: 'politicas', label: 'Políticas', icon: 'shield' }] : []),
-    ...(canAccessConfig ? [{ id: 'roles', label: 'Funções (RBAC)', icon: 'users-cog' }] : []),
-    ...(canAccessConfig ? [{ id: 'setores', label: 'Setores', icon: 'building' }] : []),
-    ...(canAccessConfig ? [{ id: 'categorias', label: 'Categorias', icon: 'tag' }] : []),
-    ...(canAccessConfig ? [{ id: 'customFields', label: 'Campos Personalizados', icon: 'list-alt' }] : []),
-    ...(canAccessConfig ? [{ id: 'sla', label: 'Regras de SLA', icon: 'clock' }] : []),
-    ...(canAccessConfig ? [{ id: 'email', label: 'E-mail', icon: 'email' }] : []),
-    ...(canAccessMalaDireta ? [{ id: 'templates', label: 'Templates', icon: 'file-alt' }] : []),
+    ...(canAccessSistema ? [{ id: 'sistema', label: 'Sistema', icon: 'settings' }] : []),
+    ...(canAccessPoliticas ? [{ id: 'politicas', label: 'Políticas', icon: 'shield' }] : []),
+    ...(canAccessRoles ? [{ id: 'roles', label: 'Funções (RBAC)', icon: 'users-cog' }] : []),
+    ...(canAccessSetores ? [{ id: 'setores', label: 'Setores', icon: 'building' }] : []),
+    ...(canAccessCategorias ? [{ id: 'categorias', label: 'Categorias', icon: 'tag' }] : []),
+    ...(canAccessCampos ? [{ id: 'customFields', label: 'Campos Personalizados', icon: 'list-alt' }] : []),
+    ...(canAccessSLA ? [{ id: 'sla', label: 'Regras de SLA', icon: 'clock' }] : []),
+    ...(canAccessEmail ? [{ id: 'email', label: 'E-mail', icon: 'email' }] : []),
+    ...(canAccessTemplates ? [{ id: 'templates', label: 'Templates', icon: 'file-alt' }] : []),
     { id: 'aparencia', label: 'Aparência', icon: 'palette' },
     { id: 'notificacoes', label: 'Notificações', icon: 'bell' }
   ];
@@ -6250,7 +6427,7 @@ const ConfiguracoesPage = () => {
       </div>
       
       <div className="w-full max-w-[1550px]">
-        {activeTab === 'sistema' && canAccessConfig && (
+        {activeTab === 'sistema' && canAccessSistema && (
            <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-[2rem] md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.5rem] md:rounded-[2rem] bg-primary/10 text-primary flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
@@ -6261,7 +6438,7 @@ const ConfiguracoesPage = () => {
                   <p className="text-xs md:text-sm text-slate-400 dark:text-slate-500 font-medium mt-1">Personalize o nome, slogan e logo do sistema.</p>
                 </div>
               </div>
-              <form onSubmit={async (e) => {
+              <form key={JSON.stringify(systemSettings)} onSubmit={async (e) => {
                 e.preventDefault();
                 const data = new FormData(e.currentTarget);
                 const file = data.get('appLogo') as File;
@@ -6285,7 +6462,7 @@ const ConfiguracoesPage = () => {
                  </div>
                  <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-2xl border border-slate-100 dark:border-slate-800">
                     <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Nome da Empresa</label>
-                    <input name="companyName" key={systemSettings.companyName} required defaultValue={systemSettings.companyName} placeholder="Sua Empresa" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base text-slate-800 dark:text-slate-200" />
+                    <input name="companyName" key={systemSettings.companyName} required value={localSettings.companyName} onChange={(e) => setLocalSettings({ ...localSettings, companyName: e.target.value })} placeholder="Sua Empresa" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm md:text-base text-slate-800 dark:text-slate-200" />
                  </div>
                  <div className="space-y-1 md:col-span-2 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-[2rem] md:rounded-2xl border border-slate-100 dark:border-slate-800">
                     <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Logo do Sistema</label>
@@ -6303,7 +6480,7 @@ const ConfiguracoesPage = () => {
            </div>
         )}
 
-        {activeTab === 'politicas' && canAccessConfig && (
+        {activeTab === 'politicas' && canAccessPoliticas && (
            <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-[2rem] md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.5rem] md:rounded-[2rem] bg-primary/10 text-primary flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
@@ -6314,19 +6491,9 @@ const ConfiguracoesPage = () => {
                   <p className="text-xs md:text-sm text-slate-400 dark:text-slate-500 font-medium mt-1">Defina parâmetros de segurança e regras de acesso.</p>
                 </div>
               </div>
-              <form onSubmit={(e) => {
+              <form onSubmit={async (e) => {
                 e.preventDefault();
-                const data = new FormData(e.currentTarget);
-                updateSystemPolicies({
-                  maxUploadSizeMB: Number(data.get('maxUploadSizeMB')),
-                  loginAttempts: Number(data.get('loginAttempts')),
-                  lockoutDurationMin: Number(data.get('lockoutDurationMin')),
-                  minPasswordLength: Number(data.get('minPasswordLength')),
-                  requireUppercase: data.get('requireUppercase') === 'on',
-                  requireLowercase: data.get('requireLowercase') === 'on',
-                  requireNumber: data.get('requireNumber') === 'on',
-                  requireSpecial: data.get('requireSpecial') === 'on'
-                });
+                await updateSystemPolicies(localPolicies);
                 success('Políticas de segurança atualizadas!');
               }} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                  <div className="space-y-4 md:col-span-2">
@@ -6334,15 +6501,15 @@ const ConfiguracoesPage = () => {
                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                      <div className="space-y-1 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
                         <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Tamanho Máx. Upload (MB)</label>
-                        <input type="number" name="maxUploadSizeMB" required defaultValue={systemPolicies.maxUploadSizeMB} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm" />
+                        <input type="number" name="maxUploadSizeMB" required value={localPolicies.maxUploadSizeMB} onChange={(e) => setLocalPolicies({ ...localPolicies, maxUploadSizeMB: Number(e.target.value) })} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm" />
                      </div>
                      <div className="space-y-1 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
                         <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Tentativas de Login</label>
-                        <input type="number" name="loginAttempts" required defaultValue={systemPolicies.loginAttempts} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm" />
+                        <input type="number" name="loginAttempts" required value={localPolicies.loginAttempts} onChange={(e) => setLocalPolicies({ ...localPolicies, loginAttempts: Number(e.target.value) })} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm" />
                      </div>
                      <div className="space-y-1 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
                         <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Duração do Bloqueio (min)</label>
-                        <input type="number" name="lockoutDurationMin" required defaultValue={systemPolicies.lockoutDurationMin} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm" />
+                        <input type="number" name="lockoutDurationMin" required value={localPolicies.lockoutDurationMin} onChange={(e) => setLocalPolicies({ ...localPolicies, lockoutDurationMin: Number(e.target.value) })} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm" />
                      </div>
                    </div>
                  </div>
@@ -6352,23 +6519,23 @@ const ConfiguracoesPage = () => {
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <div className="space-y-1 bg-slate-50 dark:bg-slate-800/50 p-4 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
                         <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-2">Comprimento Mínimo</label>
-                        <input type="number" name="minPasswordLength" required defaultValue={systemPolicies.minPasswordLength} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm" />
+                        <input type="number" name="minPasswordLength" required value={localPolicies.minPasswordLength} onChange={(e) => setLocalPolicies({ ...localPolicies, minPasswordLength: Number(e.target.value) })} className="w-full px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none font-bold focus:border-primary shadow-sm text-sm" />
                      </div>
                      <div className="flex flex-wrap gap-4 p-4 md:p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 items-center">
                         <label className="flex items-center gap-2 cursor-pointer group">
-                          <input type="checkbox" name="requireUppercase" defaultChecked={systemPolicies.requireUppercase} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                          <input type="checkbox" name="requireUppercase" checked={localPolicies.requireUppercase} onChange={(e) => setLocalPolicies({ ...localPolicies, requireUppercase: e.target.checked })} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
                           <span className="text-xs font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">Requerer Maiúsculas</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer group">
-                          <input type="checkbox" name="requireLowercase" defaultChecked={systemPolicies.requireLowercase} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                          <input type="checkbox" name="requireLowercase" checked={localPolicies.requireLowercase} onChange={(e) => setLocalPolicies({ ...localPolicies, requireLowercase: e.target.checked })} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
                           <span className="text-xs font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">Requerer Minúsculas</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer group">
-                          <input type="checkbox" name="requireNumber" defaultChecked={systemPolicies.requireNumber} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                          <input type="checkbox" name="requireNumber" checked={localPolicies.requireNumber} onChange={(e) => setLocalPolicies({ ...localPolicies, requireNumber: e.target.checked })} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
                           <span className="text-xs font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">Requerer Números</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer group">
-                          <input type="checkbox" name="requireSpecial" defaultChecked={systemPolicies.requireSpecial} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                          <input type="checkbox" name="requireSpecial" checked={localPolicies.requireSpecial} onChange={(e) => setLocalPolicies({ ...localPolicies, requireSpecial: e.target.checked })} className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary" />
                           <span className="text-xs font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">Símbolos Especiais</span>
                         </label>
                      </div>
@@ -6382,11 +6549,11 @@ const ConfiguracoesPage = () => {
            </div>
         )}
 
-        {activeTab === 'roles' && canAccessConfig && (
+        {activeTab === 'roles' && canAccessRoles && (
            <RolesTab />
         )}
 
-        {activeTab === 'setores' && canAccessConfig && (
+        {activeTab === 'setores' && canAccessSetores && (
           <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                <div className="flex items-center gap-4">
@@ -6463,7 +6630,7 @@ const ConfiguracoesPage = () => {
           </div>
         )}
 
-        {activeTab === 'categorias' && canAccessConfig && (
+        {activeTab === 'categorias' && canAccessCategorias && (
           <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                <div className="flex items-center gap-4">
@@ -6536,7 +6703,7 @@ const ConfiguracoesPage = () => {
           </div>
         )}
 
-        {activeTab === 'customFields' && canAccessConfig && (
+        {activeTab === 'customFields' && canAccessCampos && (
           <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                <div className="flex items-center gap-4">
@@ -6597,7 +6764,7 @@ const ConfiguracoesPage = () => {
           </div>
         )}
 
-        {activeTab === 'sla' && canAccessConfig && (
+        {activeTab === 'sla' && canAccessSLA && (
            <div className="bg-white p-6 md:p-10 rounded-3xl shadow-sm border border-slate-100 space-y-4 md:space-y-6 animate-in slide-in-from-bottom-2">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.5rem] md:rounded-[2rem] bg-blue-50 text-blue-500 flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
@@ -6643,7 +6810,7 @@ const ConfiguracoesPage = () => {
            </div>
         )}
 
-        {activeTab === 'email' && canAccessConfig && (
+        {activeTab === 'email' && canAccessEmail && (
            <div className="bg-white p-6 md:p-10 rounded-3xl shadow-sm border border-slate-100 space-y-4 md:space-y-6 animate-in slide-in-from-bottom-2">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-[1.5rem] md:rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
@@ -6745,7 +6912,7 @@ const ConfiguracoesPage = () => {
            </div>
         )}
 
-        {activeTab === 'templates' && canAccessMalaDireta && (
+        {activeTab === 'templates' && canAccessTemplates && (
            <TemplatesTab />
         )}
 

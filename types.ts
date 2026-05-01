@@ -75,6 +75,16 @@ export interface UserPermissions {
   configuracoes: Permission;
   auditoria: Permission;
   calendario: Permission;
+  // Granular settings permissions
+  config_sistema: Permission;
+  config_politicas: Permission;
+  config_rbac: Permission;
+  config_setores: Permission;
+  config_categorias: Permission;
+  config_campos: Permission;
+  config_sla: Permission;
+  config_email: Permission;
+  config_templates: Permission;
 }
 
 export interface SLASettings {
