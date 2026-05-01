@@ -4,7 +4,7 @@
       "id": "1",
       "nome": "Administrador",
       "email": "admin@senseirm.com",
-      "roleId": "admin",
+      "roleId": "caaa05e3-5ecd-4d52-9c7d-22ea273a12d4",
       "status": "ativo",
       "tema": "verde",
       "dataCriacao": "2026-04-09T13:51:02.383Z",
@@ -16,7 +16,7 @@
         "email": true,
         "system": true
       },
-      "senha": "$2b$10$RkDws1FeQWl6EiiVPbFCBup3un2LJiwla/fvVndop7WgvT8PDOK6e"
+      "senha": "$2b$10$Wrt4C8VcsnQDRcpYn101KexFgL9KDf0MBNE3MvdeG09WTVWIParN2"
     },
     {
       "id": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
@@ -30,7 +30,7 @@
       "celular": "+55 (51) 98146-7081",
       "possuiWhatsapp": true,
       "roleId": "user",
-      "senha": "$2b$10$VfoXTcX/.yJLhsfxlLlV9Oai3dZ/FamTjT2DoyN/RpT5kErfZEenW"
+      "senha": "$2b$10$GOgTMOgjXgWMUZ2JlMymQONuJuhZKAJvrbX1mVoJex0ZCK8hsJ5XK"
     }
   ],
   "roles": [
@@ -175,26 +175,26 @@
           "acesso": true,
           "leitura": true,
           "incluir": false,
-          "editar": false,
+          "editar": true,
           "excluir": false
         },
         "malaDireta": {
           "acesso": true,
           "leitura": true,
-          "incluir": false,
-          "editar": false,
-          "excluir": false
+          "incluir": true,
+          "editar": true,
+          "excluir": true
         },
         "tarefas": {
           "acesso": true,
           "leitura": true,
-          "incluir": false,
-          "editar": false,
-          "excluir": false
+          "incluir": true,
+          "editar": true,
+          "excluir": true
         },
         "usuarios": {
           "acesso": true,
-          "leitura": true,
+          "leitura": false,
           "incluir": false,
           "editar": false,
           "excluir": false
@@ -282,6 +282,132 @@
           "incluir": false,
           "editar": false,
           "excluir": false
+        }
+      }
+    },
+    {
+      "id": "caaa05e3-5ecd-4d52-9c7d-22ea273a12d4",
+      "name": "Administrador",
+      "description": "Acesso total ao sistema",
+      "permissions": {
+        "dashboard": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "clientes": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "malaDireta": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "tarefas": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "usuarios": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "configuracoes": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "auditoria": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "calendario": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "config_sistema": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "config_politicas": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "config_rbac": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "config_setores": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "config_categorias": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "config_campos": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "config_sla": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "config_email": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
+        },
+        "config_templates": {
+          "acesso": true,
+          "leitura": true,
+          "incluir": true,
+          "editar": true,
+          "excluir": true
         }
       }
     }
@@ -840,6 +966,308 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "tiprzau0n",
+      "timestamp": "2026-05-01T21:29:47.409Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Nelson Macedo autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "2o8qm41h7",
+      "timestamp": "2026-05-01T21:29:37.619Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Nelson Macedo alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "5g2ze8wpu",
+      "timestamp": "2026-05-01T21:29:22.722Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "UPDATE",
+      "module": "CLIENTES",
+      "details": "Cliente GRUPPEN SERVICOS DE INFORMATICA LTDA atualizado. Nenhuma alteração nos campos principais.",
+      "entityId": "201eaa0d-6ee9-42be-b5f8-08692a179203",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "mf1t50no5",
+      "timestamp": "2026-05-01T21:29:02.785Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Nelson Macedo autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "chk4gpler",
+      "timestamp": "2026-05-01T21:28:55.799Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "iyeeicaph",
+      "timestamp": "2026-05-01T21:28:52.806Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIGURACOES",
+      "details": "Função Usuário Padrão alterada.",
+      "entityId": "user",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "h4aozhugz",
+      "timestamp": "2026-05-01T21:27:58.892Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "v9qwwah9l",
+      "timestamp": "2026-05-01T21:27:52.353Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "0qr9hkp0i",
+      "timestamp": "2026-05-01T21:27:40.299Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Nelson Macedo autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "3adlc6fkp",
+      "timestamp": "2026-05-01T21:27:27.175Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Nelson Macedo alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "y9ocuyrp5",
+      "timestamp": "2026-05-01T21:27:02.847Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Nelson Macedo autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "elj5mk3v9",
+      "timestamp": "2026-05-01T21:26:56.287Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "cgnvuafej",
+      "timestamp": "2026-05-01T21:26:51.488Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIGURACOES",
+      "details": "Função Usuário Padrão alterada.",
+      "entityId": "user",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "1n5kwv6rz",
+      "timestamp": "2026-05-01T21:25:47.968Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "9q3z69wkb",
+      "timestamp": "2026-05-01T21:25:36.070Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "gmv3mk5gt",
+      "timestamp": "2026-05-01T21:21:27.363Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Administrador alterado. Alterações: [Perfil: \"admin\" → \"caaa05e3-5ecd-4d52-9c7d-22ea273a12d4\"]",
+      "entityId": "1",
+      "diff": [
+        {
+          "field": "Perfil",
+          "oldValue": "admin",
+          "newValue": "caaa05e3-5ecd-4d52-9c7d-22ea273a12d4"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "8308pnpcq",
+      "timestamp": "2026-05-01T21:21:07.502Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIGURACOES",
+      "details": "Função Administrador alterada.",
+      "entityId": "caaa05e3-5ecd-4d52-9c7d-22ea273a12d4",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "262f2axkx",
+      "timestamp": "2026-05-01T21:20:50.844Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "CONFIGURACOES",
+      "details": "Função undefined (Cópia) criada.",
+      "entityId": "caaa05e3-5ecd-4d52-9c7d-22ea273a12d4",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "iqaccppcl",
+      "timestamp": "2026-05-01T21:19:32.926Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIGURACOES",
+      "details": "Função Usuário Padrão alterada.",
+      "entityId": "user",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ak7gpu46l",
+      "timestamp": "2026-05-01T21:19:18.568Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário Nelson Macedo alterado. Nenhuma alteração nos campos principais.",
+      "entityId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ewrm5w8qz",
+      "timestamp": "2026-05-01T21:19:04.190Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "wqzbskr7h",
+      "timestamp": "2026-05-01T21:18:57.409Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "9r3j3eicd",
+      "timestamp": "2026-05-01T21:18:33.813Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Nelson Macedo autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "lrms2laf0",
+      "timestamp": "2026-05-01T21:15:47.359Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "p9xce63d8",
+      "timestamp": "2026-05-01T21:13:06.114Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Nelson Macedo autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "80h908z3e",
+      "timestamp": "2026-05-01T21:12:53.029Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "6q2ilf97s",
+      "timestamp": "2026-05-01T21:11:58.100Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIGURACOES",
+      "details": "Função Usuário Padrão alterada.",
+      "entityId": "user",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "pawt8as0b",
+      "timestamp": "2026-05-01T21:11:26.282Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
     {
       "id": "cmkirwhfh",
       "timestamp": "2026-05-01T21:07:40.748Z",

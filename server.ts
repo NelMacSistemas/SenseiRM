@@ -592,9 +592,9 @@ app.get('/api/data', authenticateToken, apiLimiter, (req: any, res: any) => {
     fs.appendFileSync(path.join(__dirname, 'debug.log'), `[${new Date().toISOString()}] /api/data called. isAdmin=${isAdmin}. db.systemPolicies=${JSON.stringify(db.systemPolicies)}\n`);
   } catch (e) {}
 
-  // Filter data based on permissions
+  // Filter data based on permissions: Respect RBAC but allow self-visibility
   const safeUsers = db.users
-    .filter(() => isAdmin || perms.usuarios?.acesso)
+    .filter((u: any) => isAdmin || perms.usuarios?.acesso || u.id === req.user.id)
     .map(({ senha, ...u }: any) => u);
 
   res.json({
@@ -654,7 +654,10 @@ app.post('/api/sync', authenticateToken, apiLimiter, (req: any, res: any) => {
   const module = typeToModule[type];
   const permissionAction = action === 'ADD' ? 'incluir' : (action === 'UPDATE' ? 'editar' : (action === 'DELETE' ? 'excluir' : 'acesso'));
 
-  if (!isAdmin && (!module || !perms[module] || !perms[module][permissionAction])) {
+  // Allow self-update for non-admins (restricted fields handled below)
+  const isSelfUpdate = type === 'users' && action === 'UPDATE' && payload.id === user.id;
+
+  if (!isAdmin && !isSelfUpdate && (!module || !perms[module] || !perms[module][permissionAction])) {
     return res.status(403).json({ error: `Permissão insuficiente para ${action} em ${type}` });
   }
   
@@ -699,13 +702,28 @@ app.post('/api/sync', authenticateToken, apiLimiter, (req: any, res: any) => {
         }
       }
 
-      if (type === 'users' && payload.senha && !/^\$2[aby]\$/.test(payload.senha.substring(0, 4))) {
-        payload.senha = bcrypt.hashSync(payload.senha, 10);
-      } else if (type === 'users' && !payload.senha) {
-        payload.senha = oldItem.senha; // Keep old password if not provided
+      if (type === 'users' && isSelfUpdate && !isAdmin) {
+        // Self-update for non-admins: Only allow sensitive fields
+        const updatedUser = {
+          ...oldItem,
+          celular: payload.celular || oldItem.celular,
+          possuiWhatsapp: payload.possuiWhatsapp !== undefined ? payload.possuiWhatsapp : oldItem.possuiWhatsapp
+        };
+        
+        if (payload.senha && payload.senha.length > 0 && !/^\$2[aby]\$/.test(payload.senha.substring(0, 4))) {
+          updatedUser.senha = bcrypt.hashSync(payload.senha, 10);
+        }
+        
+        (db as any)[type][index] = updatedUser;
+      } else {
+        if (type === 'users' && payload.senha && !/^\$2[aby]\$/.test(payload.senha.substring(0, 4))) {
+          payload.senha = bcrypt.hashSync(payload.senha, 10);
+        } else if (type === 'users' && !payload.senha) {
+          payload.senha = oldItem.senha; // Keep old password if not provided
+        }
+        
+        (db as any)[type][index] = payload;
       }
-      
-      (db as any)[type][index] = payload;
       
       if (type === 'tasks') {
         if (oldItem.responsavelId !== payload.responsavelId) {

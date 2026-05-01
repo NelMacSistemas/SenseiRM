@@ -5557,8 +5557,9 @@ const UsersPage = () => {
   const itemsPerPage = 10;
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const canManageUsers = hasPermission('usuarios', 'editar') || hasPermission('usuarios', 'incluir');
-  const canViewAllUsers = hasPermission('usuarios', 'leitura');
+  const isSuperAdmin = currentUser?.roleId === 'admin';
+  const canManageUsers = isSuperAdmin || hasPermission('usuarios', 'editar') || hasPermission('usuarios', 'incluir');
+  const canViewAllUsers = isSuperAdmin || hasPermission('usuarios', 'leitura');
 
   useEffect(() => {
     if (location.state?.openModal && canManageUsers) {
@@ -5749,11 +5750,11 @@ const UsersPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-1">
                     <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Nome Exibição</label>
-                    <input name="nome" readOnly={!canManageUsers} defaultValue={editingUser?.nome} required className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 outline-none font-bold shadow-inner text-sm md:text-base" />
+                    <input name="nome" readOnly={!canManageUsers} defaultValue={editingUser?.nome} required className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 outline-none font-bold shadow-inner text-sm md:text-base read-only:opacity-60" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">E-mail Corporativo</label>
-                    <input name="email" readOnly={!canManageUsers} defaultValue={editingUser?.email} required type="email" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 outline-none font-bold shadow-inner text-sm md:text-base" />
+                    <input name="email" readOnly={!canManageUsers} defaultValue={editingUser?.email} required type="email" className="w-full px-4 md:px-6 py-2 md:py-3 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 dark:text-slate-50 outline-none font-bold shadow-inner text-sm md:text-base read-only:opacity-60" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest ml-1">Chave de Acesso (Senha)</label>
