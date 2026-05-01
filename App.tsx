@@ -5735,16 +5735,29 @@ const UsersPage = () => {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {paginatedUsers.map(u => (
-          <div key={u.id} className="bg-white dark:bg-slate-900 p-8 rounded-2xl md:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all text-center space-y-4">
-             <img src={u.foto || `https://picsum.photos/seed/${u.id}/200`} className="w-24 h-24 rounded-2xl object-cover border-4 border-slate-50 dark:border-slate-800 shadow-lg mx-auto" />
+        {paginatedUsers.map(u => {
+          const isInactive = u.status === 'inativo' || u.status === EntityStatus.INACTIVE;
+          return (
+          <div key={u.id} className={`bg-white dark:bg-slate-900 p-8 rounded-2xl md:rounded-3xl border shadow-sm hover:shadow-xl transition-all text-center space-y-4 ${isInactive ? 'border-red-300 dark:border-red-900 opacity-80' : 'border-slate-200 dark:border-slate-800'}`}>
+             <div className="relative inline-block">
+               <img src={u.foto || `https://picsum.photos/seed/${u.id}/200`} className="w-24 h-24 rounded-2xl object-cover border-4 border-slate-50 dark:border-slate-800 shadow-lg mx-auto" />
+               {isInactive && (
+                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full shadow">Inativo</span>
+               )}
+             </div>
              <div>
                 <h4 className="text-lg font-black text-slate-800 dark:text-slate-100">{u.nome}</h4>
                 <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">{roles.find(r => r.id === u.roleId)?.name || 'Usuário'}</p>
              </div>
-             <button onClick={() => openModal(u)} className="w-full px-6 py-2 bg-slate-900 dark:bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase hover:bg-primary transition-all">{canManageUsers ? 'Gerenciar' : 'Ver Perfil'}</button>
+             <button
+               onClick={() => openModal(u)}
+               className={`w-full px-6 py-2 rounded-xl text-[10px] font-black uppercase transition-all text-white ${isInactive ? 'bg-red-500 hover:bg-red-600' : 'bg-slate-900 dark:bg-slate-800 hover:bg-primary'}`}
+             >
+               {canManageUsers ? 'Gerenciar' : 'Ver Perfil'}
+             </button>
           </div>
-        ))}
+          );
+        })}
         {paginatedUsers.length === 0 && <div className="col-span-full p-10 text-center text-slate-300 dark:text-slate-700 italic font-bold">Nenhum usuário encontrado.</div>}
       </div>
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
