@@ -856,6 +856,16 @@
   ],
   "auditLogs": [
     {
+      "id": "cxnjls9yu",
+      "timestamp": "2026-05-01T23:52:58.296Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
       "id": "jaow7pyi9",
       "timestamp": "2026-05-01T23:38:14.451Z",
       "userId": "1",
