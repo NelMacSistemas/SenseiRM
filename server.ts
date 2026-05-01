@@ -770,6 +770,40 @@ app.post('/api/sync', authenticateToken, apiLimiter, (req: any, res: any) => {
   res.json({ success: true });
 });
 
+// Verify current password (for self-service password change)
+app.post('/api/verify-password', authenticateToken, (req: any, res: any) => {
+  const { password } = req.body;
+  if (!password) return res.status(400).json({ error: 'Senha não fornecida.' });
+
+  const user = db.users.find((u: any) => u.id === req.user.id);
+  if (!user) return res.status(404).json({ error: 'Usuário não encontrado.' });
+
+  const match = bcrypt.compareSync(password, user.senha);
+  if (!match) return res.status(401).json({ error: 'Senha incorreta.' });
+
+  res.json({ success: true });
+});
+
+// Self-service password change — bypasses RBAC, requires only valid JWT
+app.post('/api/change-password', authenticateToken, (req: any, res: any) => {
+  const { newPassword } = req.body;
+  if (!newPassword || newPassword.length < 8) {
+    return res.status(400).json({ error: 'Nova senha inválida.' });
+  }
+
+  const index = db.users.findIndex((u: any) => u.id === req.user.id);
+  if (index === -1) return res.status(404).json({ error: 'Usuário não encontrado.' });
+
+  db.users[index] = {
+    ...db.users[index],
+    senha: bcrypt.hashSync(newPassword, 10)
+  };
+
+  saveData();
+  io.emit('data_updated', { type: 'users', action: 'UPDATE' });
+  res.json({ success: true });
+});
+
 app.post('/api/mail/send', authenticateToken, checkPermission('malaDireta', 'incluir'), async (req: any, res: any) => {
   const { subject, message, recipients } = req.body;
   const settings = db.emailSettings;

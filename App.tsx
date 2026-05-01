@@ -2554,11 +2554,7 @@ const Dashboard = () => {
       return toast({ title: 'Erro', message: 'As senhas não coincidem.', type: 'error' });
     }
 
-    if (currentPass !== currentUser?.senha) {
-      return toast({ title: 'Erro', message: 'Senha atual incorreta.', type: 'error' });
-    }
-
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
     if (!passwordRegex.test(newPass)) {
       return toast({ 
         title: 'Senha Fraca', 
@@ -2568,11 +2564,19 @@ const Dashboard = () => {
     }
 
     try {
-      const updatedUser = { ...currentUser, senha: newPass };
-      await updateSync('users', 'UPDATE', updatedUser);
-      
+      const token = localStorage.getItem('senseirm_token');
+      const res = await fetch('/api/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ newPassword: newPass })
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        return toast({ title: 'Erro', message: data.error || 'Falha ao alterar senha.', type: 'error' });
+      }
+
       auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'UPDATE', 'AUTH', 'Senha alterada pelo usuário.', currentUser?.id);
-      
       toast({ title: 'Sucesso', message: 'Senha alterada com sucesso!', type: 'success' });
       setIsPasswordModalOpen(false);
     } catch (err) {
