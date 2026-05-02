@@ -645,6 +645,7 @@ interface AppState {
   history: MailHistory[];
   slaSettings: SLASettings;
   notifications: Notification[];
+  onlineCount: number;
   markNotificationAsRead: (id: string) => void;
   clearNotifications: () => void;
   login: (email: string, pass: string) => Promise<boolean>;
@@ -857,10 +858,17 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       setNotifications(prev => [newNotification, ...prev]);
     });
 
+    socket.on('online_users_count', (count: number) => {
+      setOnlineCount(count);
+    });
+
     return () => {
       socket.disconnect();
     };
   }, [currentUser?.id]); // Use ID only to prevent loops on data refresh
+
+  // --- USA-02: Session Timeout com aviso prévio de 2 minutos ---
+  const [onlineCount, setOnlineCount] = useState(0);
 
   // --- USA-02: Session Timeout com aviso prévio de 2 minutos ---
   const [showSessionWarning, setShowSessionWarning] = useState(false);
@@ -1450,7 +1458,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }, [currentUser, roles]);
 
   const contextValue = useMemo(() => ({
-    currentUser, users, roles, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, systemSettings, systemPolicies, clientCategories, customFields, notifications,
+    currentUser, users, roles, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, systemSettings, systemPolicies, clientCategories, customFields, notifications, onlineCount,
     markNotificationAsRead, clearNotifications,
     login, logout, updateUser, addUser, deleteUser, deleteUserWithTasks,
     addRole, updateRole, deleteRole, deleteRoleWithReassign,
@@ -1468,7 +1476,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     pendingInactivationUser,
     setPendingInactivationUser
   }), [
-    currentUser, users, roles, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, systemSettings, systemPolicies, clientCategories, customFields, notifications, apiSync, hasPermission, theme, isLoading, pendingInactivationUser
+    currentUser, users, roles, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, systemSettings, systemPolicies, clientCategories, customFields, notifications, onlineCount, apiSync, hasPermission, theme, isLoading, pendingInactivationUser
   ]);
 
   return (
@@ -2512,7 +2520,7 @@ const CalendarView = () => {
 
 const Dashboard = () => {
   console.log('[App] Rendering Dashboard...');
-  const { clients, tasks, users, currentUser, updateSync, hasPermission, roles, auditLogs } = useApp();
+  const { clients, tasks, users, currentUser, updateSync, hasPermission, roles, auditLogs, onlineCount } = useApp();
   const { toast } = useToast();
   const { confirm } = useConfirm();
   const navigate = useNavigate();
@@ -2815,8 +2823,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* CLIENTES OVERVIEW - Ocupa 6 colunas */}
-        <div className={`${canViewAllUsers ? 'md:col-span-6' : 'md:col-span-12'} bg-primary dark:bg-primary-dark text-white p-6 rounded-2xl md:rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between group`}>
+        {/* CLIENTES OVERVIEW - Ocupa 4 colunas */}
+        <div className={`${canViewAllUsers ? 'md:col-span-4' : 'md:col-span-12'} bg-primary dark:bg-primary-dark text-white p-6 rounded-2xl md:rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between group`}>
           <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 dark:bg-black/10 rounded-full group-hover:scale-150 transition-transform duration-700" />
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-6">
@@ -2852,9 +2860,9 @@ const Dashboard = () => {
           </Link>
         </div>
 
-        {/* USUàRIOS OVERVIEW - Ocupa 6 colunas */}
+        {/* USUÀ RIOS OVERVIEW - Ocupa 4 colunas */}
         {canViewAllUsers && (
-          <div className="md:col-span-6 bg-slate-800 dark:bg-slate-950 text-white p-6 rounded-2xl md:rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between group">
+          <div className="md:col-span-4 bg-slate-800 dark:bg-slate-950 text-white p-6 rounded-2xl md:rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between group">
             <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full group-hover:scale-150 transition-transform duration-700" />
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-6">
@@ -2894,6 +2902,43 @@ const Dashboard = () => {
             </Link>
           </div>
         )}
+
+        {/* USUÁRIOS ONLINE - Visível para todos, layout adaptativo */}
+        <div className={`${canViewAllUsers ? 'md:col-span-4' : 'md:col-span-12'} bg-gradient-to-br from-emerald-600 to-teal-700 text-white p-6 rounded-2xl md:rounded-3xl shadow-lg relative overflow-hidden flex flex-col justify-between group`}>
+          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full group-hover:scale-150 transition-transform duration-700" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
+                <Icon name="signal" className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-sm font-black uppercase tracking-widest">Usuários Online</h3>
+            </div>
+
+            <div className="mb-6 flex items-end gap-3">
+              <span className="text-5xl font-black tracking-tighter">{onlineCount}</span>
+              <div className="mb-2 flex items-center gap-2">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-200"></span>
+                </span>
+                <span className="text-white/70 text-sm font-medium">ao vivo</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-white/70 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-300" /> Sessões ativas agora</span>
+                <span className="font-bold">{onlineCount}</span>
+              </div>
+              {canViewAllUsers && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-white/70 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-white/40" /> Total de usuários ativos</span>
+                  <span className="font-bold">{kpis.usersActive}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
       </div>
 

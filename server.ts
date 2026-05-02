@@ -86,17 +86,34 @@ app.use((req, res, next) => {
   next();
 });
 
+// Track online users: socketId -> userId
+const onlineSessions = new Map<string, string>();
+
+function broadcastOnlineCount() {
+  const uniqueUsers = new Set(onlineSessions.values());
+  io.emit('online_users_count', uniqueUsers.size);
+}
+
 // Handle Socket.IO connections
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+  console.log('[Socket] New connection:', socket.id);
+  
+  // Send current count immediately to the new connection
+  const initialUniqueUsers = new Set(onlineSessions.values());
+  socket.emit('online_users_count', initialUniqueUsers.size);
 
   socket.on('join', (userId) => {
     socket.join(userId);
-    console.log(`User ${userId} joined their personal room`);
+    onlineSessions.set(socket.id, userId);
+    broadcastOnlineCount();
+    console.log(`[Socket] User ${userId} joined (Socket: ${socket.id}). Online now: ${new Set(onlineSessions.values()).size}`);
   });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+    const userId = onlineSessions.get(socket.id);
+    onlineSessions.delete(socket.id);
+    broadcastOnlineCount();
+    console.log(`[Socket] Socket ${socket.id} (User: ${userId}) disconnected. Online now: ${new Set(onlineSessions.values()).size}`);
   });
 });
 

@@ -891,6 +891,98 @@
   ],
   "auditLogs": [
     {
+      "id": "u6q79e4nm",
+      "timestamp": "2026-05-02T02:03:31.778Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Nelson Macedo autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "dktu3vgm4",
+      "timestamp": "2026-05-02T02:03:24.899Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ha39ah88v",
+      "timestamp": "2026-05-02T01:49:30.905Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "s1ga2comz",
+      "timestamp": "2026-05-02T01:48:19.020Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "f6zbekchv",
+      "timestamp": "2026-05-02T01:47:09.282Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "sm9ijn4iv",
+      "timestamp": "2026-05-02T01:45:36.531Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "c0h9lvu7h",
+      "timestamp": "2026-05-02T01:32:41.253Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "CONFIG",
+      "details": "Configurações do Sistema atualizadas. Nenhuma alteração nos campos principais.",
+      "entityId": "systemSettings",
+      "diff": [],
+      "ip": "192.168.1.44"
+    },
+    {
+      "id": "henqtho9w",
+      "timestamp": "2026-05-02T01:23:17.698Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "192.168.1.44"
+    },
+    {
+      "id": "47rlqlqls",
+      "timestamp": "2026-05-02T01:18:25.706Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
       "id": "gq5xa99vs",
       "timestamp": "2026-05-01T23:59:57.059Z",
       "userId": "1",
