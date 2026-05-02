@@ -1599,7 +1599,7 @@ const ProgressBar = ({ progress, color = "bg-primary" }: { progress: number, col
 );
 
 const AttachmentsManager = ({ attachments = [], onUpdate, canEdit }: { attachments?: Attachment[], onUpdate: (atts: Attachment[]) => void, canEdit: boolean }) => {
-  const { currentUser } = useApp();
+  const { currentUser, systemPolicies } = useApp();
   const { error } = useToast();
   const { confirm } = useConfirm();
   const [uploading, setUploading] = useState(false);
@@ -1615,6 +1615,13 @@ const AttachmentsManager = ({ attachments = [], onUpdate, canEdit }: { attachmen
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Validação de Tamanho Máximo (Configurações > Política)
+    const maxMB = systemPolicies?.maxUploadSizeMB || 10;
+    if (file.size > maxMB * 1024 * 1024) {
+      error(`O arquivo excede o limite permitido de ${maxMB}MB.`);
+      return;
+    }
 
     setUploading(true);
     const formData = new FormData();

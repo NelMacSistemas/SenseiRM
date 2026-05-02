@@ -905,6 +905,26 @@
   ],
   "auditLogs": [
     {
+      "id": "9ve12ruzv",
+      "timestamp": "2026-05-02T02:48:47.046Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "min1zoduw",
+      "timestamp": "2026-05-02T02:48:36.426Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
       "id": "47vssa69d",
       "timestamp": "2026-05-02T02:44:39.182Z",
       "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",

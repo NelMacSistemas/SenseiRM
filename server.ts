@@ -136,7 +136,7 @@ const storage = multer.diskStorage({
 // SEG-07: Validação de Magic Bytes (assinatura de arquivo)
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 100 * 1024 * 1024 }, // Aumentado para 100MB para permitir controle dinâmico no handler
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|pdf|doc|docx|xls|xlsx|csv|txt|zip|rar/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -572,11 +572,26 @@ app.get('/api/auth/me', authenticateToken, (req: any, res: any) => {
 });
 
 app.post('/api/upload', authenticateToken, (req: any, res: any) => {
+  // Check Content-Length before parsing if possible
+  const maxMB = db.systemPolicies?.maxUploadSizeMB || 10;
+  if (req.headers['content-length'] && parseInt(req.headers['content-length']) > maxMB * 1024 * 1024) {
+    return res.status(400).json({ error: `O arquivo excede o limite permitido de ${maxMB}MB.` });
+  }
+
   upload.single('file')(req, res, (err) => {
     if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: `O arquivo excede o limite máximo global do sistema (100MB).` });
+      }
       return res.status(400).json({ error: `Erro no upload: ${err.message}` });
     } else if (err) {
       return res.status(400).json({ error: err.message });
+    }
+    
+    if (req.file && req.file.size > maxMB * 1024 * 1024) {
+      // Cleanup file if uploaded but exceeds dynamic limit
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      return res.status(400).json({ error: `O arquivo excede o limite permitido de ${maxMB}MB.` });
     }
     
     if (!req.file) {
