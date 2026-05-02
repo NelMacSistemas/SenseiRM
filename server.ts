@@ -618,7 +618,7 @@ app.get('/api/data', authenticateToken, apiLimiter, (req: any, res: any) => {
     users: safeUsers,
     roles: db.roles,
     clients: (isAdmin || perms.clientes?.acesso) ? db.clients : [],
-    tasks: (isAdmin || perms.tarefas?.acesso) ? db.tasks : [],
+    tasks: isAdmin ? db.tasks : (perms.tarefas?.acesso ? db.tasks.filter((t: any) => t.responsavelId === req.user.id) : []),
     sectors: (isAdmin || perms.configuracoes?.acesso) ? db.sectors : [],
     clientCategories: (isAdmin || perms.configuracoes?.acesso) ? db.clientCategories : [],
     auditLogs: (isAdmin || perms.auditoria?.acesso) ? db.auditLogs : [],

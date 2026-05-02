@@ -2528,11 +2528,12 @@ const Dashboard = () => {
 
   const canViewAllTasks = hasPermission('tarefas', 'leitura');
   const canViewAllUsers = hasPermission('usuarios', 'leitura');
+  const isAdmin = currentUser?.roleId === 'admin';
 
   // Membros calculados para KPIs
   const kpis = useMemo(() => {
-    // Escopo de tarefas
-    const scopeTasks = canViewAllTasks ? tasks : tasks.filter(t => t.responsavelId === currentUser?.id);
+    // Escopo de tarefas: Apenas admin vê tudo, outros apenas as suas
+    const scopeTasks = isAdmin ? tasks : tasks.filter(t => t.responsavelId === currentUser?.id);
     const now = new Date();
     
     // Indicadores de CLIENTES
@@ -2575,7 +2576,7 @@ const Dashboard = () => {
     // Ranking
     const rankedClients = [...clients]
       .sort((a, b) => (b.avaliacaoInterna || 0) - (a.avaliacaoInterna || 0))
-      .slice(0, 5);
+        .slice(0, 5);
 
     return {
       clientsActive, clientsInactive, clientsBlocked,
@@ -2586,7 +2587,7 @@ const Dashboard = () => {
       adimplenceRate, avgRating,
       rankedClients, taskStatusData, clientStatusData
     };
-  }, [clients, tasks, users, currentUser, canViewAllTasks]);
+  }, [clients, tasks, users, currentUser, isAdmin]);
 
   const handleChangePassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -4674,12 +4675,14 @@ const TasksPage = () => {
   const canEdit = hasPermission('tarefas', 'editar');
   const canDelete = hasPermission('tarefas', 'excluir');
   const canInclude = hasPermission('tarefas', 'incluir');
-  const canViewAllTasks = hasPermission('tarefas', 'leitura');
+  const isAdmin = currentUser?.roleId === 'admin';
+  const canViewAllTasks = isAdmin; // REGRA: Apenas admin vê tudo
 
   const activeUsers = useMemo(() => users.filter(u => u.status === EntityStatus.ACTIVE), [users]);
 
   const filteredTasks = useMemo(() => {
-    let baseTasks = canViewAllTasks && !filterMyTasks ? tasks : tasks.filter(t => t.responsavelId === currentUser?.id);
+    // REGRA DE NEGÓCIO: Apenas admin vê tudo, outros apenas onde são responsáveis
+    let baseTasks = isAdmin && !filterMyTasks ? tasks : tasks.filter(t => t.responsavelId === currentUser?.id);
     
     if (debouncedSearchTerm) {
       const lowerSearch = debouncedSearchTerm.toLowerCase();
@@ -4695,7 +4698,7 @@ const TasksPage = () => {
     }
     
     return baseTasks;
-  }, [tasks, currentUser, canViewAllTasks, debouncedSearchTerm, filterPriority, filterMyTasks]);
+  }, [tasks, currentUser, isAdmin, debouncedSearchTerm, filterPriority, filterMyTasks]);
 
   const totalPages = Math.ceil(filteredTasks.length / itemsPerPage);
   const paginatedTasks = useMemo(() => {

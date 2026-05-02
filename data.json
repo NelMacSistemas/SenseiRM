@@ -737,8 +737,8 @@
       "titulo": "tste",
       "descricao": "teste",
       "tipo": "Melhoria",
-      "solicitanteId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
-      "responsavelId": "1",
+      "solicitanteId": "1",
+      "responsavelId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
       "setorId": "",
       "interessados": "asdfasf@gmail.com",
       "prioridade": "Média",
@@ -775,6 +775,20 @@
           "action": "Atualização de tarefa",
           "changes": [
             "Responsável: \"teste\" → \"Administrador\""
+          ],
+          "justification": "Ajuste de parà¢metros técnicos.",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "4323fead-6533-4abb-b8d7-7f74de143ea7",
+          "timestamp": "2026-05-02T02:44:27.296Z",
+          "fromStatus": "Aberta",
+          "toStatus": "Aberta",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Solicitante: \"Nelson Macedo\" → \"Administrador\"",
+            "Responsável: \"Administrador\" → \"Nelson Macedo\""
           ],
           "justification": "Ajuste de parà¢metros técnicos.",
           "userId": "1",
@@ -890,6 +904,64 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "47vssa69d",
+      "timestamp": "2026-05-02T02:44:39.182Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Nelson Macedo autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "yxkfb8x0a",
+      "timestamp": "2026-05-02T02:44:32.051Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "7xezei4hd",
+      "timestamp": "2026-05-02T02:44:27.318Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-003 alterada. Alterações: [ID Responsável: \"1\" → \"86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2\"]",
+      "entityId": "10084a87-bcaa-4743-aa17-b9b3c52ab574",
+      "diff": [
+        {
+          "field": "ID Responsável",
+          "oldValue": "1",
+          "newValue": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "palz9078a",
+      "timestamp": "2026-05-02T02:44:03.846Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "jdok2l19v",
+      "timestamp": "2026-05-02T02:43:23.722Z",
+      "userId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "userName": "Nelson Macedo",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
     {
       "id": "u6q79e4nm",
       "timestamp": "2026-05-02T02:03:31.778Z",
