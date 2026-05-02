@@ -31,20 +31,6 @@
       "possuiWhatsapp": true,
       "roleId": "user",
       "senha": "$2b$10$nyaW5563F0N1iL98BBd4eOZcQQkCYLBxw1/KjJ/SiirE7JF44JYoa"
-    },
-    {
-      "id": "2d774442-04cc-44c0-8d17-3d213ead6531",
-      "dataCriacao": "2026-05-01T22:27:25.743Z",
-      "tema": "verde",
-      "foto": "",
-      "nome": "teste",
-      "email": "teste@gmail.com",
-      "status": "inativo",
-      "telefone": null,
-      "celular": "+55 (51) 98146-7082",
-      "possuiWhatsapp": true,
-      "roleId": "user",
-      "senha": "$2b$10$LkRwKBnESNeMvS1DTA/CkOaMQGJXjEeo0PLDT9.BSCUuXGiYP4sdS"
     }
   ],
   "roles": [
@@ -746,6 +732,55 @@
           "userName": "Administrador"
         }
       ]
+    },
+    {
+      "titulo": "tste",
+      "descricao": "teste",
+      "tipo": "Melhoria",
+      "solicitanteId": "86d24fe5-f6c8-4a78-ac6e-f0f072ff08e2",
+      "responsavelId": "1",
+      "setorId": "",
+      "interessados": "asdfasf@gmail.com",
+      "prioridade": "Média",
+      "status": "Aberta",
+      "dataInicio": "2026-05-01",
+      "dataConclusaoReal": "",
+      "tempoGasto": "",
+      "attachments": [],
+      "subtasks": [],
+      "comments": [],
+      "id": "10084a87-bcaa-4743-aa17-b9b3c52ab574",
+      "taskNumber": "TSK-003",
+      "dataCriacao": "2026-05-01T23:58:35.817Z",
+      "dataVencimento": "2026-06-18",
+      "logs": [
+        {
+          "id": "65a5212b-1ec7-4286-9fe2-65790c5bc7d1",
+          "timestamp": "2026-05-01T23:58:35.817Z",
+          "fromStatus": "Aberta",
+          "toStatus": "Aberta",
+          "action": "Criação da tarefa",
+          "changes": [
+            "Tarefa inicializada com os dados básicos."
+          ],
+          "justification": "Criação inicial",
+          "userId": "1",
+          "userName": "Administrador"
+        },
+        {
+          "id": "b148fad4-0c22-4ef6-8bd1-9ad016dbe58d",
+          "timestamp": "2026-05-01T23:59:29.400Z",
+          "fromStatus": "Aberta",
+          "toStatus": "Aberta",
+          "action": "Atualização de tarefa",
+          "changes": [
+            "Responsável: \"teste\" → \"Administrador\""
+          ],
+          "justification": "Ajuste de parà¢metros técnicos.",
+          "userId": "1",
+          "userName": "Administrador"
+        }
+      ]
     }
   ],
   "sectors": [
@@ -855,6 +890,138 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "gq5xa99vs",
+      "timestamp": "2026-05-01T23:59:57.059Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "3acnow9sp",
+      "timestamp": "2026-05-01T23:59:50.859Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "DELETE",
+      "module": "USUARIOS",
+      "details": "Usuário \"teste\" (t****@gmail.com) excluído permanentemente. 0 tarefa(s) associada(s) também foram excluídas.",
+      "entityId": "2d774442-04cc-44c0-8d17-3d213ead6531",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "1iocmai0i",
+      "timestamp": "2026-05-01T23:59:31.820Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário teste alterado. Alterações: [Status da Conta: \"ativo\" → \"inativo\"]",
+      "entityId": "2d774442-04cc-44c0-8d17-3d213ead6531",
+      "diff": [
+        {
+          "field": "Status da Conta",
+          "oldValue": "ativo",
+          "newValue": "inativo"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ey4yjrszj",
+      "timestamp": "2026-05-01T23:59:29.423Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-003 alterada. Alterações: [ID Responsável: \"2d774442-04cc-44c0-8d17-3d213ead6531\" → \"1\"]",
+      "entityId": "10084a87-bcaa-4743-aa17-b9b3c52ab574",
+      "diff": [
+        {
+          "field": "ID Responsável",
+          "oldValue": "2d774442-04cc-44c0-8d17-3d213ead6531",
+          "newValue": "1"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "424ik11s1",
+      "timestamp": "2026-05-01T23:58:35.838Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "CREATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-003: \"tste\" criada.",
+      "entityId": "10084a87-bcaa-4743-aa17-b9b3c52ab574",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ruksl8l0v",
+      "timestamp": "2026-05-01T23:58:01.064Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário teste alterado. Alterações: [Status da Conta: \"inativo\" → \"ativo\"]",
+      "entityId": "2d774442-04cc-44c0-8d17-3d213ead6531",
+      "diff": [
+        {
+          "field": "Status da Conta",
+          "oldValue": "inativo",
+          "newValue": "ativo"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "3awxfpkzv",
+      "timestamp": "2026-05-01T23:57:23.811Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário teste alterado. Alterações: [Status da Conta: \"ativo\" → \"inativo\"]",
+      "entityId": "2d774442-04cc-44c0-8d17-3d213ead6531",
+      "diff": [
+        {
+          "field": "Status da Conta",
+          "oldValue": "ativo",
+          "newValue": "inativo"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "nu04uccd5",
+      "timestamp": "2026-05-01T23:57:09.101Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "USUARIOS",
+      "details": "Usuário teste alterado. Alterações: [Status da Conta: \"inativo\" → \"ativo\"]",
+      "entityId": "2d774442-04cc-44c0-8d17-3d213ead6531",
+      "diff": [
+        {
+          "field": "Status da Conta",
+          "oldValue": "inativo",
+          "newValue": "ativo"
+        }
+      ],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "ofqatr0ap",
+      "timestamp": "2026-05-01T23:56:27.526Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGIN",
+      "module": "AUTH",
+      "details": "Usuário Administrador autenticou.",
+      "ip": "127.0.0.1"
+    },
     {
       "id": "cxnjls9yu",
       "timestamp": "2026-05-01T23:52:58.296Z",

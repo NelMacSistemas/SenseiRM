@@ -652,6 +652,7 @@ interface AppState {
   updateUser: (user: User) => void;
   addUser: (user: User) => void;
   deleteUser: (id: string) => void;
+  deleteUserWithTasks: (userId: string) => void;
   addRole: (role: Role) => void;
   updateRole: (role: Role) => void;
   deleteRole: (id: string) => void;
@@ -1164,6 +1165,21 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'USUARIOS', `Usuário removido: ${target?.nome} (${target?.email})`, id);
   };
 
+  const deleteUserWithTasks = (userId: string) => {
+    const target = users.find(u => u.id === userId);
+    // Delete all tasks created by or assigned to this user
+    const userTasks = tasks.filter(t => t.solicitanteId === userId || t.responsavelId === userId);
+    userTasks.forEach(t => {
+      setTasks(prev => prev.filter(task => task.id !== t.id));
+      apiSync('tasks', 'DELETE', { id: t.id });
+      auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'TAREFAS', `Tarefa ${t.taskNumber} - "${t.titulo}" excluída em cascata pela exclusão do usuário ${target?.nome}.`, t.id);
+    });
+    // Delete user
+    setUsers(prev => prev.filter(u => u.id !== userId));
+    apiSync('users', 'DELETE', { id: userId });
+    auditService.log(currentUser?.id || 'sys', currentUser?.nome || 'Sistema', 'DELETE', 'USUARIOS', `Usuário "${target?.nome}" (${target?.email}) excluído permanentemente. ${userTasks.length} tarefa(s) associada(s) também foram excluídas.`, userId);
+  };
+
   const addRole = (r: Role) => {
     setRoles(prev => [...prev, r]);
     apiSync('roles', 'ADD', r);
@@ -1436,7 +1452,7 @@ const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const contextValue = useMemo(() => ({
     currentUser, users, roles, clients, tasks, sectors, auditLogs, history, templates, slaSettings, emailSettings, systemSettings, systemPolicies, clientCategories, customFields, notifications,
     markNotificationAsRead, clearNotifications,
-    login, logout, updateUser, addUser, deleteUser,
+    login, logout, updateUser, addUser, deleteUser, deleteUserWithTasks,
     addRole, updateRole, deleteRole, deleteRoleWithReassign,
     addClient, updateClient, deleteClient,
     addCustomField, updateCustomField, deleteCustomField,
@@ -5566,7 +5582,7 @@ const TasksPage = () => {
 
 
 const UsersPage = () => {
-  const { users, addUser, updateUser, currentUser, hasPermission, roles, tasks, sectors, setPendingInactivationUser } = useApp();
+  const { users, addUser, updateUser, deleteUser, deleteUserWithTasks, currentUser, hasPermission, roles, tasks, sectors, setPendingInactivationUser } = useApp();
   const { toast } = useToast();
   const confirmDialog = useConfirm();
   const location = useLocation();
@@ -5585,6 +5601,7 @@ const UsersPage = () => {
   const isSuperAdmin = currentUser?.roleId === 'admin';
   const canManageUsers = isSuperAdmin || hasPermission('usuarios', 'editar') || hasPermission('usuarios', 'incluir');
   const canViewAllUsers = isSuperAdmin || hasPermission('usuarios', 'leitura');
+  const canDeleteUsers = hasPermission('usuarios', 'excluir');
 
   useEffect(() => {
     if (location.state?.openModal && canManageUsers) {
@@ -5755,6 +5772,21 @@ const UsersPage = () => {
              >
                {canManageUsers ? 'Gerenciar' : 'Ver Perfil'}
              </button>
+             {isInactive && u.roleId !== 'admin' && canDeleteUsers && (
+               <button
+                 onClick={() => {
+                   const userTasks = tasks.filter(t => t.solicitanteId === u.id || t.responsavelId === u.id);
+                   confirmDialog.confirm({
+                     title: 'Excluir Usuário Permanentemente',
+                     message: `Você está prestes a excluir "${u.nome}" permanentemente.${userTasks.length > 0 ? `\n\n⚠️ ATENÇÃO: ${userTasks.length} tarefa(s) associada(s) a este usuário também serão excluídas da base de dados. Esta ação não pode ser desfeita.` : '\n\nEsta ação não pode ser desfeita.'}`,
+                     onConfirm: () => deleteUserWithTasks(u.id)
+                   });
+                 }}
+                 className="w-full px-6 py-2 rounded-xl text-[10px] font-black uppercase transition-all text-red-600 dark:text-red-400 border-2 border-red-300 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center justify-center gap-2"
+               >
+                 <Icon name="trash" /> Excluir Permanentemente
+               </button>
+             )}
           </div>
           );
         })}
