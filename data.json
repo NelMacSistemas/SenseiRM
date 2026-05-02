@@ -905,6 +905,40 @@
   ],
   "auditLogs": [
     {
+      "id": "pyilpbjnx",
+      "timestamp": "2026-05-02T02:55:21.289Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "LOGOUT",
+      "module": "AUTH",
+      "details": "Sessão encerrada.",
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "qjx9p1lvm",
+      "timestamp": "2026-05-02T02:54:56.245Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Nenhuma alteração nos campos principais.",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
+      "id": "g9i6ng829",
+      "timestamp": "2026-05-02T02:54:12.549Z",
+      "userId": "1",
+      "userName": "Administrador",
+      "action": "UPDATE",
+      "module": "TAREFAS",
+      "details": "Tarefa TSK-001 alterada. Nenhuma alteração nos campos principais.",
+      "entityId": "f24ee236-ebc5-4f25-8e1d-7ec0e48c2c6f",
+      "diff": [],
+      "ip": "127.0.0.1"
+    },
+    {
       "id": "9ve12ruzv",
       "timestamp": "2026-05-02T02:48:47.046Z",
       "userId": "1",
